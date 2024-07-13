@@ -1,0 +1,52 @@
+name: Reincarceration
+version: 1.0.0
+main: org.kif.reincarceration.Reincarceration
+api-version: 1.16
+depend: [Vault, LuckPerms, PlayerVaults]
+description: A reoffender system plugin with challenges and ranks.
+
+commands:
+  reoffender:
+    description: Check your current reoffender status
+    usage: /<command>
+    permission: reincarceration.use
+    permission-message: You don't have permission to use this command [reincarceration.use].
+  rankup:
+    description: Rank up to the next reoffender level
+    usage: /<command>
+    permission: reincarceration.rankup
+    permission-message: You don't have permission to use this command [reincarceration.rankup].
+  startcycle:
+    description: Start a new reincarceration cycle
+    usage: /<command>
+    permission: reincarceration.startcycle
+    permission-message: You don't have permission to use this command [reincarceration.startcycle].
+  completecycle:
+    description: Complete your current reincarceration cycle
+    usage: /<command>
+    permission: reincarceration.completecycle
+    permission-message: You don't have permission to use this command [reincarceration.completecycle].
+  listmodifiers:
+    description: List all active modifiers
+    usage: /<command>
+    permission: reincarceration.listmodifiers
+    permission-message: You don't have permission to use this command [reincarceration.listmodifiers].
+permissions:
+  reincarceration.use:
+    description: Allows use of basic Reincarceration commands
+    default: true
+  reincarceration.startcycle:
+    description: Allows entering the reincarceration system
+    default: false
+  reincarceration.rankup:
+    description: Allows players to rank up
+    default: false
+  reincarceration.completecycle:
+    description: Allows players to complete cycles
+    default: false
+  reincarceration.listmodifiers:
+    description: Allows viewing all active modifiers
+    default: false
+  reincarceration.admin:
+    description: Allows use of Reincarceration admin commands
+    default: op

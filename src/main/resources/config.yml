@@ -1,0 +1,63 @@
+# Reincarceration Configuration
+
+# Economy settings
+economy:
+  entry-fee: 125000
+  rank-up-costs:
+    - 15000
+    - 35000
+    - 65000
+    - 100000
+
+# Rank settings
+ranks:
+  0:
+    name: "C✪"
+    permission-group: "reoffender_c"
+  1:
+    name: "B✪"
+    permission-group: "reoffender_b"
+  2:
+    name: "A✪"
+    permission-group: "reoffender_a"
+  3:
+    name: "Elite✪"
+    permission-group: "reoffender_elite"
+
+# Database settings
+database:
+  filename: "reincarceration_data.db"
+
+# Permission settings
+permissions:
+  entry-group: "citizen"  # The group players are in when not in a cycle
+  base-group: "reoffender" # parent group for all ranks
+
+# Plugin messaging
+prefix: "&8[&6Reincarceration&8] &r"  # Prefix for all plugin messages
+
+# Debug mode (set to true for additional logging)
+debug-mode: false
+
+# Modifier settings
+modifiers:
+  ore_sickness: #
+    enabled: true
+    effect_on_break: true
+    effect_on_sight: true
+    effect_duration: 200
+    sight_check_radius: 5
+    ore_effects:
+      IRON_ORE: WEAKNESS
+      GOLD_ORE: SLOW
+      DIAMOND_ORE: CONFUSION
+      EMERALD_ORE: POISON
+      COAL_ORE: BLINDNESS
+  combustion:
+    enabled: true
+    check_interval: 100
+    fire_duration: 200
+    spread_fire_duration: 100
+    spread_radius: 5.0
+    spread_fire_enabled: true
+    combustion_chance: 0.1
