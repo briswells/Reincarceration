@@ -59,13 +59,13 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         for (Map.Entry<Material, PotionEffectType> entry : oreEffects.entrySet()) {
             configSummary.append("  ").append(entry.getKey()).append(" -> ").append(entry.getValue().getName()).append("\n");
         }
-        ConsoleUtil.sendDebug(configSummary.toString());
+//        ConsoleUtil.sendDebug(configSummary.toString());
     }
 
     @Override
     public void apply(Player player) {
         super.apply(player);
-        ConsoleUtil.sendDebug("Applying Ore Sickness to " + player.getName());
+//        ConsoleUtil.sendDebug("Applying Ore Sickness to " + player.getName());
         if (effectOnSight) {
             BukkitRunnable task = new BukkitRunnable() {
                 @Override
@@ -75,36 +75,36 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
             };
             task.runTaskTimer(plugin, 0L, 20L);
             activeTasks.put(player.getUniqueId(), task);
-            ConsoleUtil.sendDebug("Started sight checking task for " + player.getName());
+//            ConsoleUtil.sendDebug("Started sight checking task for " + player.getName());
         }
     }
 
     @Override
     public void remove(Player player) {
-        ConsoleUtil.sendDebug("Removing Ore Sickness from " + player.getName());
+//        ConsoleUtil.sendDebug("Removing Ore Sickness from " + player.getName());
         super.remove(player);
         BukkitRunnable task = activeTasks.remove(player.getUniqueId());
         if (task != null) {
             task.cancel();
-            ConsoleUtil.sendDebug("Cancelled sight checking task for " + player.getName());
+//            ConsoleUtil.sendDebug("Cancelled sight checking task for " + player.getName());
         }
     }
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        ConsoleUtil.sendDebug("Block break event");
+//        ConsoleUtil.sendDebug("Block break event");
         if (!effectOnBreak) return;
 
         Player player = event.getPlayer();
         if (!isActive(player)) return;
 
-        ConsoleUtil.sendDebug("Player " + player.getName() + " broke a block");
+//        ConsoleUtil.sendDebug("Player " + player.getName() + " broke a block");
         Block block = event.getBlock();
-        ConsoleUtil.sendDebug("Block type: " + block.getType());
+//        ConsoleUtil.sendDebug("Block type: " + block.getType());
         PotionEffectType effectType = oreEffects.get(block.getType());
-        ConsoleUtil.sendDebug("Effect type: " + effectType);
+//        ConsoleUtil.sendDebug("Effect type: " + effectType);
         if (effectType != null) {
-            ConsoleUtil.sendDebug("Applying " + effectType.getName() + " effect to " + player.getName());
+//            ConsoleUtil.sendDebug("Applying " + effectType.getName() + " effect to " + player.getName());
             PotionEffect currentEffect = player.getPotionEffect(effectType);
             int amplifier = (currentEffect != null) ? currentEffect.getAmplifier() + 1 : 0;
             player.addPotionEffect(new PotionEffect(effectType, effectDuration, amplifier));
@@ -121,7 +121,7 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
             Block checkBlock = checkLocation.getBlock();
 
             if (checkBlock.equals(block)) {
-                ConsoleUtil.sendDebug("Player can see " + block.getType() + " at " + block.getLocation());
+//                ConsoleUtil.sendDebug("Player can see " + block.getType() + " at " + block.getLocation());
                 return true;
             }
 
@@ -134,7 +134,7 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
     }
 
     private void checkPlayerSight(Player player) {
-        ConsoleUtil.sendDebug("Checking sight for " + player.getName());
+//        ConsoleUtil.sendDebug("Checking sight for " + player.getName());
         Map<PotionEffectType, Integer> visibleOreEffects = new HashMap<>();
         Map<Material, Integer> oresFound = new HashMap<>();
         Map<Material, Integer> oresVisible = new HashMap<>();
@@ -150,16 +150,17 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
                     // Check if this block type is in our oreEffects map
                     if (oreEffects.containsKey(blockType)) {
                         oresFound.merge(blockType, 1, Integer::sum);
-                        ConsoleUtil.sendDebug("Found " + blockType + " at " + block.getLocation());
+//                        ConsoleUtil.sendDebug("Found " + blockType + " at " + block.getLocation());
 
                         if (hasLineOfSight(player, block)) {
                             PotionEffectType effectType = oreEffects.get(blockType);
                             visibleOreEffects.merge(effectType, 1, Integer::sum);
                             oresVisible.merge(blockType, 1, Integer::sum);
-                            ConsoleUtil.sendDebug("Player can see " + blockType + " at " + block.getLocation());
-                        } else {
-                            ConsoleUtil.sendDebug("Player cannot see " + blockType + " at " + block.getLocation());
+//                            ConsoleUtil.sendDebug("Player can see " + blockType + " at " + block.getLocation());
                         }
+//                        else {
+////                            ConsoleUtil.sendDebug("Player cannot see " + blockType + " at " + block.getLocation());
+//                        }
                     }
                 }
             }
@@ -168,7 +169,7 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         // Apply effects
         for (Map.Entry<PotionEffectType, Integer> entry : visibleOreEffects.entrySet()) {
             player.addPotionEffect(new PotionEffect(entry.getKey(), effectDuration, entry.getValue() - 1));
-            ConsoleUtil.sendDebug("Applied effect " + entry.getKey().getName() + " to " + player.getName());
+//            ConsoleUtil.sendDebug("Applied effect " + entry.getKey().getName() + " to " + player.getName());
         }
 
         // Compile summary
@@ -188,6 +189,6 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
                     .append(" (Amplifier: ").append(entry.getValue() - 1).append(")\n");
         }
 
-        ConsoleUtil.sendDebug(summary.toString());
+//        ConsoleUtil.sendDebug(summary.toString());
     }
 }

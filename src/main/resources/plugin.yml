@@ -26,6 +26,11 @@ commands:
     usage: /<command>
     permission: reincarceration.completecycle
     permission-message: You don't have permission to use this command [reincarceration.completecycle].
+  quitcycle:
+    description: Quit your current reincarceration cycle
+    usage: /<command>
+    permission: reincarceration.quitcycle
+    permission-message: You don't have permission to use this command [reincarceration.quitcycle].
   listmodifiers:
     description: List all active modifiers
     usage: /<command>
@@ -43,6 +48,9 @@ permissions:
     default: false
   reincarceration.completecycle:
     description: Allows players to complete cycles
+    default: false
+  reincarceration.quitcycle:
+    description: Allows players to quit cycles
     default: false
   reincarceration.listmodifiers:
     description: Allows viewing all active modifiers

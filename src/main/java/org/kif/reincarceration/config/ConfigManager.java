@@ -68,4 +68,12 @@ public class ConfigManager {
     public boolean isMaxRank(int rank) {
         return rank == getMaxRank();
     }
+
+    public String getBaseGroup() {
+        return config.getString("permissions.base-group", "reoffender");
+    }
+
+    public int getReoffenderVaultNumber() {
+        return config.getInt("reoffender-vault-number", 11); // Default to vault 1 if not specified
+    }
 }

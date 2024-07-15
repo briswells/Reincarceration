@@ -66,6 +66,11 @@ public class CommandModule implements Module {
             listModifiersCommand.setExecutor(new ListModifiersCommand(this, configManager,
                     modifierModule.getModifierRegistry(), dataModule.getDataManager()));
         }
+
+        PluginCommand quitCycleCommand = plugin.getCommand("quitcycle");
+        if (quitCycleCommand != null) {
+            quitCycleCommand.setExecutor(new QuitCycleCommand(this, configManager, cycleModule));
+        }
     }
 
     public Reincarceration getPlugin() {

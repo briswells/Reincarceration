@@ -53,6 +53,31 @@ public class ModifierModule implements Module {
             if (modifiersConfig.getBoolean("combustion.enabled", true)) {
                 modifierRegistry.registerModifier(new CombustionModifier(plugin));
             }
+            if (modifiersConfig.getBoolean("neolithic.enabled", true)) {
+                NeolithicModifier neolithicModifier = new NeolithicModifier(plugin);
+                modifierRegistry.registerModifier(neolithicModifier);
+                plugin.getServer().getPluginManager().registerEvents(neolithicModifier, plugin);
+            }
+            if (modifiersConfig.getBoolean("hardcore.enabled", true)) {
+                HardcoreModifier hardcoreModifier = new HardcoreModifier(plugin);
+                modifierRegistry.registerModifier(hardcoreModifier);
+                plugin.getServer().getPluginManager().registerEvents(hardcoreModifier, plugin);
+            }
+            if (modifiersConfig.getBoolean("tortoise.enabled", true)) {
+                TortoiseModifier tortoiseModifier = new TortoiseModifier(plugin);
+                modifierRegistry.registerModifier(tortoiseModifier);
+                plugin.getServer().getPluginManager().registerEvents(tortoiseModifier, plugin);
+            }
+            if (modifiersConfig.getBoolean("angler.enabled", true)) {
+                AnglerModifier anglerModifier = new AnglerModifier(plugin);
+                modifierRegistry.registerModifier(anglerModifier);
+                plugin.getServer().getPluginManager().registerEvents(anglerModifier, plugin);
+            }
+            if (modifiersConfig.getBoolean("compact.enabled", true)) {
+                CompactModifier compactModifier = new CompactModifier(plugin);
+                modifierRegistry.registerModifier(compactModifier);
+                plugin.getServer().getPluginManager().registerEvents(compactModifier, plugin);
+            }
         }
     }
 

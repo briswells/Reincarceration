@@ -28,16 +28,29 @@ ranks:
 database:
   filename: "reincarceration_data.db"
 
+reoffender-vault-number: 11
+
 # Permission settings
 permissions:
   entry-group: "citizen"  # The group players are in when not in a cycle
-  base-group: "reoffender" # parent group for all ranks
+  base-group: "reoffender" # The base group for all reoffenders
 
 # Plugin messaging
 prefix: "&8[&6Reincarceration&8] &r"  # Prefix for all plugin messages
 
 # Debug mode (set to true for additional logging)
 debug-mode: false
+
+item_flagging:
+  use_whitelist: false  # If true, use whitelist; if false, use blacklist
+  whitelist:
+    - DIAMOND
+    - IRON_INGOT
+    - GOLD_INGOT
+  blacklist:
+    - BEDROCK
+    - COMMAND_BLOCK
+    - BARRIER
 
 # Modifier settings
 modifiers:
@@ -53,6 +66,7 @@ modifiers:
       DIAMOND_ORE: CONFUSION
       EMERALD_ORE: POISON
       COAL_ORE: BLINDNESS
+      ANCIENT_DEBRIS: WITHER
   combustion:
     enabled: true
     check_interval: 100
@@ -61,3 +75,38 @@ modifiers:
     spread_radius: 5.0
     spread_fire_enabled: true
     combustion_chance: 0.1
+  neolithic:
+    enabled: true
+    allowed_tools:
+      - WOODEN_PICKAXE
+      - STONE_PICKAXE
+      - WOODEN_AXE
+      - STONE_AXE
+      - WOODEN_SHOVEL
+      - STONE_SHOVEL
+      - WOODEN_HOE
+      - STONE_HOE
+      - WOODEN_SWORD
+      - STONE_SWORD
+    allowed_blocks:
+      - DIRT
+      - SANDSTONE
+      - STONE
+      - NETHERRACK
+      - SNOW
+      - BIRCH_LOG
+    double_drop_chance: 0.2
+  hardcore:
+    enabled: true
+    max_hearts: 1
+  tortoise:
+    enabled: true
+    speed_decrease: 0.3  # 0.3 means 30% slower (translates to Slowness I)
+    mining_speed_increase: 0.5  # 0.5 means 50% faster (translates to Haste II)
+  angler:
+    enabled: true
+    provide_rod_on_death: true
+    prevent_rod_durability_loss: true
+  compact:
+    enabled: true
+    allowed_slots: 9  # This will allow only the hotbar to be used

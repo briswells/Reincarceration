@@ -9,15 +9,11 @@ import org.kif.reincarceration.core.ModuleManager;
 import org.kif.reincarceration.command.CommandModule;
 import org.kif.reincarceration.data.DataModule;
 import org.kif.reincarceration.economy.EconomyModule;
+import org.kif.reincarceration.listener.*;
 import org.kif.reincarceration.rank.RankModule;
 import org.kif.reincarceration.cycle.CycleModule;
 import org.kif.reincarceration.modifier.core.ModifierModule;
-import org.kif.reincarceration.listener.PlayerListener;
-import org.kif.reincarceration.util.BroadcastUtil;
-import org.kif.reincarceration.util.ConsoleUtil;
-import org.kif.reincarceration.util.MessageUtil;
-import org.kif.reincarceration.util.RomanNumeralUtil;
-
+import org.kif.reincarceration.util.*;
 
 import java.sql.SQLException;
 
@@ -57,9 +53,15 @@ public class Reincarceration extends JavaPlugin {
             // Register Utilities
             BroadcastUtil.initialize(this);
             MessageUtil.initialize(this);
+            ItemUtil.initialize(this);
+            VaultUtil.initialize(this);
 
             // Register event listeners
+            getServer().getPluginManager().registerEvents(new VaultAccessListener(this), this);
             getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+            getServer().getPluginManager().registerEvents(new MobDropListener(this), this);
+            getServer().getPluginManager().registerEvents(new ContainerInteractionListener(this), this);
+            getServer().getPluginManager().registerEvents(new FishingListener(this), this);
 
             ConsoleUtil.sendSuccess("Reincarceration has been enabled!");
         } catch (SQLException e) {

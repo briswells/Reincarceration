@@ -303,14 +303,19 @@ public class DataManager {
         }
     }
 
-    public void recordCycleCompletion(Player player) throws SQLException {
-        String sql = "UPDATE cycle_history SET end_time = ?, completed = ? WHERE player_uuid = ? AND completed = false";
+    public void recordCycleCompletion(Player player, Boolean completed) throws SQLException {
+        String sql = "UPDATE cycle_history SET end_time = ?, completed = ? WHERE player_uuid = ? AND end_time IS NULL";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
-            pstmt.setBoolean(2, true);
+            pstmt.setBoolean(2, completed);
             pstmt.setString(3, player.getUniqueId().toString());
-            pstmt.executeUpdate();
+            int updatedRows = pstmt.executeUpdate();
+            if (updatedRows == 0) {
+                ConsoleUtil.sendDebug("No active cycle found to complete for player: " + player.getName());
+            } else {
+                ConsoleUtil.sendDebug("Completed cycle for player: " + player.getName());
+            }
         } catch (SQLException e) {
             logSevere("Error completing cycle: " + e.getMessage());
             throw e;

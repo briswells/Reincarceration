@@ -31,7 +31,7 @@ public class CombustionModifier extends AbstractModifier implements Listener {
     private double combustionChance;
 
     public CombustionModifier(Reincarceration plugin) {
-        super("combustion", "Random Fire", "Players will spontaneously combust, advised to keep close to water sources");
+        super("combustion", "Combustion", "Players will spontaneously combust, advised to keep close to water sources");
         this.plugin = plugin;
         loadConfig();
     }
