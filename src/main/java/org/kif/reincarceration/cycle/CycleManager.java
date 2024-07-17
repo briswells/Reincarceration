@@ -167,8 +167,8 @@ public class CycleManager {
             BroadcastUtil.broadcastMessage("§c" + player.getName() + " has been discharged as a result of their inability to overcome the " + activeModifier.getName() + " modifier");
 
         } catch (SQLException e) {
-            logSevere("Error completing cycle: " + e.getMessage());
-            MessageUtil.sendPrefixMessage(player, "&cerror occurred while completing the cycle. Please try again later.");
+            logSevere("Error quitting cycle: " + e.getMessage());
+            MessageUtil.sendPrefixMessage(player, "&cAn error occurred while quitting the cycle. Please try again later.");
         }
     }
 

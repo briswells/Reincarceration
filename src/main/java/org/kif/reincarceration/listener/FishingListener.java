@@ -8,6 +8,7 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.permission.PermissionManager;
+import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.ItemUtil;
 
 public class FishingListener implements Listener {
@@ -34,16 +35,16 @@ public class FishingListener implements Listener {
             boolean hasFlag = ItemUtil.hasReincarcerationFlag(fishItem);
 
             if (isAssociated && !hasFlag) {
-                // Associated player caught non-flagged fish, cancel the event
-                event.setCancelled(true);
-                caughtItem.remove();
+                // Associated player caught non-flagged fish, flag it
+                ItemUtil.addReincarcerationFlag(fishItem);
+                caughtItem.setItemStack(fishItem);
+                ConsoleUtil.sendDebug("Flagged caught fish for associated player: " + player.getName());
             } else if (!isAssociated && hasFlag) {
                 // Non-associated player caught flagged fish, remove the flag
                 ItemUtil.removeReincarcerationFlag(fishItem);
                 caughtItem.setItemStack(fishItem);
+                ConsoleUtil.sendDebug("Removed flag from caught fish for non-associated player: " + player.getName());
             }
-            // If it's an associated player catching a flagged fish, or a non-associated player
-            // catching a non-flagged fish, we don't need to do anything special
         }
     }
 }

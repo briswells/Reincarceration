@@ -110,3 +110,6 @@ modifiers:
   compact:
     enabled: true
     allowed_slots: 9  # This will allow only the hotbar to be used
+  lumberjack:
+    enabled: true
+    provide_axe_on_death: false

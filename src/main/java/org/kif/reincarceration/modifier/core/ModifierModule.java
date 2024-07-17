@@ -78,6 +78,11 @@ public class ModifierModule implements Module {
                 modifierRegistry.registerModifier(compactModifier);
                 plugin.getServer().getPluginManager().registerEvents(compactModifier, plugin);
             }
+            if (modifiersConfig.getBoolean("lumberjack.enabled", true)) {
+                LumberjackModifier lumberjackModifier = new LumberjackModifier(plugin);
+                modifierRegistry.registerModifier(lumberjackModifier);
+                plugin.getServer().getPluginManager().registerEvents(lumberjackModifier, plugin);
+            }
         }
     }
 

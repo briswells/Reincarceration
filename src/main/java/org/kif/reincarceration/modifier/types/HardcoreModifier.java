@@ -64,7 +64,7 @@ public class HardcoreModifier extends AbstractModifier implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
-        ConsoleUtil.sendDebug("EntityDeathEvent triggered");
+//        ConsoleUtil.sendDebug("EntityDeathEvent triggered");
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
             ConsoleUtil.sendDebug("Dead entity is a player: " + player.getName());

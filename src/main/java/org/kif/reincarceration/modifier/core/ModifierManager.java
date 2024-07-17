@@ -33,6 +33,10 @@ public class ModifierManager {
         }
     }
 
+    public IModifier getModifierById(String id) {
+        return modifierRegistry.getModifier(id);
+    }
+
     public void disableModifier(Player player) throws SQLException {
         IModifier activeModifier = getActiveModifier(player);
         if (activeModifier != null) {
@@ -86,4 +90,14 @@ public class ModifierManager {
     public int getTotalModifierCount() {
         return modifierRegistry.getAllModifiers().size();
     }
+
+    public IModifier getModifierByName(String name) {
+        for (IModifier modifier : modifierRegistry.getAllModifiers()) {
+            if (modifier.getName().equalsIgnoreCase(name)) {
+                return modifier;
+            }
+        }
+        return null;
+    }
+
 }

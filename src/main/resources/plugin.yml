@@ -2,7 +2,7 @@ name: Reincarceration
 version: 1.0.0
 main: org.kif.reincarceration.Reincarceration
 api-version: 1.16
-depend: [Vault, LuckPerms, PlayerVaults]
+depend: [Vault, LuckPerms, PlayerVaults, EconomyShopGUI]
 description: A reoffender system plugin with challenges and ranks.
 
 commands:
@@ -36,6 +36,11 @@ commands:
     usage: /<command>
     permission: reincarceration.listmodifiers
     permission-message: You don't have permission to use this command [reincarceration.listmodifiers].
+  rgui:
+    description: Open the Reincarceration GUI
+    usage: /<command>
+    permission: reincarceration.gui
+    permission-message: You don't have permission to use this command.
 permissions:
   reincarceration.use:
     description: Allows use of basic Reincarceration commands
@@ -54,7 +59,13 @@ permissions:
     default: false
   reincarceration.listmodifiers:
     description: Allows viewing all active modifiers
-    default: false
+    default: true
+  reincarceration.viewonlineplayers:
+    description: Allows viewing stats and information of online players via gui
+    default: true
+  reincarceration.gui:
+    description: Allows access to the Reincarceration GUI
+    default: true
   reincarceration.admin:
     description: Allows use of Reincarceration admin commands
     default: op

@@ -9,6 +9,8 @@ import org.kif.reincarceration.core.ModuleManager;
 import org.kif.reincarceration.command.CommandModule;
 import org.kif.reincarceration.data.DataModule;
 import org.kif.reincarceration.economy.EconomyModule;
+import org.kif.reincarceration.gui.GUIListener;
+import org.kif.reincarceration.gui.GUIModule;
 import org.kif.reincarceration.listener.*;
 import org.kif.reincarceration.rank.RankModule;
 import org.kif.reincarceration.cycle.CycleModule;
@@ -34,7 +36,8 @@ public class Reincarceration extends JavaPlugin {
             moduleManager.registerModule(new RankModule(this), CoreModule.class, DataModule.class, EconomyModule.class);
             moduleManager.registerModule(new ModifierModule(this), CoreModule.class, DataModule.class);
             moduleManager.registerModule(new CycleModule(this), CoreModule.class, DataModule.class, EconomyModule.class, RankModule.class, ModifierModule.class);
-            moduleManager.registerModule(new CommandModule(this), CoreModule.class, CycleModule.class, DataModule.class, EconomyModule.class, RankModule.class, ModifierModule.class);
+            moduleManager.registerModule(new GUIModule(this), CoreModule.class, DataModule.class, EconomyModule.class, RankModule.class, ModifierModule.class, CycleModule.class);
+            moduleManager.registerModule(new CommandModule(this), CoreModule.class, CycleModule.class, DataModule.class, EconomyModule.class, RankModule.class, ModifierModule.class, GUIModule.class);
 
             // Enable core module
             moduleManager.enableModule(CoreModule.class);
@@ -48,6 +51,7 @@ public class Reincarceration extends JavaPlugin {
             moduleManager.enableModule(RankModule.class);
             moduleManager.enableModule(ModifierModule.class);
             moduleManager.enableModule(CycleModule.class);
+            moduleManager.enableModule(GUIModule.class);
             moduleManager.enableModule(CommandModule.class);
 
             // Register Utilities
@@ -62,6 +66,10 @@ public class Reincarceration extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new MobDropListener(this), this);
             getServer().getPluginManager().registerEvents(new ContainerInteractionListener(this), this);
             getServer().getPluginManager().registerEvents(new FishingListener(this), this);
+            getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+            getServer().getPluginManager().registerEvents(new PreTransactionListener(this, true), this);
+            getServer().getPluginManager().registerEvents(new PostTransactionListener(this), this);
+            getServer().getPluginManager().registerEvents(new InventoryChangeListener(this), this);
 
             ConsoleUtil.sendSuccess("Reincarceration has been enabled!");
         } catch (SQLException e) {

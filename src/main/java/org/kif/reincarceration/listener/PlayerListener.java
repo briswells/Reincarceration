@@ -4,6 +4,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
@@ -107,13 +108,11 @@ public class PlayerListener implements Listener {
                 ConsoleUtil.sendDebug("Dropped container item: " + item.getType().name() +
                         ", Flagged: " + ItemUtil.hasReincarcerationFlag(item));
             }
-        } else {
-            MessageUtil.sendPrefixMessage(player, "&cYou are not associated with the base group.");
         }
     }
 
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onItemPickup(EntityPickupItemEvent event) {
         if (!(event.getEntity() instanceof Player)) return;
 

@@ -1,5 +1,6 @@
 package org.kif.reincarceration.util;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -66,9 +67,9 @@ public class ItemUtil {
             return;
         }
 
-        ItemMeta meta = item.getItemMeta();
+        ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
         if (meta == null) {
-            ConsoleUtil.sendDebug("ItemMeta is null for " + item.getType().name() + ", cannot add flag");
+            ConsoleUtil.sendDebug("Cannot create ItemMeta for " + item.getType().name());
             return;
         }
 
@@ -81,8 +82,13 @@ public class ItemUtil {
     }
 
     public static boolean hasReincarcerationFlag(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) {
-            ConsoleUtil.sendDebug("Cannot check flag: Item is null or has no meta");
+        if (item == null) {
+            ConsoleUtil.sendDebug("Cannot check flag: Item is null");
+            return false;
+        }
+
+        if (!item.hasItemMeta()) {
+            ConsoleUtil.sendDebug("Item has no metadata: " + item.getType());
             return false;
         }
 

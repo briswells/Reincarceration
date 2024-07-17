@@ -1,5 +1,8 @@
 package org.kif.reincarceration.modifier.types;
 
+import me.gypopo.economyshopgui.api.events.PreTransactionEvent;
+import me.gypopo.economyshopgui.objects.ShopItem;
+import me.gypopo.economyshopgui.util.Transaction;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -14,15 +17,45 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.modifier.core.AbstractModifier;
 import org.kif.reincarceration.util.ConsoleUtil;
+import org.kif.reincarceration.util.MessageUtil;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class AnglerModifier extends AbstractModifier implements Listener {
     private final Reincarceration plugin;
     private boolean provideRodOnDeath;
     private boolean preventRodDurabilityLoss;
+    private final Set<Material> allowedItems;
 
     public AnglerModifier(Reincarceration plugin) {
-        super("angler", "Angler", "Provides fishing benefits");
+        super("angler", "Angler", "Provides fishing benefits and restricts selling to fish-related items");
         this.plugin = plugin;
+        this.allowedItems = new HashSet<>(Arrays.asList(
+            Material.COD,
+            Material.SALMON,
+            Material.TROPICAL_FISH,
+            Material.PUFFERFISH,
+            Material.NAUTILUS_SHELL,
+            Material.FISHING_ROD,
+            Material.ENCHANTED_BOOK,
+            Material.BOW,
+            Material.LILY_PAD,
+            Material.BOWL,
+            Material.LEATHER,
+            Material.LEATHER_BOOTS,
+            Material.SADDLE,
+            Material.NAME_TAG,
+            Material.TRIPWIRE_HOOK,
+            Material.ROTTEN_FLESH,
+            Material.STICK,
+            Material.STRING,
+            Material.BONE,
+            Material.INK_SAC,
+            Material.BAMBOO
+        ));
         loadConfig();
     }
 
@@ -78,6 +111,29 @@ public class AnglerModifier extends AbstractModifier implements Listener {
                     meta.setDamage(0);
                     fishingRod.setItemMeta((ItemMeta) meta);
                     ConsoleUtil.sendDebug("Restored durability of fishing rod for " + player.getName());
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPreTransaction(PreTransactionEvent event) {
+        if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
+            event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
+            event.getTransactionType() == Transaction.Type.QUICK_SELL) {
+
+            Player player = event.getPlayer();
+
+            if (!isActive(player)) return;
+
+            Map<ShopItem, Integer> itemsToSell = event.getItems();
+
+            for (ShopItem shopItem : itemsToSell.keySet()) {
+                ItemStack itemToSell = shopItem.getShopItem();
+                if (!allowedItems.contains(itemToSell.getType())) {
+                    event.setCancelled(true);
+                    MessageUtil.sendPrefixMessage(player, "&cYou can only sell items obtained from fishing while using the Angler modifier.");
+                    return;
                 }
             }
         }

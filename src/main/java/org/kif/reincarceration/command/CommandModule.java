@@ -9,6 +9,7 @@ import org.kif.reincarceration.data.DataModule;
 import org.kif.reincarceration.economy.EconomyModule;
 import org.kif.reincarceration.modifier.core.ModifierModule;
 import org.kif.reincarceration.rank.RankModule;
+import org.kif.reincarceration.gui.GUIModule;
 import org.kif.reincarceration.util.ConsoleUtil;
 
 import java.sql.SQLException;
@@ -39,6 +40,7 @@ public class CommandModule implements Module {
         EconomyModule economyModule = plugin.getModuleManager().getModule(EconomyModule.class);
         RankModule rankModule = plugin.getModuleManager().getModule(RankModule.class);
         ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
+        GUIModule guiModule = plugin.getModuleManager().getModule(GUIModule.class);
 
         PluginCommand reoffenderCommand = plugin.getCommand("reoffender");
         if (reoffenderCommand != null) {
@@ -70,6 +72,11 @@ public class CommandModule implements Module {
         PluginCommand quitCycleCommand = plugin.getCommand("quitcycle");
         if (quitCycleCommand != null) {
             quitCycleCommand.setExecutor(new QuitCycleCommand(this, configManager, cycleModule));
+        }
+
+        PluginCommand guiCommand = plugin.getCommand("rgui");
+        if (guiCommand != null) {
+            guiCommand.setExecutor(new GUICommand(this, configManager, cycleModule, dataModule, economyModule, guiModule));
         }
     }
 
