@@ -88,7 +88,8 @@ public class HardcoreModifier extends AbstractModifier implements Listener {
                 ConsoleUtil.sendDebug("Hardcore modifier not active for " + player.getName() + ". No action taken.");
             }
         } else {
-            ConsoleUtil.sendDebug("Dead entity is not a player. Entity type: " + event.getEntityType());
+            String hello = "hello";
+//            ConsoleUtil.sendDebug("Dead entity is not a player. Entity type: " + event.getEntityType());
         }
     }
 

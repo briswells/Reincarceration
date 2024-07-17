@@ -62,7 +62,7 @@ public class Reincarceration extends JavaPlugin {
 
             // Register event listeners
             getServer().getPluginManager().registerEvents(new VaultAccessListener(this), this);
-            getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+            // getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
             getServer().getPluginManager().registerEvents(new MobDropListener(this), this);
             getServer().getPluginManager().registerEvents(new ContainerInteractionListener(this), this);
             getServer().getPluginManager().registerEvents(new FishingListener(this), this);
@@ -70,6 +70,15 @@ public class Reincarceration extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new PreTransactionListener(this, true), this);
             getServer().getPluginManager().registerEvents(new PostTransactionListener(this), this);
             getServer().getPluginManager().registerEvents(new InventoryChangeListener(this), this);
+
+            getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
+            // getServer().getPluginManager().registerEvents(new PlayerQuitListener(), this);
+            getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
+            getServer().getPluginManager().registerEvents(new ItemPickupListener(this), this);
+            getServer().getPluginManager().registerEvents(new PrepareItemCraftListener(this), this);
+            getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
+            getServer().getPluginManager().registerEvents(new FurnaceSmeltListener(this), this);
+            getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
             ConsoleUtil.sendSuccess("Reincarceration has been enabled!");
         } catch (SQLException e) {
