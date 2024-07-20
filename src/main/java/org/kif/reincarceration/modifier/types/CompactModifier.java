@@ -1,20 +1,28 @@
 package org.kif.reincarceration.modifier.types;
 
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.modifier.core.AbstractModifier;
 import org.kif.reincarceration.util.ConsoleUtil;
+import org.kif.reincarceration.util.MessageUtil;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -196,6 +204,55 @@ public class CompactModifier extends AbstractModifier implements Listener {
                 ConsoleUtil.sendDebug("Dropped item " + item.getType() + " for " + player.getName() + " due to no space in allowed slots");
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        if (!isActive(player)) return;
+
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+
+        Block block = event.getClickedBlock();
+        if (block == null || !(block.getState() instanceof Sign)) return;
+
+        String locationKey = getLocationKey(block);
+        int vaultNumber = getChestNumberFromSign(locationKey);
+
+        if (vaultNumber == -1) return; // Not a PlayerVault sign
+
+        int reoffenderVaultNumber = plugin.getModuleManager().getConfigManager().getReoffenderVaultNumber();
+
+        ConsoleUtil.sendDebug("Compact Modifier - Player " + player.getName() + " attempting to access Vault #" + vaultNumber);
+
+        if (vaultNumber == reoffenderVaultNumber) {
+            event.setCancelled(true);
+            MessageUtil.sendPrefixMessage(player, "&cYou cannot access vaults while under the Compact modifier effect.");
+            ConsoleUtil.sendDebug("Compact Modifier blocked " + player.getName() + " from accessing Vault #" + vaultNumber);
+        }
+    }
+
+    private String getLocationKey(Block block) {
+        String world = block.getWorld().getName();
+        int x = block.getX();
+        int y = block.getY();
+        int z = block.getZ();
+        return world + ";;" + x + ";;" + y + ";;" + z;
+    }
+
+    private int getChestNumberFromSign(String locationKey) {
+        File signsFile = new File(plugin.getDataFolder().getParentFile(), "PlayerVaults/signs.yml");
+        if (!signsFile.exists()) {
+            ConsoleUtil.sendError("signs.yml file not found!");
+            return -1;
+        }
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(signsFile);
+        if (config.contains(locationKey)) {
+            return config.getInt(locationKey + ".chest", -1);
+        }
+        ConsoleUtil.sendDebug("Chest number not found for sign at " + locationKey);
+        return -1;
     }
 
     public void reloadConfig() {

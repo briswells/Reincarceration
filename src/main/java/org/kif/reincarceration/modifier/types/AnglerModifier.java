@@ -116,28 +116,28 @@ public class AnglerModifier extends AbstractModifier implements Listener {
         }
     }
 
-    @EventHandler
-    public void onPreTransaction(PreTransactionEvent event) {
-        if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
-            event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
-            event.getTransactionType() == Transaction.Type.QUICK_SELL) {
-
-            Player player = event.getPlayer();
-
-            if (!isActive(player)) return;
-
-            Map<ShopItem, Integer> itemsToSell = event.getItems();
-
-            for (ShopItem shopItem : itemsToSell.keySet()) {
-                ItemStack itemToSell = shopItem.getShopItem();
-                if (!allowedItems.contains(itemToSell.getType())) {
-                    event.setCancelled(true);
-                    MessageUtil.sendPrefixMessage(player, "&cYou can only sell items obtained from fishing while using the Angler modifier.");
-                    return;
-                }
-            }
-        }
-    }
+//    @EventHandler
+//    public void onPreTransaction(PreTransactionEvent event) {
+//        if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
+//            event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
+//            event.getTransactionType() == Transaction.Type.QUICK_SELL) {
+//
+//            Player player = event.getPlayer();
+//
+//            if (!isActive(player)) return;
+//
+//            Map<ShopItem, Integer> itemsToSell = event.getItems();
+//
+//            for (ShopItem shopItem : itemsToSell.keySet()) {
+//                ItemStack itemToSell = shopItem.getShopItem();
+//                if (!allowedItems.contains(itemToSell.getType())) {
+//                    event.setCancelled(true);
+//                    MessageUtil.sendPrefixMessage(player, "&cYou can only sell items obtained from fishing while using the Angler modifier.");
+//                    return;
+//                }
+//            }
+//        }
+//    }
 
     private void provideFishingRod(Player player) {
         if (!player.getInventory().contains(Material.FISHING_ROD)) {

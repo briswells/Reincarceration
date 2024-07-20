@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class ItemUtil {
 
-    private static final String REINCARCERATION_FLAG_KEY = "reincarcerationFlag";
+    private static final String REINCARCERATION_FLAG = "flagged";
     private static NamespacedKey reincarcerationKey;
     private static Reincarceration plugin;
     private static boolean useWhitelist;
@@ -24,7 +24,7 @@ public class ItemUtil {
 
     public static void initialize(Reincarceration plugin) {
         ItemUtil.plugin = plugin;
-        reincarcerationKey = new NamespacedKey(plugin, REINCARCERATION_FLAG_KEY);
+        reincarcerationKey = new NamespacedKey(plugin, REINCARCERATION_FLAG);
         loadConfig();
         ConsoleUtil.sendDebug("ItemUtil initialized with key: " + reincarcerationKey.toString());
     }
@@ -74,7 +74,7 @@ public class ItemUtil {
         }
 
         PersistentDataContainer container = meta.getPersistentDataContainer();
-        container.set(reincarcerationKey, PersistentDataType.BYTE, (byte) 1);
+        container.set(reincarcerationKey, PersistentDataType.BYTE, (byte)1);  // The value doesn't matter, we only care about the key's presence
         item.setItemMeta(meta);
 
         ConsoleUtil.sendDebug("Flag added to item: " + item.getType().name() +
@@ -99,19 +99,31 @@ public class ItemUtil {
         }
 
         PersistentDataContainer container = meta.getPersistentDataContainer();
-        Byte value = container.get(reincarcerationKey, PersistentDataType.BYTE);
-        boolean hasFlag = (value != null && value == (byte) 1);
+        boolean hasFlag = container.has(reincarcerationKey, PersistentDataType.BYTE);
         ConsoleUtil.sendDebug("Checking flag for item: " + item.getType().name() + ", Has flag: " + hasFlag);
         return hasFlag;
     }
 
     public static void removeReincarcerationFlag(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return;
+        if (item == null || !item.hasItemMeta()) {
+            ConsoleUtil.sendDebug("Cannot remove flag: Item is null or has no metadata");
+            return;
+        }
 
         ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            ConsoleUtil.sendDebug("Cannot remove flag: ItemMeta is null for " + item.getType().name());
+            return;
+        }
+
         PersistentDataContainer container = meta.getPersistentDataContainer();
-        container.remove(reincarcerationKey);
-        item.setItemMeta(meta);
+        if (container.has(reincarcerationKey, PersistentDataType.BYTE)) {
+            container.remove(reincarcerationKey);
+            item.setItemMeta(meta);
+            ConsoleUtil.sendDebug("Flag removed from item: " + item.getType().name());
+        } else {
+            ConsoleUtil.sendDebug("No flag to remove from item: " + item.getType().name());
+        }
     }
 
     private static boolean canFlagItem(Material material) {

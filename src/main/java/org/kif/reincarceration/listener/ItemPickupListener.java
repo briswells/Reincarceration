@@ -24,6 +24,10 @@ public class ItemPickupListener implements Listener {
         if (!(event.getEntity() instanceof Player)) return;
 
         Player player = (Player) event.getEntity();
+
+        // Check if the player is an operator
+        if (player.isOp()) return;
+
         ItemStack item = event.getItem().getItemStack();
 
         boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player);

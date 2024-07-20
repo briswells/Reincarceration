@@ -9,10 +9,10 @@ import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.ItemUtil;
 
-public class PrepareItemCraftListener implements Listener {
+public class ItemCraftingListener implements Listener {
     private final Reincarceration plugin;
 
-    public PrepareItemCraftListener(Reincarceration plugin) {
+    public ItemCraftingListener(Reincarceration plugin) {
         this.plugin = plugin;
     }
 

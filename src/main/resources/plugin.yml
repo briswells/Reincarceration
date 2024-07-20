@@ -6,6 +6,28 @@ depend: [Vault, LuckPerms, PlayerVaults, EconomyShopGUI]
 description: A reoffender system plugin with challenges and ranks.
 
 commands:
+  rgui:
+    description: Open the Reincarceration GUI
+    usage: /<command>
+    permission: reincarceration.gui
+    permission-message: You don't have permission to use this command.
+  flagitem:
+    description: Adds a reincarceration flag to the item in your hand.
+    usage: /<command>
+    permission: reincarceration.admin.flagitem
+  inspectitem:
+    description: Inspects the item in your hand for reincarceration flag and provides item details.
+    usage: /<command>
+    permission: reincarceration.admin.inspectitem
+  inspectinventory:
+    description: Inspects a player's inventory for flagged or unflagged items.
+    usage: /<command> <player>
+    permission: reincarceration.admin.inspectinventory
+  viewplayerdata:
+    description: View all database data related to a player.
+    usage: /<command> <player>
+    permission: reincarceration.admin.viewplayerdata
+
   reoffender:
     description: Check your current reoffender status
     usage: /<command>
@@ -36,11 +58,7 @@ commands:
     usage: /<command>
     permission: reincarceration.listmodifiers
     permission-message: You don't have permission to use this command [reincarceration.listmodifiers].
-  rgui:
-    description: Open the Reincarceration GUI
-    usage: /<command>
-    permission: reincarceration.gui
-    permission-message: You don't have permission to use this command.
+
 permissions:
   reincarceration.use:
     description: Allows use of basic Reincarceration commands
@@ -68,4 +86,16 @@ permissions:
     default: true
   reincarceration.admin:
     description: Allows use of Reincarceration admin commands
+    default: op
+  reincarceration.admin.flagitem:
+    description: Allows adding reincarceration flag to items
+    default: op
+  reincarceration.admin.inspectitem:
+    description: Allows inspecting items for reincarceration flags
+    default: op
+  reincarceration.admin.inspectinventory:
+    description: Allows inspecting player inventories for flagged/unflagged items
+    default: op
+  reincarceration.admin.viewplayerdata:
+    description: Allows viewing all database data for a player
     default: op

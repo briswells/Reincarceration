@@ -52,21 +52,88 @@ item_flagging:
     - COMMAND_BLOCK
     - BARRIER
 
+blacklisted_inventories:
+  - ENDER_CHEST
+  - SHULKER_BOX
+
 # Modifier settings
 modifiers:
-  ore_sickness: #
-    enabled: true
+  ore_sickness:
     effect_on_break: true
     effect_on_sight: true
     effect_duration: 200
     sight_check_radius: 5
     ore_effects:
-      IRON_ORE: WEAKNESS
-      GOLD_ORE: SLOW
-      DIAMOND_ORE: CONFUSION
-      EMERALD_ORE: POISON
-      COAL_ORE: BLINDNESS
-      ANCIENT_DEBRIS: WITHER
+      IRON_ORE:
+        type: potion
+        effect: WEAKNESS
+        duration: 200
+        amplifier: 1
+
+      GOLD_ORE:
+        type: teleport
+        min_distance: 1
+        max_distance: 2
+        allowed_blocks:
+          - STONE
+          - DIRT
+          - GRASS_BLOCK
+
+      DIAMOND_ORE:
+        type: gravity_flip
+        duration: 100
+
+      EMERALD_ORE:
+        type: block_transform
+        from_material: STONE
+        to_material: EMERALD_BLOCK
+        radius: 3
+
+      REDSTONE_ORE:
+        type: inventory_shuffle
+
+      LAPIS_ORE:
+        type: magnet
+        radius: 5
+        attract: true
+        duration: 100
+
+      COAL_ORE:
+        type: ender_vision
+        duration: 200
+
+      COPPER_ORE:
+        type: bouncy_blocks
+        radius: 5
+        duration: 200
+
+      NETHER_QUARTZ_ORE:
+        type: vertigo
+        duration: 100
+        max_rotation_per_tick: 10.0
+
+      NETHER_GOLD_ORE:
+        type: inventory_weight
+        duration: 200
+
+      ANCIENT_DEBRIS:
+        type: randomized_drops
+        duration: 200
+
+      DEEPSLATE_IRON_ORE:
+        type: hunger
+        amount: 4
+
+      DEEPSLATE_GOLD_ORE:
+        type: item_drop
+        item: SNOWBALL
+        amount: 1
+
+      DEEPSLATE_DIAMOND_ORE:
+        type: sound
+        sound: ENTITY_GHAST_SCREAM
+        volume: 1.0
+        pitch: 1.0
   combustion:
     enabled: true
     check_interval: 100

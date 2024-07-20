@@ -8,10 +8,10 @@ import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.ItemUtil;
 
-public class FurnaceSmeltListener implements Listener {
+public class ItemSmeltingListener implements Listener {
     private final Reincarceration plugin;
 
-    public FurnaceSmeltListener(Reincarceration plugin) {
+    public ItemSmeltingListener(Reincarceration plugin) {
         this.plugin = plugin;
     }
 

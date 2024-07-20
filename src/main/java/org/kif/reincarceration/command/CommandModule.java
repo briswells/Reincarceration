@@ -78,6 +78,20 @@ public class CommandModule implements Module {
         if (guiCommand != null) {
             guiCommand.setExecutor(new GUICommand(this, configManager, cycleModule, dataModule, economyModule, guiModule));
         }
+
+        registerCommand("flagitem", new FlagItemCommand(plugin));
+        registerCommand("inspectitem", new InspectItemCommand(plugin));
+        registerCommand("inspectinventory", new InspectInventoryCommand(plugin));
+        registerCommand("viewplayerdata", new ViewPlayerDataCommand(plugin));
+    }
+
+    private void registerCommand(String name, org.bukkit.command.CommandExecutor executor) {
+        PluginCommand command = plugin.getCommand(name);
+        if (command != null) {
+            command.setExecutor(executor);
+        } else {
+            ConsoleUtil.sendError("Failed to register command: " + name);
+        }
     }
 
     public Reincarceration getPlugin() {

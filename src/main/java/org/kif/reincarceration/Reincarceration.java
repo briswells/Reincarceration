@@ -42,9 +42,6 @@ public class Reincarceration extends JavaPlugin {
             // Enable core module
             moduleManager.enableModule(CoreModule.class);
 
-//            // Initialize console utility
-//            ConsoleUtil.initialize(this);
-
             // Enable modules in specific order, respecting dependencies
             moduleManager.enableModule(DataModule.class);
             moduleManager.enableModule(EconomyModule.class);
@@ -61,24 +58,51 @@ public class Reincarceration extends JavaPlugin {
             VaultUtil.initialize(this);
 
             // Register event listeners
-            getServer().getPluginManager().registerEvents(new VaultAccessListener(this), this);
-            // getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-            getServer().getPluginManager().registerEvents(new MobDropListener(this), this);
-            getServer().getPluginManager().registerEvents(new ContainerInteractionListener(this), this);
-            getServer().getPluginManager().registerEvents(new FishingListener(this), this);
-            getServer().getPluginManager().registerEvents(new GUIListener(this), this);
-            getServer().getPluginManager().registerEvents(new PreTransactionListener(this, true), this);
-            getServer().getPluginManager().registerEvents(new PostTransactionListener(this), this);
-            getServer().getPluginManager().registerEvents(new InventoryChangeListener(this), this);
 
+            // Reincarceration Player Initialization Listener
             getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
-            // getServer().getPluginManager().registerEvents(new PlayerQuitListener(), this);
+
+            // Reincarceration GUI Listener
+            getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+
+            // PlayerVault Interaction Listener
+            getServer().getPluginManager().registerEvents(new VaultAccessListener(this), this);
+
+            // EconomyShopGUI Transaction Listeners
+            getServer().getPluginManager().registerEvents(new PreTransactionListener(this), this);
+            getServer().getPluginManager().registerEvents(new PostTransactionListener(this), this);
+
+
+
+            // -*- Reincarceration Anti-Cheat Listeners -*-
+            // Flagging: items dropped by associated players breaking blocks
             getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
+            // Flagging: items dropped by associated players killing entities
+            // getServer().getPluginManager().registerEvents(new MobDropListener(this), this);
+            // Flagging: items fished by associated players
+            getServer().getPluginManager().registerEvents(new FishingListener(this), this);
+            // Flagging: items crafted utilizing flagged items only
+            getServer().getPluginManager().registerEvents(new ItemCraftingListener(this), this);
+            // Flagging: items smelted utilizing flagged items only
+            getServer().getPluginManager().registerEvents(new ItemSmeltingListener(this), this);
+
+            // Prevention: Accessing Containers with unflagged items
+            getServer().getPluginManager().registerEvents(new ContainerInteractionListener(this), this);
+
+
+            //// getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+
+
+
+
+
+
+            // this one has a bad issue of unflagging items
+////            getServer().getPluginManager().registerEvents(new InventoryChangeListener(this), this);
+
             getServer().getPluginManager().registerEvents(new ItemPickupListener(this), this);
-            getServer().getPluginManager().registerEvents(new PrepareItemCraftListener(this), this);
-            getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
-            getServer().getPluginManager().registerEvents(new FurnaceSmeltListener(this), this);
-            getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
+//            getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
+//            getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
             ConsoleUtil.sendSuccess("Reincarceration has been enabled!");
         } catch (SQLException e) {

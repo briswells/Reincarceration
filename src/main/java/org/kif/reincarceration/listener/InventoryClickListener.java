@@ -27,8 +27,15 @@ public class InventoryClickListener implements Listener {
             return;
         }
 
+
         Player player = (Player) event.getWhoClicked();
+
+        if (player.isOp()) return;
+
         boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player);
+
+        if (!isAssociated) return;
+
         String inventoryTitle = event.getView().getTitle();
 
         // Check if the click is within a custom GUI screen
