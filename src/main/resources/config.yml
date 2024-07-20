@@ -51,14 +51,28 @@ item_flagging:
     - BEDROCK
     - COMMAND_BLOCK
     - BARRIER
+    - SHULKER_BOX
+    - DIAMOND_BLOCK
+    - GOLD_BLOCK
+    - IRON_BLOCK
+    - EMERALD_BLOCK
+    - LAPIS_BLOCK
+    - NETHERITE_BLOCK
 
-blacklisted_inventories:
+blacklisted_containers:
   - ENDER_CHEST
   - SHULKER_BOX
+  - BARREL
+  - TRAPPED_CHEST
+allowed_container_title_patterns:
+  - "me.gypopo.economyshopgui.objects.TransactionMenu"
+  - "Buying"
+  - "Market"
 
 # Modifier settings
 modifiers:
   ore_sickness:
+    # IDEAS: Fire, Item Repulsion, Player Repulsion, Sinking, Collapse, Mobs only they can see,
     effect_on_break: true
     effect_on_sight: true
     effect_duration: 200
@@ -80,8 +94,12 @@ modifiers:
           - GRASS_BLOCK
 
       DIAMOND_ORE:
-        type: gravity_flip
+        type: magnet
+        radius: 3
+        attract: true
         duration: 100
+#        type: gravity_flip
+#        duration: 100
 
       EMERALD_ORE:
         type: block_transform
@@ -94,7 +112,7 @@ modifiers:
 
       LAPIS_ORE:
         type: magnet
-        radius: 5
+        radius: 3
         attract: true
         duration: 100
 
@@ -104,13 +122,13 @@ modifiers:
 
       COPPER_ORE:
         type: bouncy_blocks
-        radius: 5
+        radius: 1
         duration: 200
 
       NETHER_QUARTZ_ORE:
         type: vertigo
-        duration: 100
-        max_rotation_per_tick: 10.0
+        duration: 25
+        max_rotation_per_tick: 2.0
 
       NETHER_GOLD_ORE:
         type: inventory_weight
@@ -118,11 +136,11 @@ modifiers:
 
       ANCIENT_DEBRIS:
         type: randomized_drops
-        duration: 200
+        duration: 30
 
       DEEPSLATE_IRON_ORE:
         type: hunger
-        amount: 4
+        amount: 5
 
       DEEPSLATE_GOLD_ORE:
         type: item_drop

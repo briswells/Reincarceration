@@ -55,6 +55,7 @@ public class GUIManager {
         modifierMaterials.put("tortoise", Material.TURTLE_HELMET);
         modifierMaterials.put("neolithic", Material.MUTTON);
         modifierMaterials.put("hardcore", Material.BONE);
+        modifierMaterials.put("lumberjack", Material.WOODEN_AXE);
 
         ConsoleUtil.sendSuccess("GUIManager initialized with all required components");
     }
@@ -109,7 +110,9 @@ public class GUIManager {
 
             // Add player status summary
             List<String> statusLore = new ArrayList<>();
-            statusLore.add(inCycle ? "Rank: " + configManager.getRankName(currentRank) : "Not in a cycle");
+            if (inCycle) {
+                statusLore.add("Rank: " + configManager.getRankName(currentRank));
+            }
             statusLore.add("Cycles Completed: " + dataManager.getPlayerCycleCount(player));
             statusLore.add((inCycle ? "Currently in a cycle" : "Not in a cycle"));
             if (inCycle) {

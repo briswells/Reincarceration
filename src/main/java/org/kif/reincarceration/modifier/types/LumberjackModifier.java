@@ -93,28 +93,36 @@ public class LumberjackModifier extends AbstractModifier implements Listener {
         }
     }
 
-//    @EventHandler
-//    public void onPreTransaction(PreTransactionEvent event) {
-//        if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
-//                event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
-//                event.getTransactionType() == Transaction.Type.QUICK_SELL) {
-//
-//            Player player = event.getPlayer();
-//
-//            if (!isActive(player)) return;
-//
-//            Map<ShopItem, Integer> itemsToSell = event.getItems();
-//
-//            for (ShopItem shopItem : itemsToSell.keySet()) {
-//                ItemStack itemToSell = shopItem.getShopItem();
-//                if (!allowedItems.contains(itemToSell.getType())) {
-//                    event.setCancelled(true);
-//                    MessageUtil.sendPrefixMessage(player, "&cYou can only sell logs, planks, and saplings while using the Lumberjack modifier.");
-//                    return;
-//                }
-//            }
-//        }
-//    }
+    @EventHandler
+    public void onPreTransaction(PreTransactionEvent event) {
+        if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
+                event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
+                event.getTransactionType() == Transaction.Type.SHOPSTAND_SELL_SCREEN ||
+                event.getTransactionType() == Transaction.Type.SELL_GUI_SCREEN ||
+                event.getTransactionType() == Transaction.Type.SELL_ALL_COMMAND ||
+                event.getTransactionType() == Transaction.Type.AUTO_SELL_CHEST ||
+                event.getTransactionType() == Transaction.Type.QUICK_SELL) {
+            ConsoleUtil.sendDebug("10565: Lumberjack: ");
+
+            Player player = event.getPlayer();
+
+            if (!isActive(player)) return;
+            Map<ShopItem, Integer> itemsToSell = event.getItems();
+            ConsoleUtil.sendDebug("10565: Amount: " + event.getAmount());
+            ConsoleUtil.sendDebug("10565: ShopItem: " + event.getShopItem());
+            ConsoleUtil.sendDebug("10565: Items: " + event.getItems());
+            ConsoleUtil.sendDebug("10565: Player: " + event.getPlayer());
+
+            for (ShopItem shopItem : itemsToSell.keySet()) {
+                ItemStack itemToSell = shopItem.getShopItem();
+                if (!allowedItems.contains(itemToSell.getType())) {
+                    event.setCancelled(true);
+                    MessageUtil.sendPrefixMessage(player, "&cYou can only sell logs, planks, and saplings while using the Lumberjack modifier.");
+                    return;
+                }
+            }
+        }
+    }
 
     private void provideWoodenAxe(Player player) {
         if (!player.getInventory().contains(Material.WOODEN_AXE)) {

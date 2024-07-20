@@ -1,5 +1,6 @@
 package org.kif.reincarceration.listener;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -8,7 +9,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.permission.PermissionManager;
 import org.kif.reincarceration.util.ContainerViewerTracker;
@@ -16,18 +17,24 @@ import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.util.MessageUtil;
 import org.kif.reincarceration.util.ConsoleUtil;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ContainerInteractionListener implements Listener {
     private final Reincarceration plugin;
     private final PermissionManager permissionManager;
-    private final List<String> blacklistedInventories;
+    private final List<String> blacklistedContainers;
+    private final List<String> allowedContainerTitlePatterns;
+    private final Map<Player, BukkitTask> checkTasks = new HashMap<>();
+    private static final long CHECK_INTERVAL = 5L;
 
     public ContainerInteractionListener(Reincarceration plugin) {
         this.plugin = plugin;
         this.permissionManager = new PermissionManager(plugin);
-        this.blacklistedInventories = plugin.getConfig().getStringList("blacklisted_containers");
+        this.blacklistedContainers = plugin.getConfig().getStringList("blacklisted_containers");
+        this.allowedContainerTitlePatterns = plugin.getConfig().getStringList("allowed_container_title_patterns");
     }
 
     @EventHandler
@@ -56,27 +63,34 @@ public class ContainerInteractionListener implements Listener {
                 return;
             }
 
+            if (isAllowedContainer(inventory)) {
+                // Allow access to EconomyShopGUI for all players
+                return;
+            }
+
             if (containsUnflaggedItem(inventory)) {
                 event.setCancelled(true);
                 MessageUtil.sendPrefixMessage(player, "&cThis container has prohibited contents.");
                 ConsoleUtil.sendDebug("Blocked inventory open for " + player.getName() + ": contains unflagged items");
                 return;
             }
-        } else {
-            // Non-associated player is opening the inventory
-            Set<Player> currentViewers = ContainerViewerTracker.getViewers(inventory);
-            for (Player viewer : currentViewers) {
-                if (permissionManager.isAssociatedWithBaseGroup(viewer)) {
-                    // Close inventory for associated players
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            viewer.closeInventory();
-                            MessageUtil.sendPrefixMessage(viewer, "&cThis container has been accessed by a prohibited player.");
-                        }
-                    }.runTask(plugin);
+
+            // Start a repeating task to check for unflagged items
+            BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+                if (player.getOpenInventory().getTopInventory().equals(inventory)) {
+                    if (containsUnflaggedItem(inventory)) {
+                        player.closeInventory();
+                        MessageUtil.sendPrefixMessage(player, "&cThis container has been accessed by a prohibited player.");
+                        ConsoleUtil.sendDebug("Closed inventory for " + player.getName() + ": unflagged items detected");
+                    }
+                } else {
+                    // If the player is no longer viewing this inventory, cancel the task
+                    checkTasks.remove(player).cancel();
                 }
-            }
+            }, CHECK_INTERVAL, CHECK_INTERVAL);
+
+            checkTasks.put(player, task);
+        } else {
             removeFlagsFromInventory(inventory);
             ConsoleUtil.sendDebug("Removed flags from inventory for non-associated player: " + player.getName());
         }
@@ -98,10 +112,40 @@ public class ContainerInteractionListener implements Listener {
         // Remove player from container viewers
         ContainerViewerTracker.removeViewer(inventory, player);
         logContainerViewers(inventory);
+
+        // Cancel the check task if it exists
+        BukkitTask task = checkTasks.remove(player);
+        if (task != null) {
+            task.cancel();
+        }
     }
 
     private boolean isBlacklistedInventory(Inventory inventory) {
-        return blacklistedInventories.contains(inventory.getType().name());
+        return blacklistedContainers.contains(inventory.getType().name());
+    }
+
+    private boolean isAllowedContainer(Inventory inventory) {
+        // Check if the inventory holder is from EconomyShopGUI
+        // This method might need to be adjusted based on how EconomyShopGUI implements its inventories
+        if (inventory.getHolder() == null) {
+            return false;
+        }
+        ConsoleUtil.sendDebug("Inventory Name: " + inventory.getHolder().getClass().getName());
+        ConsoleUtil.sendDebug("Simple Name: " + inventory.getHolder().getClass().getSimpleName());
+        String title = inventory.getHolder().getClass().getName();
+
+        for (String pattern : allowedContainerTitlePatterns) {
+            if (title.contains(pattern)) {
+                return true;
+            }
+        }
+
+
+
+
+
+        return false;
+
     }
 
     private boolean shouldIgnoreInventory(Inventory inventory) {

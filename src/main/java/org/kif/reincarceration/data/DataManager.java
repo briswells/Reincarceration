@@ -6,6 +6,7 @@ import org.kif.reincarceration.util.ConsoleUtil;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class DataManager {
     private final DataModule dataModule;
@@ -75,6 +76,20 @@ public class DataManager {
         try (Connection conn = dataModule.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, player.getUniqueId().toString());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean("in_cycle");
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isPlayerInCycleUUID(UUID playerUUID) throws SQLException {
+        String sql = "SELECT in_cycle FROM player_data WHERE uuid = ?";
+        try (Connection conn = dataModule.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, playerUUID.toString());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getBoolean("in_cycle");

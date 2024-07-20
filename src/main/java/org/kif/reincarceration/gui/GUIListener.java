@@ -59,7 +59,10 @@ public class GUIListener implements Listener {
                 title.contains("Start Cycle") ||
                 title.contains("Rank Up") ||
                 title.contains("Modifier List") ||
+                title.contains("Available Modifiers") ||  // Add this
+                title.contains("Completed Modifiers") ||  // Add this
                 title.contains("Online Players") ||
+                title.contains("Quit Cycle") ||
                 title.contains("Complete Cycle")) {
             event.setCancelled(true);
 
@@ -144,7 +147,7 @@ public class GUIListener implements Listener {
                 if (modifier != null) {
                     cycleManager.startNewCycle(player, modifier);
                     player.closeInventory();
-                    player.sendMessage(ChatColor.GREEN + "You've started a new cycle with the " + modifierName + " modifier!");
+//                    player.sendMessage(ChatColor.GREEN + "You've started a new cycle with the " + modifierName + " modifier!");
                 }
             } catch (Exception e) {
                 player.sendMessage(ChatColor.RED + "Error starting cycle: " + e.getMessage());

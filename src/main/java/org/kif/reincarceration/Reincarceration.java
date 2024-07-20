@@ -92,7 +92,7 @@ public class Reincarceration extends JavaPlugin {
 
             //// getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
 
-
+            getServer().getPluginManager().registerEvents(new PayCommandListener(this), this);
 
 
 

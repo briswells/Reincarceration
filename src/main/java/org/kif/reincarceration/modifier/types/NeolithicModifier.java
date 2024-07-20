@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
@@ -60,7 +61,7 @@ public class NeolithicModifier extends AbstractModifier implements Listener {
         ConsoleUtil.sendDebug("Removed Neolithic Modifier from " + player.getName());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onCraftItem(CraftItemEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
         Player player = (Player) event.getWhoClicked();
@@ -74,7 +75,7 @@ public class NeolithicModifier extends AbstractModifier implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         if (!isActive(player)) return;
