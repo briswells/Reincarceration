@@ -33,7 +33,9 @@ public class PermissionManager {
         DataModule dataModule = plugin.getModuleManager().getModule(DataModule.class);
         this.dataManager = dataModule.getDataManager();
 
-        this.customTagsAPI = Objects.requireNonNull(plugin.getServer().getServicesManager().getRegistration(CustomTagsAPI.class)).getProvider();
+        this.customTagsAPI = Objects
+                .requireNonNull(plugin.getServer().getServicesManager().getRegistration(CustomTagsAPI.class))
+                .getProvider();
     }
 
     public void updatePlayerRankGroup(Player player, int rank) {
@@ -164,10 +166,10 @@ public class PermissionManager {
 
             String tagId = "reincarnation_" + completedModifiersCount;
 
-            // Remove all previous reincarnation tags
+            // Remove all previous reincarnation iteration tags
             List<String> userTags = customTagsAPI.getUserTagIds(player);
             for (String tag : userTags) {
-                if (tag.startsWith("reincarnation_")) {
+                if (tag.matches("^reincarnation_[0-9]+$")) {
                     customTagsAPI.removeUserTag(player, tag);
                 }
             }
@@ -186,7 +188,8 @@ public class PermissionManager {
                 ConsoleUtil.sendError("Failed to set " + tagId + " as selected tag for " + player.getName());
             }
         } catch (SQLException e) {
-            ConsoleUtil.sendError("Error getting completed modifier count for " + player.getName() + ": " + e.getMessage());
+            ConsoleUtil.sendError(
+                    "Error getting completed modifier count for " + player.getName() + ": " + e.getMessage());
         }
     }
 

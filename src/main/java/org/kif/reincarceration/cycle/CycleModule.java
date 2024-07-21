@@ -27,14 +27,15 @@ public class CycleModule implements Module {
         RankModule rankModule = plugin.getModuleManager().getModule(RankModule.class);
         ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
 
-        if (coreModule == null || dataModule == null || economyModule == null || rankModule == null || modifierModule == null) {
+        if (coreModule == null || dataModule == null || economyModule == null || rankModule == null
+                || modifierModule == null) {
             throw new IllegalStateException("Required modules are not initialized");
         }
 
         ConfigManager configManager = coreModule.getConfigManager();
         PermissionManager permissionManager = new PermissionManager(plugin);
 
-        this.cycleManager = new CycleManager(this, configManager, dataModule.getDataManager(),
+        this.cycleManager = new CycleManager(plugin, this, configManager, dataModule.getDataManager(),
                 economyModule.getEconomyManager(), rankModule.getRankManager(),
                 permissionManager, modifierModule.getModifierManager());
 
