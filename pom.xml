@@ -6,7 +6,7 @@
 
     <groupId>org.kif</groupId>
     <artifactId>Reincarceration</artifactId>
-    <version>0.7-ALPHA</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>Reincarceration</name>
@@ -140,9 +140,9 @@
         <dependency>
             <groupId>com.flyerzrule</groupId>
             <artifactId>CustomTags</artifactId>
-            <version>1.0.0</version>
+            <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/dependencies/CustomTags-1.0.jar</systemPath>
+            <systemPath>${project.basedir}/dependencies/CustomTags.jar</systemPath>
         </dependency>
     </dependencies>
 </project>

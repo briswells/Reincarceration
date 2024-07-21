@@ -12,15 +12,18 @@ import org.kif.reincarceration.config.ConfigManager;
 import org.kif.reincarceration.data.DataManager;
 import org.kif.reincarceration.data.DataModule;
 import org.kif.reincarceration.util.ConsoleUtil;
-import org.kif.reincarceration.util.RomanNumeralUtil;
+import com.flyerzrule.mc.customtags.api.CustomTagsAPI;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Objects;
 
 public class PermissionManager {
     private final Reincarceration plugin;
     private final ConfigManager configManager;
     private final LuckPerms luckPerms;
     private final DataManager dataManager;
+    private final CustomTagsAPI customTagsAPI;
 
     public PermissionManager(Reincarceration plugin) {
         this.plugin = plugin;
@@ -29,6 +32,8 @@ public class PermissionManager {
 
         DataModule dataModule = plugin.getModuleManager().getModule(DataModule.class);
         this.dataManager = dataModule.getDataManager();
+
+        this.customTagsAPI = Objects.requireNonNull(plugin.getServer().getServicesManager().getRegistration(CustomTagsAPI.class)).getProvider();
     }
 
     public void updatePlayerRankGroup(Player player, int rank) {
@@ -150,47 +155,39 @@ public class PermissionManager {
     }
 
     public void addCompletionPrefix(Player player) {
-        if (luckPerms == null) {
-            plugin.getLogger().severe("LuckPerms not found! Unable to reset player group.");
-            return;
-        }
-
-        User user = luckPerms.getUserManager().getUser(player.getUniqueId());
-
-        if (user == null) {
-            plugin.getLogger().severe("Unable to get LuckPerms user for " + player.getName());
-            return;
-        }
-
-        int completedModifiersCount;
         try {
-            ConsoleUtil.sendDebug("Getting completed modifier count for " + player.getName());
-            completedModifiersCount = dataManager.getCompletedModifierCount(player);
+            int completedModifiersCount = dataManager.getCompletedModifierCount(player);
+            if (completedModifiersCount == 0) {
+                ConsoleUtil.sendDebug("No completed modifiers for " + player.getName());
+                return;
+            }
+
+            String tagId = "reincarnation_" + completedModifiersCount;
+
+            // Remove all previous reincarnation tags
+            List<String> userTags = customTagsAPI.getUserTagIds(player);
+            for (String tag : userTags) {
+                if (tag.startsWith("reincarnation_")) {
+                    customTagsAPI.removeUserTag(player, tag);
+                }
+            }
+
+            // Add new reincarnation tag
+            if (customTagsAPI.giveUserTag(player, tagId)) {
+                ConsoleUtil.sendDebug("Added tag " + tagId + " for " + player.getName());
+            } else {
+                ConsoleUtil.sendError("Failed to add tag " + tagId + " for " + player.getName());
+            }
+
+            // Set it as the selected tag
+            if (customTagsAPI.setUserSelectedTag(player, tagId)) {
+                ConsoleUtil.sendDebug("Set " + tagId + " as selected tag for " + player.getName());
+            } else {
+                ConsoleUtil.sendError("Failed to set " + tagId + " as selected tag for " + player.getName());
+            }
         } catch (SQLException e) {
             ConsoleUtil.sendError("Error getting completed modifier count for " + player.getName() + ": " + e.getMessage());
-            throw new RuntimeException(e);
         }
-
-        if (completedModifiersCount == 0) {
-            ConsoleUtil.sendDebug("No completed modifiers for " + player.getName());
-            return;
-        }
-
-        // Remove all previous prefixes
-        for (int i = 1; i <= completedModifiersCount; i++) {
-            String romanNumeral = RomanNumeralUtil.toRoman(i);
-            removePermission(player, "prefix.0.&8[&4" + romanNumeral + "&8]&r");
-            removePermission(player, "prefix.0.&8[&6" + romanNumeral + "&8]&r");
-            ConsoleUtil.sendDebug("Removed prefix for " + player.getName() + ": " + romanNumeral);
-        }
-
-        ConsoleUtil.sendDebug("Adding completion prefix for " + player.getName());
-        String currentRomanNumeral = RomanNumeralUtil.toRoman(completedModifiersCount);
-        addPermission(player, "prefix.0.&8[&6" + currentRomanNumeral + "&8]&r");
-
-        ConsoleUtil.sendDebug("Saving completion prefix for " + player.getName());
-        // Save changes
-        luckPerms.getUserManager().saveUser(user);
     }
 
     public boolean isAssociatedWithBaseGroup(Player player) {
