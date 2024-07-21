@@ -28,36 +28,36 @@ commands:
     usage: /<command> <player>
     permission: reincarceration.admin.viewplayerdata
 
-  reoffender:
-    description: Check your current reoffender status
-    usage: /<command>
-    permission: reincarceration.use
-    permission-message: You don't have permission to use this command [reincarceration.use].
-  rankup:
-    description: Rank up to the next reoffender level
-    usage: /<command>
-    permission: reincarceration.rankup
-    permission-message: You don't have permission to use this command [reincarceration.rankup].
-  startcycle:
-    description: Start a new reincarceration cycle
-    usage: /<command>
-    permission: reincarceration.startcycle
-    permission-message: You don't have permission to use this command [reincarceration.startcycle].
-  completecycle:
-    description: Complete your current reincarceration cycle
-    usage: /<command>
-    permission: reincarceration.completecycle
-    permission-message: You don't have permission to use this command [reincarceration.completecycle].
-  quitcycle:
-    description: Quit your current reincarceration cycle
-    usage: /<command>
-    permission: reincarceration.quitcycle
-    permission-message: You don't have permission to use this command [reincarceration.quitcycle].
-  listmodifiers:
-    description: List all active modifiers
-    usage: /<command>
-    permission: reincarceration.listmodifiers
-    permission-message: You don't have permission to use this command [reincarceration.listmodifiers].
+#  reoffender:
+#    description: Check your current reoffender status
+#    usage: /<command>
+#    permission: reincarceration.use
+#    permission-message: You don't have permission to use this command [reincarceration.use].
+#  rankup:
+#    description: Rank up to the next reoffender level
+#    usage: /<command>
+#    permission: reincarceration.rankup
+#    permission-message: You don't have permission to use this command [reincarceration.rankup].
+#  startcycle:
+#    description: Start a new reincarceration cycle
+#    usage: /<command>
+#    permission: reincarceration.startcycle
+#    permission-message: You don't have permission to use this command [reincarceration.startcycle].
+#  completecycle:
+#    description: Complete your current reincarceration cycle
+#    usage: /<command>
+#    permission: reincarceration.completecycle
+#    permission-message: You don't have permission to use this command [reincarceration.completecycle].
+#  quitcycle:
+#    description: Quit your current reincarceration cycle
+#    usage: /<command>
+#    permission: reincarceration.quitcycle
+#    permission-message: You don't have permission to use this command [reincarceration.quitcycle].
+#  listmodifiers:
+#    description: List all active modifiers
+#    usage: /<command>
+#    permission: reincarceration.listmodifiers
+#    permission-message: You don't have permission to use this command [reincarceration.listmodifiers].
 
 permissions:
   reincarceration.use:

@@ -14,7 +14,6 @@ import org.kif.reincarceration.util.BroadcastUtil;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.MessageUtil;
 import org.kif.reincarceration.util.VaultUtil;
-import com.flyerzrule.mc.customtags.api.CustomTagsAPI;
 
 import java.sql.SQLException;
 import java.util.Objects;
@@ -27,12 +26,10 @@ public class CycleManager {
     private final RankManager rankManager;
     private final PermissionManager permissionManager;
     private final ModifierManager modifierManager;
-    private final CustomTagsAPI customTagsAPI;
 
     public CycleManager(Reincarceration plugin, CycleModule cycleModule, ConfigManager configManager,
-            DataManager dataManager,
-            EconomyManager economyManager, RankManager rankManager, PermissionManager permissionManager,
-            ModifierManager modifierManager) {
+                        DataManager dataManager, EconomyManager economyManager, RankManager rankManager,
+                        PermissionManager permissionManager, ModifierManager modifierManager) {
         this.cycleModule = cycleModule;
         this.configManager = configManager;
         this.dataManager = dataManager;
@@ -40,9 +37,6 @@ public class CycleManager {
         this.rankManager = rankManager;
         this.permissionManager = permissionManager;
         this.modifierManager = modifierManager;
-        this.customTagsAPI = Objects
-                .requireNonNull(plugin.getServer().getServicesManager().getRegistration(CustomTagsAPI.class))
-                .getProvider();
 
         ConsoleUtil.sendSuccess("CycleManager initialized with all required components");
     }
@@ -130,14 +124,6 @@ public class CycleManager {
             dataManager.setStoredBalance(player, 0);
 
             modifierManager.completeModifier(player, activeModifier);
-
-            // Add Completed Modifier Tag
-            String completedTag = "reincarnation_" + activeModifier.getId();
-            if (customTagsAPI.giveUserTag(player, completedTag)) {
-                ConsoleUtil.sendDebug("Added tag " + completedTag + " for " + player.getName());
-            } else {
-                ConsoleUtil.sendError("Failed to add tag " + completedTag + " for " + player.getName());
-            }
 
             int completedModifiersCount = dataManager.getCompletedModifierCount(player);
 

@@ -158,38 +158,54 @@ public class PermissionManager {
 
     public void addCompletionPrefix(Player player) {
         try {
-            int completedModifiersCount = dataManager.getCompletedModifierCount(player);
-            if (completedModifiersCount == 0) {
-                ConsoleUtil.sendDebug("No completed modifiers for " + player.getName());
+            int cycleCount = dataManager.getPlayerCycleCount(player);
+            List<String> completedModifiers = dataManager.getCompletedModifiers(player);
+
+            if (cycleCount == 0 && completedModifiers.isEmpty()) {
+                ConsoleUtil.sendDebug("No completed cycles or modifiers for " + player.getName());
                 return;
             }
 
-            String tagId = "reincarnation_" + completedModifiersCount;
-
-            // Remove all previous reincarnation iteration tags
+            // Remove all previous reincarnation and modifier tags
             List<String> userTags = customTagsAPI.getUserTagIds(player);
             for (String tag : userTags) {
-                if (tag.matches("^reincarnation_[0-9]+$")) {
+                if (tag.matches("^reincarnation_[0-9]+$") || tag.startsWith("reincarnation_")) {
                     customTagsAPI.removeUserTag(player, tag);
                 }
             }
 
-            // Add new reincarnation tag
-            if (customTagsAPI.giveUserTag(player, tagId)) {
-                ConsoleUtil.sendDebug("Added tag " + tagId + " for " + player.getName());
-            } else {
-                ConsoleUtil.sendError("Failed to add tag " + tagId + " for " + player.getName());
+            // Add reincarnation level tag
+            if (cycleCount > 0) {
+                String reincarnationTagId = "reincarnation_" + cycleCount;
+                if (customTagsAPI.giveUserTag(player, reincarnationTagId)) {
+                    ConsoleUtil.sendDebug("Added reincarnation tag " + reincarnationTagId + " for " + player.getName());
+                } else {
+                    ConsoleUtil.sendError("Failed to add reincarnation tag " + reincarnationTagId + " for " + player.getName());
+                }
             }
 
-            // Set it as the selected tag
-            if (customTagsAPI.setUserSelectedTag(player, tagId)) {
-                ConsoleUtil.sendDebug("Set " + tagId + " as selected tag for " + player.getName());
-            } else {
-                ConsoleUtil.sendError("Failed to set " + tagId + " as selected tag for " + player.getName());
+            // Add completed modifier tags
+            for (String modifierId : completedModifiers) {
+                String completedTag = "reincarnation_" + modifierId;
+                if (customTagsAPI.giveUserTag(player, completedTag)) {
+                    ConsoleUtil.sendDebug("Added modifier tag " + completedTag + " for " + player.getName());
+                } else {
+                    ConsoleUtil.sendError("Failed to add modifier tag " + completedTag + " for " + player.getName());
+                }
             }
+
+            // Set the reincarnation level tag as the selected tag if it exists
+            if (cycleCount > 0) {
+                String selectedTagId = "reincarnation_" + cycleCount;
+                if (customTagsAPI.setUserSelectedTag(player, selectedTagId)) {
+                    ConsoleUtil.sendDebug("Set " + selectedTagId + " as selected tag for " + player.getName());
+                } else {
+                    ConsoleUtil.sendError("Failed to set " + selectedTagId + " as selected tag for " + player.getName());
+                }
+            }
+
         } catch (SQLException e) {
-            ConsoleUtil.sendError(
-                    "Error getting completed modifier count for " + player.getName() + ": " + e.getMessage());
+            ConsoleUtil.sendError("Error updating tags for " + player.getName() + ": " + e.getMessage());
         }
     }
 
