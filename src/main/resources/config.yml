@@ -218,7 +218,8 @@ modifiers:
       - BAMBOO
   compact:
     enabled: true
-    allowed_slots: 9  # This will allow only the hotbar to be used
+    allowed_inventory_slots: 9
+    allowed_hotbar_slots: 9
   lumberjack:
     enabled: true
     allowed_items:

@@ -37,9 +37,11 @@ import java.util.stream.IntStream;
 
 public class CompactModifier extends AbstractModifier implements Listener {
     private final Reincarceration plugin;
-    private int allowedSlots;
+    private int allowedInventorySlots;
+    private int allowedHotbarSlots;
     private static final int HOTBAR_SIZE = 9;
     private static final int PLAYER_INVENTORY_SIZE = 36; // 27 main inventory + 9 hotbar
+    private static final int INVENTORY_ROW_SIZE = 9;
     private ItemStack restrictedSlotItem;
 
     public CompactModifier(Reincarceration plugin) {
@@ -51,12 +53,14 @@ public class CompactModifier extends AbstractModifier implements Listener {
     private void loadConfig() {
         ConfigurationSection config = plugin.getConfig().getConfigurationSection("modifiers.compact");
         if (config != null) {
-            this.allowedSlots = config.getInt("allowed_slots", 9);
+            this.allowedInventorySlots = config.getInt("allowed_inventory_slots", 9);
+            this.allowedHotbarSlots = config.getInt("allowed_hotbar_slots", 9);
         } else {
-            ConsoleUtil.sendError("Compact modifier configuration not found. Using default value.");
-            this.allowedSlots = 9;
+            ConsoleUtil.sendError("Compact modifier configuration not found. Using default values.");
+            this.allowedInventorySlots = 9;
+            this.allowedHotbarSlots = 9;
         }
-        ConsoleUtil.sendDebug("Compact Modifier Config: Allowed Slots = " + allowedSlots);
+        ConsoleUtil.sendDebug("Compact Modifier Config: Allowed Inventory Slots = " + allowedInventorySlots + ", Allowed Hotbar Slots = " + allowedHotbarSlots);
     }
 
     @Override
@@ -66,7 +70,7 @@ public class CompactModifier extends AbstractModifier implements Listener {
         enforceInventoryRestriction(player);
         fillRestrictedSlots(player);
         removeDisallowedDeadBushes(player);
-        ConsoleUtil.sendDebug("Applied Compact Modifier to " + player.getName() + ". Allowed slots: " + allowedSlots);
+        ConsoleUtil.sendDebug("Applied Compact Modifier to " + player.getName() + ". Allowed slots: " + allowedInventorySlots + " inventory slots, " + allowedHotbarSlots + " hotbar slots");
     }
 
     @Override
@@ -85,14 +89,14 @@ public class CompactModifier extends AbstractModifier implements Listener {
         int slot = event.getRawSlot();
         int playerInvSlot = event.getView().convertSlot(slot);
 
-        // Allow interactions with hotbar
-        if (playerInvSlot < HOTBAR_SIZE) return;
+        // Allow interactions with allowed hotbar slots
+        if (playerInvSlot < allowedHotbarSlots) return;
+
+        // Allow interactions with the allowed inventory slots
+        if (playerInvSlot >= PLAYER_INVENTORY_SIZE - allowedInventorySlots) return;
 
         // Allow interactions with armor and offhand slots
         if (playerInvSlot >= PLAYER_INVENTORY_SIZE) return;
-
-        // Check if the slot is within the allowed range
-        if (playerInvSlot < HOTBAR_SIZE + allowedSlots) return;
 
         // Prevent interaction with restricted slot item (dead bush)
         if (event.getCurrentItem() != null && event.getCurrentItem().isSimilar(restrictedSlotItem)) {
@@ -110,7 +114,12 @@ public class CompactModifier extends AbstractModifier implements Listener {
         Player player = (Player) event.getWhoClicked();
         if (!isActive(player)) return;
 
-        Set<Integer> allowedSlotSet = IntStream.range(0, HOTBAR_SIZE + allowedSlots).boxed().collect(Collectors.toSet());
+        Set<Integer> allowedSlotSet = IntStream.range(0, allowedHotbarSlots)
+                .boxed()
+                .collect(Collectors.toSet());
+        allowedSlotSet.addAll(IntStream.range(PLAYER_INVENTORY_SIZE - allowedInventorySlots, PLAYER_INVENTORY_SIZE)
+                .boxed()
+                .collect(Collectors.toSet()));
 
         Set<Integer> affectedPlayerSlots = event.getRawSlots().stream()
                 .map(event.getView()::convertSlot)
@@ -134,7 +143,7 @@ public class CompactModifier extends AbstractModifier implements Listener {
             event.getItem().remove();
         }
 
-        if (getTotalItemsInAllowedSlots(player) >= (allowedSlots + HOTBAR_SIZE)) {
+        if (getTotalItemsInAllowedSlots(player) >= (allowedInventorySlots + allowedHotbarSlots)) {
             event.setCancelled(true);
         }
     }
@@ -145,7 +154,7 @@ public class CompactModifier extends AbstractModifier implements Listener {
         if (!isActive(player)) return;
 
         int slot = player.getInventory().getHeldItemSlot();
-        if (slot >= HOTBAR_SIZE) {
+        if (slot >= allowedHotbarSlots) {
             event.setCancelled(true);
         }
     }
@@ -189,13 +198,16 @@ public class CompactModifier extends AbstractModifier implements Listener {
     }
 
     private boolean hasSpaceInAllowedSlots(Player player) {
-        return getTotalItemsInAllowedSlots(player) < (allowedSlots + HOTBAR_SIZE);
+        return getTotalItemsInAllowedSlots(player) < (allowedInventorySlots + allowedHotbarSlots);
     }
 
     private int getTotalItemsInAllowedSlots(Player player) {
         int count = 0;
         PlayerInventory inventory = player.getInventory();
-        for (int i = 0; i < HOTBAR_SIZE + allowedSlots; i++) {
+        for (int i = 0; i < allowedHotbarSlots; i++) {
+            if (inventory.getItem(i) != null) count++;
+        }
+        for (int i = PLAYER_INVENTORY_SIZE - allowedInventorySlots; i < PLAYER_INVENTORY_SIZE; i++) {
             if (inventory.getItem(i) != null) count++;
         }
         return count;
@@ -216,7 +228,7 @@ public class CompactModifier extends AbstractModifier implements Listener {
 
     private void fillRestrictedSlots(Player player) {
         PlayerInventory inventory = player.getInventory();
-        for (int i = HOTBAR_SIZE + allowedSlots; i < PLAYER_INVENTORY_SIZE; i++) {
+        for (int i = allowedHotbarSlots; i < PLAYER_INVENTORY_SIZE - allowedInventorySlots; i++) {
             ItemStack item = inventory.getItem(i);
             if (item == null || item.getType() == Material.AIR) {
                 inventory.setItem(i, restrictedSlotItem);
@@ -229,7 +241,7 @@ public class CompactModifier extends AbstractModifier implements Listener {
 
     private void clearRestrictedSlots(Player player) {
         PlayerInventory inventory = player.getInventory();
-        for (int i = HOTBAR_SIZE + allowedSlots; i < PLAYER_INVENTORY_SIZE; i++) {
+        for (int i = allowedHotbarSlots; i < PLAYER_INVENTORY_SIZE - allowedInventorySlots; i++) {
             ItemStack item = inventory.getItem(i);
             if (item != null && item.isSimilar(restrictedSlotItem)) {
                 inventory.setItem(i, null);
@@ -239,7 +251,13 @@ public class CompactModifier extends AbstractModifier implements Listener {
 
     private void removeDisallowedDeadBushes(Player player) {
         PlayerInventory inventory = player.getInventory();
-        for (int i = 0; i < HOTBAR_SIZE + allowedSlots; i++) {
+        for (int i = 0; i < allowedHotbarSlots; i++) {
+            ItemStack item = inventory.getItem(i);
+            if (item != null && item.getType() == Material.DEAD_BUSH && !item.isSimilar(restrictedSlotItem)) {
+                inventory.setItem(i, null);
+            }
+        }
+        for (int i = PLAYER_INVENTORY_SIZE - allowedInventorySlots; i < PLAYER_INVENTORY_SIZE; i++) {
             ItemStack item = inventory.getItem(i);
             if (item != null && item.getType() == Material.DEAD_BUSH && !item.isSimilar(restrictedSlotItem)) {
                 inventory.setItem(i, null);
@@ -253,7 +271,13 @@ public class CompactModifier extends AbstractModifier implements Listener {
             player.getInventory().setItem(fromSlot, null);
             if (hasSpaceInAllowedSlots(player)) {
                 HashMap<Integer, ItemStack> leftover = new HashMap<>();
-                for (int i = 0; i < HOTBAR_SIZE + allowedSlots; i++) {
+                for (int i = 0; i < allowedHotbarSlots; i++) {
+                    if (player.getInventory().getItem(i) == null) {
+                        player.getInventory().setItem(i, item);
+                        return;
+                    }
+                }
+                for (int i = PLAYER_INVENTORY_SIZE - allowedInventorySlots; i < PLAYER_INVENTORY_SIZE; i++) {
                     if (player.getInventory().getItem(i) == null) {
                         player.getInventory().setItem(i, item);
                         return;
