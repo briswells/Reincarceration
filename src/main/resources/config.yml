@@ -186,15 +186,42 @@ modifiers:
     max_hearts: 1
   tortoise:
     enabled: true
-    speed_decrease: 0.3  # 0.3 means 30% slower (translates to Slowness I)
-    mining_speed_increase: 0.5  # 0.5 means 50% faster (translates to Haste II)
+    slowness_level: 2           # Level of the slowness effect (1 for Slowness I, 2 for Slowness II, etc.)
+    resistance_level: 1         # Level of the resistance effect (1 for Resistance I, 2 for Resistance II, etc.)
+    mining_haste_level: 2       # Level of the mining haste effect (1 for Haste I, 2 for Haste II, etc.)
+    immobilization_duration: 5  # Duration in seconds that the player is immobilized after taking damage
   angler:
     enabled: true
     provide_rod_on_death: true
     prevent_rod_durability_loss: true
+    allowed_items:
+      - COD
+      - SALMON
+      - TROPICAL_FISH
+      - PUFFERFISH
+      - NAUTILUS_SHELL
+      - FISHING_ROD
+      - ENCHANTED_BOOK
+      - BOW
+      - LILY_PAD
+      - BOWL
+      - LEATHER
+      - LEATHER_BOOTS
+      - SADDLE
+      - NAME_TAG
+      - TRIPWIRE_HOOK
+      - ROTTEN_FLESH
+      - STICK
+      - STRING
+      - BONE
+      - INK_SAC
+      - BAMBOO
   compact:
     enabled: true
     allowed_slots: 9  # This will allow only the hotbar to be used
   lumberjack:
     enabled: true
-    provide_axe_on_death: false
+    allowed_items:
+      - BIRCH_LOG
+      - BIRCH_PLANKS
+      - BIRCH_SAPLING

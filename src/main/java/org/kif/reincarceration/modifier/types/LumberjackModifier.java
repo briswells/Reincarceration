@@ -2,7 +2,6 @@ package org.kif.reincarceration.modifier.types;
 
 import me.gypopo.economyshopgui.api.events.PreTransactionEvent;
 import me.gypopo.economyshopgui.objects.ShopItem;
-import me.gypopo.economyshopgui.util.EcoType;
 import me.gypopo.economyshopgui.util.Transaction;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -18,9 +17,8 @@ import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.util.MessageUtil;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 public class LumberjackModifier extends AbstractModifier implements Listener {
@@ -32,41 +30,60 @@ public class LumberjackModifier extends AbstractModifier implements Listener {
         super("lumberjack", "Lumberjack", "Provides woodcutting benefits and restricts selling to wood-related items");
         this.plugin = plugin;
         this.allowedItems = new HashSet<>();
-        initializeAllowedItems();
         loadConfig();
-    }
-
-    private void initializeAllowedItems() {
-        // Add all types of logs
-        allowedItems.addAll(Arrays.asList(
-                Material.OAK_LOG, Material.SPRUCE_LOG, Material.BIRCH_LOG,
-                Material.JUNGLE_LOG, Material.ACACIA_LOG, Material.DARK_OAK_LOG,
-                Material.CRIMSON_STEM, Material.WARPED_STEM
-        ));
-
-        // Add all types of planks
-        allowedItems.addAll(Arrays.asList(
-                Material.OAK_PLANKS, Material.SPRUCE_PLANKS, Material.BIRCH_PLANKS,
-                Material.JUNGLE_PLANKS, Material.ACACIA_PLANKS, Material.DARK_OAK_PLANKS,
-                Material.CRIMSON_PLANKS, Material.WARPED_PLANKS
-        ));
-
-        // Add all types of saplings
-        allowedItems.addAll(Arrays.asList(
-                Material.OAK_SAPLING, Material.SPRUCE_SAPLING, Material.BIRCH_SAPLING,
-                Material.JUNGLE_SAPLING, Material.ACACIA_SAPLING, Material.DARK_OAK_SAPLING
-        ));
     }
 
     private void loadConfig() {
         ConfigurationSection config = plugin.getConfig().getConfigurationSection("modifiers.lumberjack");
         if (config != null) {
-            this.provideAxeOnDeath = config.getBoolean("provide_axe_on_death", true);
+            this.provideAxeOnDeath = config.getBoolean("provide_axe_on_death", false);
+            List<String> allowedItemsList = config.getStringList("allowed_items");
+            if (!allowedItemsList.isEmpty()) {
+                for (String item : allowedItemsList) {
+                    try {
+                        Material material = Material.valueOf(item.toUpperCase());
+                        allowedItems.add(material);
+                    } catch (IllegalArgumentException e) {
+                        ConsoleUtil.sendError("Invalid material in Lumberjack modifier config: " + item);
+                    }
+                }
+            } else {
+                ConsoleUtil.sendError("No allowed items specified in Lumberjack modifier config. Using default values.");
+                initializeDefaultAllowedItems();
+            }
         } else {
             ConsoleUtil.sendError("Lumberjack modifier configuration not found. Using default values.");
-            this.provideAxeOnDeath = true;
+            this.provideAxeOnDeath = false;
+            initializeDefaultAllowedItems();
         }
         ConsoleUtil.sendDebug("Lumberjack Modifier Config: Provide Axe On Death = " + provideAxeOnDeath);
+        ConsoleUtil.sendDebug("Lumberjack Modifier Config: Allowed Items = " + allowedItems);
+    }
+
+    private void initializeDefaultAllowedItems() {
+        // Default allowed items in case the config is not found or invalid
+        allowedItems.add(Material.OAK_LOG);
+        allowedItems.add(Material.SPRUCE_LOG);
+        allowedItems.add(Material.BIRCH_LOG);
+        allowedItems.add(Material.JUNGLE_LOG);
+        allowedItems.add(Material.ACACIA_LOG);
+        allowedItems.add(Material.DARK_OAK_LOG);
+        allowedItems.add(Material.CRIMSON_STEM);
+        allowedItems.add(Material.WARPED_STEM);
+        allowedItems.add(Material.OAK_PLANKS);
+        allowedItems.add(Material.SPRUCE_PLANKS);
+        allowedItems.add(Material.BIRCH_PLANKS);
+        allowedItems.add(Material.JUNGLE_PLANKS);
+        allowedItems.add(Material.ACACIA_PLANKS);
+        allowedItems.add(Material.DARK_OAK_PLANKS);
+        allowedItems.add(Material.CRIMSON_PLANKS);
+        allowedItems.add(Material.WARPED_PLANKS);
+        allowedItems.add(Material.OAK_SAPLING);
+        allowedItems.add(Material.SPRUCE_SAPLING);
+        allowedItems.add(Material.BIRCH_SAPLING);
+        allowedItems.add(Material.JUNGLE_SAPLING);
+        allowedItems.add(Material.ACACIA_SAPLING);
+        allowedItems.add(Material.DARK_OAK_SAPLING);
     }
 
     @Override
@@ -106,7 +123,7 @@ public class LumberjackModifier extends AbstractModifier implements Listener {
 
             Player player = event.getPlayer();
 
-            if(areAllItemsFlagged(player)) {
+            if (areAllItemsFlagged(player)) {
                 ConsoleUtil.sendDebug("All items are flagged for player: " + player.getName());
             } else {
                 MessageUtil.sendPrefixMessage(player, "&cTransaction Denied: Prohibited Items found on Player.");

@@ -5,9 +5,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -18,11 +17,13 @@ import org.kif.reincarceration.util.ConsoleUtil;
 
 public class TortoiseModifier extends AbstractModifier implements Listener {
     private final Reincarceration plugin;
-    private double speedDecrease;
-    private double miningSpeedIncrease;
+    private int slownessLevel;
+    private int resistanceLevel;
+    private int miningHasteLevel;
+    private int immobilizationDuration;
 
     public TortoiseModifier(Reincarceration plugin) {
-        super("tortoise", "Tortoise", "Decreases movement speed but increases mining speed");
+        super("tortoise", "Tortoise", "Decreases movement speed but increases resistance and mining speed. Immobilizes player on damage.");
         this.plugin = plugin;
         loadConfig();
     }
@@ -30,20 +31,24 @@ public class TortoiseModifier extends AbstractModifier implements Listener {
     private void loadConfig() {
         ConfigurationSection config = plugin.getConfig().getConfigurationSection("modifiers.tortoise");
         if (config != null) {
-            this.speedDecrease = config.getDouble("speed_decrease", 0.3);
-            this.miningSpeedIncrease = config.getDouble("mining_speed_increase", 0.5);
+            this.slownessLevel = config.getInt("slowness_level", 2);
+            this.resistanceLevel = config.getInt("resistance_level", 1);
+            this.miningHasteLevel = config.getInt("mining_haste_level", 2);
+            this.immobilizationDuration = config.getInt("immobilization_duration", 5);
         } else {
             ConsoleUtil.sendError("Tortoise modifier configuration not found. Using default values.");
-            this.speedDecrease = 0.3;
-            this.miningSpeedIncrease = 0.5;
+            this.slownessLevel = 2;
+            this.resistanceLevel = 1;
+            this.miningHasteLevel = 2;
+            this.immobilizationDuration = 5;
         }
-        ConsoleUtil.sendDebug("Tortoise Modifier Config: Speed Decrease = " + speedDecrease + ", Mining Speed Increase = " + miningSpeedIncrease);
+        ConsoleUtil.sendDebug("Tortoise Modifier Config: Slowness Level = " + slownessLevel + ", Resistance Level = " + resistanceLevel + ", Mining Haste Level = " + miningHasteLevel + ", Immobilization Duration = " + immobilizationDuration + " seconds");
     }
 
     @Override
     public void apply(Player player) {
         super.apply(player);
-        applySpeedEffect(player);
+        applyEffects(player);
         startEffectChecker(player);
         ConsoleUtil.sendDebug("Applied Tortoise Modifier to " + player.getName());
     }
@@ -51,17 +56,20 @@ public class TortoiseModifier extends AbstractModifier implements Listener {
     @Override
     public void remove(Player player) {
         super.remove(player);
-        removeSpeedEffect(player);
+        removeEffects(player);
         ConsoleUtil.sendDebug("Removed Tortoise Modifier from " + player.getName());
     }
 
-    private void applySpeedEffect(Player player) {
-        int amplifier = (int) (speedDecrease * 10) - 1; // Convert to potion effect amplifier
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, amplifier, false, false));
+    private void applyEffects(Player player) {
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, slownessLevel - 1, false, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Integer.MAX_VALUE, resistanceLevel - 1, false, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, Integer.MAX_VALUE, miningHasteLevel - 1, false, false));
     }
 
-    private void removeSpeedEffect(Player player) {
+    private void removeEffects(Player player) {
         player.removePotionEffect(PotionEffectType.SLOW);
+        player.removePotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
+        player.removePotionEffect(PotionEffectType.FAST_DIGGING);
     }
 
     private void startEffectChecker(Player player) {
@@ -72,10 +80,8 @@ public class TortoiseModifier extends AbstractModifier implements Listener {
                     this.cancel();
                     return;
                 }
-                if (!player.hasPotionEffect(PotionEffectType.SLOW)) {
-                    applySpeedEffect(player);
-                    ConsoleUtil.sendDebug("Reapplied Tortoise speed effect to " + player.getName());
-                }
+                applyEffects(player);
+                ConsoleUtil.sendDebug("Reapplied all Tortoise effects to " + player.getName());
             }
         }.runTaskTimer(plugin, 20L * 30, 20L * 30); // Check every 30 seconds
     }
@@ -84,9 +90,7 @@ public class TortoiseModifier extends AbstractModifier implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         if (isActive(player)) {
-            // Simulate faster mining by giving a brief haste effect
-            int amplifier = (int) (miningSpeedIncrease * 10) - 1;
-            player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 40, amplifier, false, false));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 40, miningHasteLevel - 1, false, false));
         }
     }
 
@@ -94,11 +98,10 @@ public class TortoiseModifier extends AbstractModifier implements Listener {
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
         if (isActive(player)) {
-            // Use a delayed task to ensure the effect is applied after respawn
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    applySpeedEffect(player);
+                    applyEffects(player);
                 }
             }.runTaskLater(plugin, 1L);
         }
@@ -108,14 +111,28 @@ public class TortoiseModifier extends AbstractModifier implements Listener {
     public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
         Player player = event.getPlayer();
         if (isActive(player)) {
-            // Reapply effect on next tick to override any potion effects from consumed item
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    applySpeedEffect(player);
+                    applyEffects(player);
                 }
             }.runTaskLater(plugin, 1L);
         }
+    }
+
+    @EventHandler
+    public void onPlayerDamage(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            if (isActive(player)) {
+                immobilizePlayer(player);
+            }
+        }
+    }
+
+    private void immobilizePlayer(Player player) {
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, immobilizationDuration * 20, 6, false, false)); // Slowness level 7 (index 6) makes the player immobile
+        ConsoleUtil.sendDebug("Immobilized " + player.getName() + " for " + immobilizationDuration + " seconds due to damage");
     }
 
     public void reloadConfig() {

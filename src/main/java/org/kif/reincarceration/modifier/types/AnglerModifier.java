@@ -19,10 +19,11 @@ import org.kif.reincarceration.modifier.core.AbstractModifier;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.MessageUtil;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
+
+import static org.kif.reincarceration.util.ItemUtil.addReincarcerationFlag;
 
 public class AnglerModifier extends AbstractModifier implements Listener {
     private final Reincarceration plugin;
@@ -33,29 +34,7 @@ public class AnglerModifier extends AbstractModifier implements Listener {
     public AnglerModifier(Reincarceration plugin) {
         super("angler", "Angler", "Provides fishing benefits and restricts selling to fish-related items");
         this.plugin = plugin;
-        this.allowedItems = new HashSet<>(Arrays.asList(
-            Material.COD,
-            Material.SALMON,
-            Material.TROPICAL_FISH,
-            Material.PUFFERFISH,
-            Material.NAUTILUS_SHELL,
-            Material.FISHING_ROD,
-            Material.ENCHANTED_BOOK,
-            Material.BOW,
-            Material.LILY_PAD,
-            Material.BOWL,
-            Material.LEATHER,
-            Material.LEATHER_BOOTS,
-            Material.SADDLE,
-            Material.NAME_TAG,
-            Material.TRIPWIRE_HOOK,
-            Material.ROTTEN_FLESH,
-            Material.STICK,
-            Material.STRING,
-            Material.BONE,
-            Material.INK_SAC,
-            Material.BAMBOO
-        ));
+        this.allowedItems = new HashSet<>();
         loadConfig();
     }
 
@@ -64,13 +43,54 @@ public class AnglerModifier extends AbstractModifier implements Listener {
         if (config != null) {
             this.provideRodOnDeath = config.getBoolean("provide_rod_on_death", true);
             this.preventRodDurabilityLoss = config.getBoolean("prevent_rod_durability_loss", true);
+
+            List<String> allowedItemsList = config.getStringList("allowed_items");
+            if (!allowedItemsList.isEmpty()) {
+                for (String item : allowedItemsList) {
+                    try {
+                        Material material = Material.valueOf(item.toUpperCase());
+                        allowedItems.add(material);
+                    } catch (IllegalArgumentException e) {
+                        ConsoleUtil.sendError("Invalid material in Angler modifier config: " + item);
+                    }
+                }
+            } else {
+                ConsoleUtil.sendError("No allowed items specified in Angler modifier config. Using default values.");
+                initializeDefaultAllowedItems();
+            }
         } else {
             ConsoleUtil.sendError("Angler modifier configuration not found. Using default values.");
             this.provideRodOnDeath = true;
             this.preventRodDurabilityLoss = true;
+            initializeDefaultAllowedItems();
         }
         ConsoleUtil.sendDebug("Angler Modifier Config: Provide Rod On Death = " + provideRodOnDeath +
                 ", Prevent Rod Durability Loss = " + preventRodDurabilityLoss);
+        ConsoleUtil.sendDebug("Angler Modifier Config: Allowed Items = " + allowedItems);
+    }
+
+    private void initializeDefaultAllowedItems() {
+        allowedItems.add(Material.COD);
+        allowedItems.add(Material.SALMON);
+        allowedItems.add(Material.TROPICAL_FISH);
+        allowedItems.add(Material.PUFFERFISH);
+        allowedItems.add(Material.NAUTILUS_SHELL);
+        allowedItems.add(Material.FISHING_ROD);
+        allowedItems.add(Material.ENCHANTED_BOOK);
+        allowedItems.add(Material.BOW);
+        allowedItems.add(Material.LILY_PAD);
+        allowedItems.add(Material.BOWL);
+        allowedItems.add(Material.LEATHER);
+        allowedItems.add(Material.LEATHER_BOOTS);
+        allowedItems.add(Material.SADDLE);
+        allowedItems.add(Material.NAME_TAG);
+        allowedItems.add(Material.TRIPWIRE_HOOK);
+        allowedItems.add(Material.ROTTEN_FLESH);
+        allowedItems.add(Material.STICK);
+        allowedItems.add(Material.STRING);
+        allowedItems.add(Material.BONE);
+        allowedItems.add(Material.INK_SAC);
+        allowedItems.add(Material.BAMBOO);
     }
 
     @Override
@@ -116,32 +136,47 @@ public class AnglerModifier extends AbstractModifier implements Listener {
         }
     }
 
-//    @EventHandler
-//    public void onPreTransaction(PreTransactionEvent event) {
-//        if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
-//            event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
-//            event.getTransactionType() == Transaction.Type.QUICK_SELL) {
-//
-//            Player player = event.getPlayer();
-//
-//            if (!isActive(player)) return;
-//
-//            Map<ShopItem, Integer> itemsToSell = event.getItems();
-//
-//            for (ShopItem shopItem : itemsToSell.keySet()) {
-//                ItemStack itemToSell = shopItem.getShopItem();
-//                if (!allowedItems.contains(itemToSell.getType())) {
-//                    event.setCancelled(true);
-//                    MessageUtil.sendPrefixMessage(player, "&cYou can only sell items obtained from fishing while using the Angler modifier.");
-//                    return;
-//                }
-//            }
-//        }
-//    }
+    @EventHandler
+    public void onPreTransaction(PreTransactionEvent event) {
+        if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
+                event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
+                event.getTransactionType() == Transaction.Type.SHOPSTAND_SELL_SCREEN ||
+                event.getTransactionType() == Transaction.Type.SELL_GUI_SCREEN ||
+                event.getTransactionType() == Transaction.Type.SELL_ALL_COMMAND ||
+                event.getTransactionType() == Transaction.Type.AUTO_SELL_CHEST ||
+                event.getTransactionType() == Transaction.Type.QUICK_SELL) {
+
+            Player player = event.getPlayer();
+
+            if (isActive(player)) {
+                ShopItem shopItem = event.getShopItem();
+                if (shopItem != null) {
+                    ItemStack itemStack = shopItem.getItemToGive();
+                    ConsoleUtil.sendDebug("ShopItem: " + shopItem);
+                    ConsoleUtil.sendDebug("ItemStack: " + itemStack);
+                    if (itemStack != null) {
+                        ConsoleUtil.sendDebug("Item Type: " + itemStack.getType());
+                        ConsoleUtil.sendDebug("Item Amount: " + itemStack.getAmount());
+                        ConsoleUtil.sendDebug("Item Meta: " + itemStack.getItemMeta());
+                        if (!allowedItems.contains(itemStack.getType())) {
+                            event.setCancelled(true);
+                            MessageUtil.sendPrefixMessage(player, "&cTransaction Denied - Attempted to sell prohibited items.");
+                            ConsoleUtil.sendDebug("Transaction cancelled because item " + itemStack.getType() + " is not allowed.");
+                            ConsoleUtil.sendDebug("Cancelled: " + event.isCancelled());
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private void provideFishingRod(Player player) {
         if (!player.getInventory().contains(Material.FISHING_ROD)) {
-            player.getInventory().addItem(new ItemStack(Material.FISHING_ROD));
+            ItemStack item = new ItemStack(Material.FISHING_ROD);
+            addReincarcerationFlag(item);
+            player.getInventory().addItem(item);
+
             ConsoleUtil.sendDebug("Provided fishing rod to " + player.getName());
         }
     }
