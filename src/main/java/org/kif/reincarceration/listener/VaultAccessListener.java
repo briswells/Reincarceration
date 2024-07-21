@@ -10,26 +10,34 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.config.ConfigManager;
+import org.kif.reincarceration.modifier.core.IModifier;
+import org.kif.reincarceration.modifier.core.ModifierModule;
+import org.kif.reincarceration.modifier.core.ModifierManager;
 import org.kif.reincarceration.permission.PermissionManager;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.MessageUtil;
 
 import java.io.File;
+import java.sql.SQLException;
 
 public class VaultAccessListener implements Listener {
 
     private final Reincarceration plugin;
     private final PermissionManager permissionManager;
     private final ConfigManager configManager;
+    private final ModifierManager modifierManager;
 
     public VaultAccessListener(Reincarceration plugin) {
         this.plugin = plugin;
         this.permissionManager = new PermissionManager(plugin);
         this.configManager = plugin.getModuleManager().getConfigManager();
+
+        ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
+        this.modifierManager = modifierModule.getModifierManager();
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
+    public void onPlayerInteract(PlayerInteractEvent event) throws SQLException {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 
         Block block = event.getClickedBlock();
@@ -47,10 +55,19 @@ public class VaultAccessListener implements Listener {
         ConsoleUtil.sendDebug("Player " + player.getName() + " attempting to access Vault #" + vaultNumber +
                 ". Associated: " + isAssociated + ", Reoffender Vault: " + reoffenderVaultNumber);
 
-        if (isAssociated && vaultNumber != reoffenderVaultNumber) {
-            event.setCancelled(true);
-            MessageUtil.sendPrefixMessage(player, "&cYou can only access Vault #" + reoffenderVaultNumber + " while in the Reincarceration system.");
-            ConsoleUtil.sendDebug("Blocked " + player.getName() + " from accessing Vault #" + vaultNumber);
+        if (isAssociated) {
+
+            IModifier activeModifier = modifierManager.getActiveModifier(player);
+            if (activeModifier != null && activeModifier.handleVaultAccess(event)) {
+                // The modifier handled the event, so we're done
+                return;
+            }
+
+            if(vaultNumber != reoffenderVaultNumber){
+                event.setCancelled(true);
+                MessageUtil.sendPrefixMessage(player, "&cYou can only access Vault #" + reoffenderVaultNumber + " while in the Reincarceration system.");
+                ConsoleUtil.sendDebug("Blocked " + player.getName() + " from accessing Vault #" + vaultNumber);
+            }
         } else if (!isAssociated && vaultNumber == reoffenderVaultNumber) {
             event.setCancelled(true);
             MessageUtil.sendPrefixMessage(player, "&cYou cannot access Vault #" + reoffenderVaultNumber + " outside the Reincarceration system.");

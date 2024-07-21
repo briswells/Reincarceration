@@ -1,5 +1,6 @@
 package org.kif.reincarceration.modifier.types;
 
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
@@ -10,20 +11,26 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.modifier.core.AbstractModifier;
 import org.kif.reincarceration.util.ConsoleUtil;
+import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.util.MessageUtil;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -33,6 +40,7 @@ public class CompactModifier extends AbstractModifier implements Listener {
     private int allowedSlots;
     private static final int HOTBAR_SIZE = 9;
     private static final int PLAYER_INVENTORY_SIZE = 36; // 27 main inventory + 9 hotbar
+    private ItemStack restrictedSlotItem;
 
     public CompactModifier(Reincarceration plugin) {
         super("compact", "Compact", "Limits the number of usable inventory slots");
@@ -54,13 +62,17 @@ public class CompactModifier extends AbstractModifier implements Listener {
     @Override
     public void apply(Player player) {
         super.apply(player);
+        this.restrictedSlotItem = createRestrictedSlotItem();
         enforceInventoryRestriction(player);
+        fillRestrictedSlots(player);
+        removeDisallowedDeadBushes(player);
         ConsoleUtil.sendDebug("Applied Compact Modifier to " + player.getName() + ". Allowed slots: " + allowedSlots);
     }
 
     @Override
     public void remove(Player player) {
         super.remove(player);
+        clearRestrictedSlots(player);
         ConsoleUtil.sendDebug("Removed Compact Modifier from " + player.getName());
     }
 
@@ -73,8 +85,6 @@ public class CompactModifier extends AbstractModifier implements Listener {
         int slot = event.getRawSlot();
         int playerInvSlot = event.getView().convertSlot(slot);
 
-        ConsoleUtil.sendDebug("Inventory Click - Player: " + player.getName() + ", Raw Slot: " + slot + ", Player Inv Slot: " + playerInvSlot);
-
         // Allow interactions with hotbar
         if (playerInvSlot < HOTBAR_SIZE) return;
 
@@ -84,21 +94,14 @@ public class CompactModifier extends AbstractModifier implements Listener {
         // Check if the slot is within the allowed range
         if (playerInvSlot < HOTBAR_SIZE + allowedSlots) return;
 
-        // Handle shift-clicks
-        if (event.isShiftClick()) {
-            ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem != null && !clickedItem.getType().isAir()) {
-                if (!hasSpaceInAllowedSlots(player)) {
-                    event.setCancelled(true);
-                    ConsoleUtil.sendDebug("Blocked shift-click to full allowed slots for " + player.getName());
-                }
-            }
+        // Prevent interaction with restricted slot item (dead bush)
+        if (event.getCurrentItem() != null && event.getCurrentItem().isSimilar(restrictedSlotItem)) {
+            event.setCancelled(true);
             return;
         }
 
         // Cancel interactions with restricted slots
         event.setCancelled(true);
-        ConsoleUtil.sendDebug("Blocked inventory interaction in restricted slot " + playerInvSlot + " for " + player.getName());
     }
 
     @EventHandler
@@ -114,11 +117,8 @@ public class CompactModifier extends AbstractModifier implements Listener {
                 .filter(slot -> slot < PLAYER_INVENTORY_SIZE)
                 .collect(Collectors.toSet());
 
-        ConsoleUtil.sendDebug("Inventory Drag - Player: " + player.getName() + ", Affected Player Slots: " + affectedPlayerSlots);
-
         if (!allowedSlotSet.containsAll(affectedPlayerSlots)) {
             event.setCancelled(true);
-            ConsoleUtil.sendDebug("Blocked inventory drag to restricted slots for " + player.getName());
         }
     }
 
@@ -128,11 +128,14 @@ public class CompactModifier extends AbstractModifier implements Listener {
         Player player = (Player) event.getEntity();
         if (!isActive(player)) return;
 
-        ConsoleUtil.sendDebug("Item Pickup - Player: " + player.getName() + ", Item: " + event.getItem().getItemStack().getType());
+        ItemStack item = event.getItem().getItemStack();
+        if (item.getType() == Material.DEAD_BUSH) {
+            event.setCancelled(true);
+            event.getItem().remove();
+        }
 
         if (getTotalItemsInAllowedSlots(player) >= (allowedSlots + HOTBAR_SIZE)) {
             event.setCancelled(true);
-            ConsoleUtil.sendDebug("Blocked item pickup due to inventory restriction for " + player.getName());
         }
     }
 
@@ -142,12 +145,47 @@ public class CompactModifier extends AbstractModifier implements Listener {
         if (!isActive(player)) return;
 
         int slot = player.getInventory().getHeldItemSlot();
-        ConsoleUtil.sendDebug("Item Drop - Player: " + player.getName() + ", Slot: " + slot);
-
         if (slot >= HOTBAR_SIZE) {
             event.setCancelled(true);
-            ConsoleUtil.sendDebug("Blocked item drop from restricted slot " + slot + " for " + player.getName());
         }
+    }
+
+    @EventHandler
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        if (!(event.getPlayer() instanceof Player)) return;
+        Player player = (Player) event.getPlayer();
+        if (!isActive(player)) return;
+
+        if (event.getInventory().getType() == InventoryType.CRAFTING || event.getInventory().getType() == InventoryType.PLAYER) {
+            removeDisallowedDeadBushes(player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        if (!isActive(player)) return;
+
+        PlayerInventory inventory = player.getInventory();
+        for (ItemStack item : inventory.getContents()) {
+            if (item != null && item.getType() == Material.DEAD_BUSH) {
+                item.setAmount(0);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        Player player = event.getPlayer();
+        if (!isActive(player)) return;
+
+        this.restrictedSlotItem = createRestrictedSlotItem();
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                fillRestrictedSlots(player);
+            }
+        }.runTaskLater(plugin, 1L); // Run on next tick to ensure inventory is available
     }
 
     private boolean hasSpaceInAllowedSlots(Player player) {
@@ -171,88 +209,78 @@ public class CompactModifier extends AbstractModifier implements Listener {
                     this.cancel();
                     return;
                 }
-                PlayerInventory inventory = player.getInventory();
-                for (int i = HOTBAR_SIZE + allowedSlots; i < PLAYER_INVENTORY_SIZE; i++) {
-                    moveItemToAllowedSlot(player, i);
-                }
+                fillRestrictedSlots(player);
             }
-        }.runTaskTimer(plugin, 20L, 20L); // Run every second
+        }.runTaskTimer(plugin, 20L * 60, 20L * 60); // Run every minute
+    }
+
+    private void fillRestrictedSlots(Player player) {
+        PlayerInventory inventory = player.getInventory();
+        for (int i = HOTBAR_SIZE + allowedSlots; i < PLAYER_INVENTORY_SIZE; i++) {
+            ItemStack item = inventory.getItem(i);
+            if (item == null || item.getType() == Material.AIR) {
+                inventory.setItem(i, restrictedSlotItem);
+            } else if (!item.isSimilar(restrictedSlotItem)) {
+                moveItemToAllowedSlot(player, i);
+                inventory.setItem(i, restrictedSlotItem);
+            }
+        }
+    }
+
+    private void clearRestrictedSlots(Player player) {
+        PlayerInventory inventory = player.getInventory();
+        for (int i = HOTBAR_SIZE + allowedSlots; i < PLAYER_INVENTORY_SIZE; i++) {
+            ItemStack item = inventory.getItem(i);
+            if (item != null && item.isSimilar(restrictedSlotItem)) {
+                inventory.setItem(i, null);
+            }
+        }
+    }
+
+    private void removeDisallowedDeadBushes(Player player) {
+        PlayerInventory inventory = player.getInventory();
+        for (int i = 0; i < HOTBAR_SIZE + allowedSlots; i++) {
+            ItemStack item = inventory.getItem(i);
+            if (item != null && item.getType() == Material.DEAD_BUSH && !item.isSimilar(restrictedSlotItem)) {
+                inventory.setItem(i, null);
+            }
+        }
     }
 
     private void moveItemToAllowedSlot(Player player, int fromSlot) {
         ItemStack item = player.getInventory().getItem(fromSlot);
         if (item != null && !item.getType().isAir()) {
-            ConsoleUtil.sendDebug("Attempting to move item from slot " + fromSlot + " for " + player.getName());
             player.getInventory().setItem(fromSlot, null);
             if (hasSpaceInAllowedSlots(player)) {
                 HashMap<Integer, ItemStack> leftover = new HashMap<>();
                 for (int i = 0; i < HOTBAR_SIZE + allowedSlots; i++) {
                     if (player.getInventory().getItem(i) == null) {
                         player.getInventory().setItem(i, item);
-                        ConsoleUtil.sendDebug("Successfully moved item " + item.getType() + " to allowed slot " + i + " for " + player.getName());
                         return;
                     }
                 }
                 if (!leftover.isEmpty()) {
                     for (ItemStack dropItem : leftover.values()) {
                         player.getWorld().dropItemNaturally(player.getLocation(), dropItem);
-                        ConsoleUtil.sendDebug("Dropped item " + dropItem.getType() + " for " + player.getName() + " due to no space");
                     }
                 }
             } else {
                 player.getWorld().dropItemNaturally(player.getLocation(), item);
-                ConsoleUtil.sendDebug("Dropped item " + item.getType() + " for " + player.getName() + " due to no space in allowed slots");
             }
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onPlayerInteract(PlayerInteractEvent event) {
+    private ItemStack createRestrictedSlotItem() {
+        ItemStack deadBush = new ItemStack(Material.DEAD_BUSH);
+        ItemUtil.addReincarcerationFlag(deadBush);
+        return deadBush;
+    }
+
+    public boolean handleVaultAccess(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (!isActive(player)) return;
-
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-
-        Block block = event.getClickedBlock();
-        if (block == null || !(block.getState() instanceof Sign)) return;
-
-        String locationKey = getLocationKey(block);
-        int vaultNumber = getChestNumberFromSign(locationKey);
-
-        if (vaultNumber == -1) return; // Not a PlayerVault sign
-
-        int reoffenderVaultNumber = plugin.getModuleManager().getConfigManager().getReoffenderVaultNumber();
-
-        ConsoleUtil.sendDebug("Compact Modifier - Player " + player.getName() + " attempting to access Vault #" + vaultNumber);
-
-        if (vaultNumber == reoffenderVaultNumber) {
-            event.setCancelled(true);
-            MessageUtil.sendPrefixMessage(player, "&cYou cannot access vaults while under the Compact modifier effect.");
-            ConsoleUtil.sendDebug("Compact Modifier blocked " + player.getName() + " from accessing Vault #" + vaultNumber);
-        }
-    }
-
-    private String getLocationKey(Block block) {
-        String world = block.getWorld().getName();
-        int x = block.getX();
-        int y = block.getY();
-        int z = block.getZ();
-        return world + ";;" + x + ";;" + y + ";;" + z;
-    }
-
-    private int getChestNumberFromSign(String locationKey) {
-        File signsFile = new File(plugin.getDataFolder().getParentFile(), "PlayerVaults/signs.yml");
-        if (!signsFile.exists()) {
-            ConsoleUtil.sendError("signs.yml file not found!");
-            return -1;
-        }
-
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(signsFile);
-        if (config.contains(locationKey)) {
-            return config.getInt(locationKey + ".chest", -1);
-        }
-        ConsoleUtil.sendDebug("Chest number not found for sign at " + locationKey);
-        return -1;
+        event.setCancelled(true);
+        MessageUtil.sendPrefixMessage(player, "&cVault Access Denied - You are not allowed to access vaults.");
+        return true;
     }
 
     public void reloadConfig() {

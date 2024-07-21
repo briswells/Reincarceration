@@ -5,6 +5,7 @@ import me.gypopo.economyshopgui.api.events.PreTransactionEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 public interface IModifier {
     String getId();
@@ -17,4 +18,5 @@ public interface IModifier {
     boolean handleFishing(PlayerFishEvent event);
     boolean handlePreTransaction(PreTransactionEvent event);
     boolean handlePostTransaction(PostTransactionEvent event);
+    boolean handleVaultAccess(PlayerInteractEvent event);
 }

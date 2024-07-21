@@ -5,6 +5,7 @@ import me.gypopo.economyshopgui.api.events.PreTransactionEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -74,6 +75,12 @@ public abstract class AbstractModifier implements IModifier {
     @Override
     public boolean handlePostTransaction(PostTransactionEvent event) {
         // Default implementation returns false, indicating that the PostTransactionListener should handle it
+        return false;
+    }
+
+    @Override
+    public boolean handleVaultAccess(PlayerInteractEvent event) {
+        // Default implementation returns false, indicating that the VaultAccessListener should handle it
         return false;
     }
 }
