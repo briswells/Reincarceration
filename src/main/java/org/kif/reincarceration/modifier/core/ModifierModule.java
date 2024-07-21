@@ -56,7 +56,7 @@ public class ModifierModule implements Module {
             if (modifiersConfig.getBoolean("neolithic.enabled", true)) {
                 NeolithicModifier neolithicModifier = new NeolithicModifier(plugin);
                 modifierRegistry.registerModifier(neolithicModifier);
-                plugin.getServer().getPluginManager().registerEvents(neolithicModifier, plugin);
+//                plugin.getServer().getPluginManager().registerEvents(neolithicModifier, plugin);
             }
             if (modifiersConfig.getBoolean("hardcore.enabled", true)) {
                 HardcoreModifier hardcoreModifier = new HardcoreModifier(plugin);

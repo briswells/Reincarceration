@@ -1,28 +1,26 @@
 package org.kif.reincarceration.modifier.types;
 
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.modifier.core.AbstractModifier;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.MessageUtil;
+import org.kif.reincarceration.util.ItemUtil;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class NeolithicModifier extends AbstractModifier implements Listener {
+public class NeolithicModifier extends AbstractModifier {
     private final Reincarceration plugin;
     private final Set<Material> allowedTools;
     private final Set<Material> allowedBlocks;
-    private final double doubleDropChance;
 
     public NeolithicModifier(Reincarceration plugin) {
         super("neolithic", "Neolithic", "Limits players to basic tools and provides unique gathering bonuses");
@@ -31,7 +29,59 @@ public class NeolithicModifier extends AbstractModifier implements Listener {
         ConfigurationSection config = plugin.getConfig().getConfigurationSection("modifiers.neolithic");
         this.allowedTools = loadMaterialSet(config, "allowed_tools");
         this.allowedBlocks = loadMaterialSet(config, "allowed_blocks");
-        this.doubleDropChance = config.getDouble("double_drop_chance", 0.2);
+    }
+
+    @Override
+    public boolean handleBlockBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
+
+        if (!allowedTools.contains(itemInHand.getType()) && isTool(itemInHand.getType())) {
+            event.setCancelled(true);
+            MessageUtil.sendPrefixMessage(player, "&cYou can't use advanced tools!");
+            ConsoleUtil.sendDebug(player.getName() + " attempted to use " + itemInHand.getType() + " but was prevented by Neolithic Modifier");
+            return true;
+        }
+
+        if (!allowedBlocks.contains(block.getType())) {
+            event.setCancelled(true);
+            MessageUtil.sendPrefixMessage(player, "&cYou can't break this type of block!");
+            return true;
+        }
+
+        // Handle normal block breaking
+        event.setDropItems(false);
+        for (ItemStack drop : block.getDrops(itemInHand)) {
+            ItemUtil.addReincarcerationFlag(drop);
+            block.getWorld().dropItemNaturally(block.getLocation(), drop);
+        }
+
+        // Handle special cases (cactus and sugar cane)
+        if (block.getType() == Material.CACTUS || block.getType() == Material.SUGAR_CANE) {
+            handleConnectedBlocks(block);
+        }
+
+        return true; // We've handled this event
+    }
+
+    private void handleConnectedBlocks(Block startBlock) {
+        Material material = startBlock.getType();
+        Block above = startBlock.getRelative(0, 1, 0);
+        while (above.getType() == material) {
+            ItemStack drop = new ItemStack(material);
+            ItemUtil.addReincarcerationFlag(drop);
+            above.setType(Material.AIR);
+            above.getWorld().dropItemNaturally(above.getLocation(), drop);
+            ConsoleUtil.sendDebug("Dropped flagged connected block: " + material.name());
+            above = above.getRelative(0, 1, 0);
+        }
+    }
+
+    private boolean isTool(Material material) {
+        return material.name().endsWith("_PICKAXE") || material.name().endsWith("_AXE") ||
+                material.name().endsWith("_SHOVEL") || material.name().endsWith("_HOE") ||
+                material.name().endsWith("_SWORD");
     }
 
     private Set<Material> loadMaterialSet(ConfigurationSection config, String path) {
@@ -46,62 +96,5 @@ public class NeolithicModifier extends AbstractModifier implements Listener {
             }
         }
         return materials;
-    }
-
-    @Override
-    public void apply(Player player) {
-        super.apply(player);
-//        MessageUtil.sendPrefixMessage(player, "&6You've entered with the Neolithic modifier. Only basic tools are available, but your gathering skills are enhanced!");
-        ConsoleUtil.sendDebug("Applied Neolithic Modifier to " + player.getName());
-    }
-
-    @Override
-    public void remove(Player player) {
-        super.remove(player);
-        ConsoleUtil.sendDebug("Removed Neolithic Modifier from " + player.getName());
-    }
-
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onCraftItem(CraftItemEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
-        Player player = (Player) event.getWhoClicked();
-        if (!isActive(player)) return;
-
-        ItemStack result = event.getRecipe().getResult();
-        if (!allowedTools.contains(result.getType()) && isTool(result.getType())) {
-            event.setCancelled(true);
-            MessageUtil.sendPrefixMessage(player, "&cYou can't craft advanced tools!");
-            ConsoleUtil.sendDebug(player.getName() + " attempted to craft " + result.getType() + " but was prevented by Neolithic Modifier");
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onBlockBreak(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-        if (!isActive(player)) return;
-
-        ItemStack itemInHand = player.getInventory().getItemInMainHand();
-        if (!allowedTools.contains(itemInHand.getType()) && isTool(itemInHand.getType())) {
-            event.setCancelled(true);
-            MessageUtil.sendPrefixMessage(player, "&cYou can't use advanced tools!");
-            ConsoleUtil.sendDebug(player.getName() + " attempted to use " + itemInHand.getType() + " but was prevented by Neolithic Modifier");
-            return;
-        }
-
-        if (allowedBlocks.contains(event.getBlock().getType())) {
-            if (Math.random() < doubleDropChance) {
-                for (ItemStack drop : event.getBlock().getDrops(itemInHand)) {
-                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), drop);
-                }
-                MessageUtil.sendPrefixMessage(player, "&6Your Neolithic skills have yielded extra resources!");
-                ConsoleUtil.sendDebug(player.getName() + " received double drops from " + event.getBlock().getType());
-            }
-        }
-    }
-
-    private boolean isTool(Material material) {
-        return material.name().endsWith("_PICKAXE") || material.name().endsWith("_AXE") ||
-                material.name().endsWith("_SHOVEL") || material.name().endsWith("_HOE") ||
-                material.name().endsWith("_SWORD");
     }
 }

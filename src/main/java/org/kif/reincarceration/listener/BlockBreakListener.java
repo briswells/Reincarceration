@@ -11,9 +11,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.kif.reincarceration.Reincarceration;
+import org.kif.reincarceration.modifier.core.ModifierModule;
 import org.kif.reincarceration.permission.PermissionManager;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.ItemUtil;
+import org.kif.reincarceration.modifier.core.IModifier;
+import org.kif.reincarceration.modifier.core.ModifierManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +24,17 @@ import java.util.List;
 public class BlockBreakListener implements Listener {
     private final Reincarceration plugin;
     private final PermissionManager permissionManager;
+    private final ModifierManager modifierManager;
 
     public BlockBreakListener(Reincarceration plugin) {
         this.plugin = plugin;
         this.permissionManager = new PermissionManager(plugin);
+
+        ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
+        this.modifierManager = modifierModule.getModifierManager();
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.LOW)
     public void onBlockBreak(BlockBreakEvent event) {
         if (event.isCancelled()) {
             return;
@@ -39,16 +46,30 @@ public class BlockBreakListener implements Listener {
         ConsoleUtil.sendDebug("Player " + player.getName() + " broke a block. Associated with base group: " + isAssociated);
 
         if (isAssociated) {
-            handleBlockBreak(event);
-            handleSpecialCases(event);
+            try {
+                IModifier activeModifier = modifierManager.getActiveModifier(player);
+                if (activeModifier != null && activeModifier.handleBlockBreak(event)) {
+                    // The modifier handled the event, so we're done
+                    return;
+                }
+
+                // If we get here, either there was no active modifier or it didn't handle the event
+                handleDefaultBreak(event);
+            } catch (Exception e) {
+                ConsoleUtil.sendError("Error handling block break: " + e.getMessage());
+                event.setCancelled(true);
+            }
         }
     }
 
-    private void handleBlockBreak(BlockBreakEvent event) {
+    private void handleDefaultBreak(BlockBreakEvent event) {
+        Block block = event.getBlock();
+        Player player = event.getPlayer();
+
         List<ItemStack> containerContents = new ArrayList<>();
 
         // Check if the block is a container (has an inventory)
-        BlockState state = event.getBlock().getState();
+        BlockState state = block.getState();
         if (state instanceof Container) {
             Container container = (Container) state;
             for (ItemStack item : container.getInventory().getContents()) {
@@ -59,31 +80,29 @@ public class BlockBreakListener implements Listener {
             container.getInventory().clear();
         }
 
-        if (event.isCancelled()) {
-            return;
-        }
         // Cancel normal drops
         event.setDropItems(false);
 
-        // Flag and drop the block itself
-        for (ItemStack drop : event.getBlock().getDrops(event.getPlayer().getInventory().getItemInMainHand())) {
-            if (drop != null) {
-                ItemUtil.addReincarcerationFlag(drop);
-                event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), drop);
-                ConsoleUtil.sendDebug("Dropped flagged block item: " + drop.getType().name());
-            }
+        // Get and flag the drops
+        List<ItemStack> drops = new ArrayList<>(block.getDrops(player.getInventory().getItemInMainHand()));
+        for (ItemStack drop : drops) {
+            ItemUtil.addReincarcerationFlag(drop);
+            block.getWorld().dropItemNaturally(block.getLocation(), drop);
+            ConsoleUtil.sendDebug("Dropped flagged block item: " + drop.getType().name());
         }
 
         // Drop container contents without flagging
         for (ItemStack item : containerContents) {
-            event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
+            block.getWorld().dropItemNaturally(block.getLocation(), item);
             ConsoleUtil.sendDebug("Dropped container item: " + item.getType().name() +
                     ", Flagged: " + ItemUtil.hasReincarcerationFlag(item));
         }
+
+        // Handle special cases
+        handleSpecialCases(block);
     }
 
-    private void handleSpecialCases(BlockBreakEvent event) {
-        Block block = event.getBlock();
+    private void handleSpecialCases(Block block) {
         if (block.getType() == Material.CACTUS || block.getType() == Material.SUGAR_CANE) {
             flagConnectedBlocks(block, block.getType());
         }

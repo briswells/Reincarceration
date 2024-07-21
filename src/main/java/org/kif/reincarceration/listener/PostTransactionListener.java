@@ -12,11 +12,15 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.kif.reincarceration.Reincarceration;
+import org.kif.reincarceration.modifier.core.IModifier;
+import org.kif.reincarceration.modifier.core.ModifierManager;
+import org.kif.reincarceration.modifier.core.ModifierModule;
 import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.permission.PermissionManager;
 import me.gypopo.economyshopgui.util.Transaction.Result;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 import static me.gypopo.economyshopgui.util.Transaction.Result.*;
@@ -24,14 +28,17 @@ import static me.gypopo.economyshopgui.util.Transaction.Result.*;
 public class PostTransactionListener implements Listener {
     private final Reincarceration plugin;
     private final PermissionManager permissionManager;
+    private final ModifierManager modifierManager;
 
     public PostTransactionListener(Reincarceration plugin) {
         this.plugin = plugin;
         this.permissionManager = new PermissionManager(plugin);
+        ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
+        this.modifierManager = modifierModule.getModifierManager();
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPostTransaction(PostTransactionEvent event) {
+    public void onPostTransaction(PostTransactionEvent event) throws SQLException {
         ConsoleUtil.sendDebug("PostTransaction Entering");
         ConsoleUtil.sendDebug("Event details: " + event.toString());
 
@@ -40,6 +47,12 @@ public class PostTransactionListener implements Listener {
 
         if (!permissionManager.isAssociatedWithBaseGroup(player)) {
             ConsoleUtil.sendDebug("Player is not associated with the base group. Exiting.");
+            return;
+        }
+
+        IModifier activeModifier = modifierManager.getActiveModifier(player);
+        if (activeModifier != null && activeModifier.handlePostTransaction(event)) {
+            // The modifier handled the event, so we're done
             return;
         }
 

@@ -1,6 +1,10 @@
 package org.kif.reincarceration.modifier.core;
 
+import me.gypopo.economyshopgui.api.events.PostTransactionEvent;
+import me.gypopo.economyshopgui.api.events.PreTransactionEvent;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -47,5 +51,29 @@ public abstract class AbstractModifier implements IModifier {
     @Override
     public boolean isActive(Player player) {
         return activePlayers.contains(player.getUniqueId());
+    }
+
+    @Override
+    public boolean handleBlockBreak(BlockBreakEvent event) {
+        // Default implementation returns false, indicating that the BlockBreakListener should handle it
+        return false;
+    }
+
+    @Override
+    public boolean handleFishing(PlayerFishEvent event) {
+        // Default implementation returns false, indicating that the FishingListener should handle it
+        return false;
+    }
+
+    @Override
+    public boolean handlePreTransaction(PreTransactionEvent event) {
+        // Default implementation returns false, indicating that the PreTransactionListener should handle it
+        return false;
+    }
+
+    @Override
+    public boolean handlePostTransaction(PostTransactionEvent event) {
+        // Default implementation returns false, indicating that the PostTransactionListener should handle it
+        return false;
     }
 }
