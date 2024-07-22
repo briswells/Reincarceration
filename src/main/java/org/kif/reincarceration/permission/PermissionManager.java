@@ -17,6 +17,7 @@ import com.flyerzrule.mc.customtags.api.CustomTagsAPI;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class PermissionManager {
     private final Reincarceration plugin;
@@ -210,16 +211,23 @@ public class PermissionManager {
     }
 
     public boolean isAssociatedWithBaseGroup(Player player) {
+        return isAssociatedWithBaseGroup(player.getUniqueId(), player.getName());
+    }
+
+    public boolean isAssociatedWithBaseGroup(
+            UUID uuid,
+            String name
+    ) {
         if (luckPerms == null) {
             plugin.getLogger().severe("LuckPerms not found! Unable to check base group association.");
             return false;
         }
 
         String baseGroup = configManager.getBaseGroup();
-        User user = luckPerms.getUserManager().getUser(player.getUniqueId());
+        User user = luckPerms.getUserManager().getUser(uuid);
 
         if (user == null) {
-            plugin.getLogger().warning("Unable to get LuckPerms user for " + player.getName());
+            plugin.getLogger().warning("Unable to get LuckPerms user for " + name);
             return false;
         }
 

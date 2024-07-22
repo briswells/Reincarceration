@@ -20,6 +20,7 @@ import org.kif.reincarceration.permission.PermissionManager;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.modifier.core.IModifier;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -146,8 +147,8 @@ public class GUIManager {
         try {
             int currentRank = rankManager.getPlayerRank(player);
             int cycleCount = dataManager.getPlayerCycleCount(player);
-            double balance = economyManager.getBalance(player);
-            double storedBalance = dataManager.getStoredBalance(player);
+            BigDecimal balance = economyManager.getBalance(player);
+            BigDecimal storedBalance = dataManager.getStoredBalance(player);
             boolean inCycle = cycleManager.isPlayerInCycle(player);
 
             if (inCycle) {
@@ -203,8 +204,8 @@ public class GUIManager {
         Inventory inventory = Bukkit.createInventory(null, 27, ChatColor.GREEN + "Rank Up");
 
         int currentRank = rankManager.getPlayerRank(player);
-        double balance = economyManager.getBalance(player);
-        double rankUpCost = configManager.getRankUpCost(currentRank);
+        BigDecimal balance = economyManager.getBalance(player);
+        BigDecimal rankUpCost = configManager.getRankUpCost(currentRank);
 
         inventory.setItem(11, createGuiItem(Material.DIAMOND_SWORD, ChatColor.AQUA + "Current Rank",
                 "Rank: " + configManager.getRankName(currentRank),
@@ -214,8 +215,8 @@ public class GUIManager {
                 "Current Balance: " + balance,
                 "Cost to Rank Up: " + rankUpCost));
 
-        Material rankUpMaterial = (balance >= rankUpCost) ? Material.EMERALD_BLOCK : Material.REDSTONE_BLOCK;
-        String rankUpStatus = (balance >= rankUpCost) ? "Click to Rank Up!" : "Insufficient Funds";
+        Material rankUpMaterial = (balance.compareTo(rankUpCost) >= 0) ? Material.EMERALD_BLOCK : Material.REDSTONE_BLOCK;
+        String rankUpStatus = (balance.compareTo(rankUpCost) >= 0) ? "Click to Rank Up!" : "Insufficient Funds";
         inventory.setItem(15, createGuiItem(rankUpMaterial, ChatColor.GREEN + "Rank Up", rankUpStatus));
 
         inventory.setItem(26, createBackButton());
@@ -469,8 +470,8 @@ public class GUIManager {
         try {
             int currentRank = rankManager.getPlayerRank(player);
             int cycleCount = dataManager.getPlayerCycleCount(player);
-            double balance = economyManager.getBalance(player);
-            double storedBalance = dataManager.getStoredBalance(player);
+            BigDecimal balance = economyManager.getBalance(player);
+            BigDecimal storedBalance = dataManager.getStoredBalance(player);
             boolean inCycle = cycleManager.isPlayerInCycle(player);
             IModifier activeModifier = modifierManager.getActiveModifier(player);
 

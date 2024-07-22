@@ -5,6 +5,8 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.entity.Player;
 import org.kif.reincarceration.util.ConsoleUtil;
 
+import java.math.BigDecimal;
+
 public class EconomyManager {
     private final EconomyModule economyModule;
 
@@ -20,10 +22,10 @@ public class EconomyManager {
         return economy;
     }
 
-    public boolean hasEnoughBalance(Player player, double amount) {
+    public boolean hasEnoughBalance(Player player, BigDecimal amount) {
         ConsoleUtil.sendDebug("Checking balance for " + player.getName() + ": has " + amount + "?");
         try {
-            boolean hasBalance = getEconomy().has(player, amount);
+            boolean hasBalance = getEconomy().has(player, amount.doubleValue());
             ConsoleUtil.sendDebug(String.format("Checked balance for %s: has %.2f? %s",
                     player.getName(), amount, hasBalance));
             return hasBalance;
@@ -33,10 +35,10 @@ public class EconomyManager {
         }
     }
 
-    public boolean withdrawMoney(Player player, double amount) {
+    public boolean withdrawMoney(Player player, BigDecimal amount) {
         ConsoleUtil.sendDebug("Withdrawing " + amount + " from " + player.getName());
         try {
-            EconomyResponse response = getEconomy().withdrawPlayer(player, amount);
+            EconomyResponse response = getEconomy().withdrawPlayer(player, amount.doubleValue());
             if (response.transactionSuccess()) {
                 ConsoleUtil.sendDebug(String.format("Withdrew %.2f from %s. New balance: %.2f",
                         amount, player.getName(), response.balance));
@@ -52,10 +54,10 @@ public class EconomyManager {
         }
     }
 
-    public void depositMoney(Player player, double amount) {
+    public void depositMoney(Player player, BigDecimal amount) {
         ConsoleUtil.sendDebug("Depositing " + amount + " to " + player.getName());
         try {
-            EconomyResponse response = getEconomy().depositPlayer(player, amount);
+            EconomyResponse response = getEconomy().depositPlayer(player, amount.doubleValue());
             if (response.transactionSuccess()) {
                 ConsoleUtil.sendDebug(String.format("Deposited %.2f to %s. New balance: %.2f",
                         amount, player.getName(), response.balance));
@@ -68,27 +70,27 @@ public class EconomyManager {
         }
     }
 
-    public double getBalance(Player player) {
+    public BigDecimal getBalance(Player player) {
         ConsoleUtil.sendDebug("Retrieving balance for " + player.getName());
         try {
             double balance = getEconomy().getBalance(player);
             ConsoleUtil.sendDebug(String.format("Retrieved balance for %s: %.2f",
                     player.getName(), balance));
-            return balance;
+            return BigDecimal.valueOf(balance);
         } catch (IllegalStateException e) {
             logSevere("Failed to get balance: " + e.getMessage());
-            return 0;
+            return BigDecimal.ZERO;
         }
     }
 
-    public void setBalance(Player player, double amount) {
+    public void setBalance(Player player, BigDecimal amount) {
         ConsoleUtil.sendDebug("Setting balance for " + player.getName() + " to " + amount);
         try {
-            double currentBalance = getEconomy().getBalance(player);
-            if (currentBalance > amount) {
-                withdrawMoney(player, currentBalance - amount);
-            } else if (currentBalance < amount) {
-                depositMoney(player, amount - currentBalance);
+            BigDecimal currentBalance = BigDecimal.valueOf(getEconomy().getBalance(player));
+            if (currentBalance.compareTo(amount) > 0) {
+                withdrawMoney(player, currentBalance.subtract(amount));
+            } else if (currentBalance.compareTo(amount) < 0) {
+                depositMoney(player, amount.subtract(currentBalance));
             }
             ConsoleUtil.sendDebug(String.format("Set balance for %s to %.2f",
                     player.getName(), amount));

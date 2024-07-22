@@ -3,6 +3,7 @@ package org.kif.reincarceration.data;
 import org.bukkit.entity.Player;
 import org.kif.reincarceration.util.ConsoleUtil;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -159,30 +160,30 @@ public class DataManager {
         }
     }
 
-    public double getStoredBalance(Player player) throws SQLException {
+    public BigDecimal getStoredBalance(Player player) throws SQLException {
         String sql = "SELECT stored_balance FROM player_data WHERE uuid = ?";
         try (Connection conn = dataModule.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, player.getUniqueId().toString());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getDouble("stored_balance");
+                    return rs.getBigDecimal("stored_balance");
                 }
             }
         } catch (SQLException e) {
             logSevere("Error getting stored balance: " + e.getMessage());
             throw e;
         }
-        return 0.0;
+        return BigDecimal.ZERO;
     }
 
-    public void setStoredBalance(Player player, double balance) throws SQLException {
+    public void setStoredBalance(Player player, BigDecimal balance) throws SQLException {
         String sql = "UPDATE player_data SET stored_balance = ? WHERE uuid = ?";
         try (Connection conn = dataModule.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             conn.setAutoCommit(false);
             try {
-                pstmt.setDouble(1, balance);
+                pstmt.setBigDecimal(1, balance);
                 pstmt.setString(2, player.getUniqueId().toString());
                 pstmt.executeUpdate();
                 conn.commit();

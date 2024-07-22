@@ -15,6 +15,7 @@ import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.MessageUtil;
 import org.kif.reincarceration.util.VaultUtil;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Objects;
 
@@ -42,21 +43,21 @@ public class CycleManager {
     }
 
     public void startNewCycle(Player player, IModifier modifier) {
-        double entryFee = configManager.getEntryFee();
+        BigDecimal entryFee = configManager.getEntryFee();
         if (!economyManager.hasEnoughBalance(player, entryFee)) {
             MessageUtil.sendPrefixMessage(player, "&cInsufficent Funds. Entry Fee: " + entryFee);
             return;
         }
 
-        double currentBalance = economyManager.getBalance(player);
+        BigDecimal currentBalance = economyManager.getBalance(player);
         if (economyManager.withdrawMoney(player, entryFee)) {
             try {
                 VaultUtil.ensureVaultCleared(player.getUniqueId().toString(), 3);
                 dataManager.recordCycleStart(player, modifier.getId());
                 dataManager.setPlayerCycleStatus(player, true);
                 rankManager.setPlayerRank(player, 0);
-                dataManager.setStoredBalance(player, currentBalance - entryFee);
-                economyManager.setBalance(player, 0);
+                dataManager.setStoredBalance(player, currentBalance);
+                economyManager.setBalance(player, BigDecimal.ZERO);
                 player.setHealth(0.0);
                 // apply the modifier after 5 seconds just to not interfere with the player's death
                 Bukkit.getScheduler().runTaskLater(cycleModule.getPlugin(), () -> {
@@ -101,7 +102,7 @@ public class CycleManager {
                 return;
             }
 
-            double finalRankUpCost = configManager.getRankUpCost(currentRank);
+            BigDecimal finalRankUpCost = configManager.getRankUpCost(currentRank);
             if (!economyManager.hasEnoughBalance(player, finalRankUpCost)) {
                 MessageUtil.sendPrefixMessage(player,
                         "&cInsufficent Funds: " + finalRankUpCost + " required to complete the cycle.");
@@ -110,9 +111,9 @@ public class CycleManager {
 
             economyManager.withdrawMoney(player, finalRankUpCost);
 
-            double storedBalance = dataManager.getStoredBalance(player);
-            double currentBalance = economyManager.getBalance(player);
-            double totalBalance = storedBalance + currentBalance;
+            BigDecimal storedBalance = dataManager.getStoredBalance(player);
+            BigDecimal currentBalance = economyManager.getBalance(player);
+            BigDecimal totalBalance = storedBalance.add(currentBalance);
 
             IModifier activeModifier = modifierManager.getActiveModifier(player);
 
@@ -121,7 +122,7 @@ public class CycleManager {
             dataManager.incrementPlayerCycleCount(player);
             rankManager.setPlayerRank(player, 0);
             economyManager.setBalance(player, totalBalance);
-            dataManager.setStoredBalance(player, 0);
+            dataManager.setStoredBalance(player, BigDecimal.ZERO);
 
             modifierManager.completeModifier(player, activeModifier);
 
@@ -154,9 +155,9 @@ public class CycleManager {
 
             int currentRank = rankManager.getPlayerRank(player);
 
-            double storedBalance = dataManager.getStoredBalance(player);
-            double currentBalance = economyManager.getBalance(player);
-            double totalBalance = storedBalance + currentBalance;
+            BigDecimal storedBalance = dataManager.getStoredBalance(player);
+            BigDecimal currentBalance = economyManager.getBalance(player);
+            BigDecimal totalBalance = storedBalance.add(currentBalance);
 
             IModifier activeModifier = modifierManager.getActiveModifier(player);
 
@@ -164,7 +165,7 @@ public class CycleManager {
             dataManager.setPlayerCycleStatus(player, false);
             rankManager.setPlayerRank(player, 0);
             economyManager.setBalance(player, totalBalance);
-            dataManager.setStoredBalance(player, 0);
+            dataManager.setStoredBalance(player, BigDecimal.ZERO);
 
             modifierManager.removeModifier(player);
             int completedModifiersCount = dataManager.getCompletedModifierCount(player);
