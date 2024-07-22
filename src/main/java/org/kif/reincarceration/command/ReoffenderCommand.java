@@ -14,6 +14,7 @@ import org.kif.reincarceration.economy.EconomyManager;
 import org.kif.reincarceration.economy.EconomyModule;
 import org.kif.reincarceration.util.MessageUtil;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 
 public class ReoffenderCommand implements CommandExecutor {
@@ -49,8 +50,8 @@ public class ReoffenderCommand implements CommandExecutor {
         try {
             dataManager.createPlayerData(player);
             int currentRank = dataManager.getPlayerRank(player);
-            double balance = economyManager.getBalance(player);
-            double storedBalance = dataManager.getStoredBalance(player);
+            BigDecimal balance = economyManager.getBalance(player);
+            BigDecimal storedBalance = dataManager.getStoredBalance(player);
             String rankName = configManager.getRankName(currentRank);
             boolean inCycle = cycleManager.isPlayerInCycle(player);
             int cycleCount = dataManager.getPlayerCycleCount(player);
@@ -68,24 +69,24 @@ public class ReoffenderCommand implements CommandExecutor {
 
             if (inCycle) {
                 if (currentRank < configManager.getRankUpCosts().size()) {
-                    double nextRankCost = configManager.getRankUpCost(currentRank);
+                    BigDecimal nextRankCost = configManager.getRankUpCost(currentRank);
                     MessageUtil.sendMessage(player, "&4| §r&cCost to rank up: §r&c" + nextRankCost);
 
                     if (economyManager.hasEnoughBalance(player, nextRankCost)) {
                         MessageUtil.sendMessage(player, "&4| §r&cYou have enough money to rank up! Use §n/rankup§r&c to proceed.");
                     } else {
-                        MessageUtil.sendMessage(player, "&4| §r&cYou need " + (nextRankCost - balance) + " more to rank up.");
+                        MessageUtil.sendMessage(player, "&4| §r&cYou need " + nextRankCost.subtract(balance) + " more to rank up.");
                     }
                 } else {
                     MessageUtil.sendMessage(player, "&4| §r&cYou have reached the maximum rank! Use §n/completecycle to finish your cycle.");
                 }
             } else {
-                double entryFee = configManager.getEntryFee();
+                BigDecimal entryFee = configManager.getEntryFee();
                 MessageUtil.sendMessage(player, "&4| §r&cEntry fee for new cycle: §r&c" + entryFee);
-                if (balance >= entryFee) {
+                if (balance.compareTo(entryFee) >= 0) {
                     MessageUtil.sendMessage(player, "&4| §r&cYou can start a new cycle with §n/startcycle");
                 } else {
-                    MessageUtil.sendMessage(player, "&4| §r&cYou need " + (entryFee - balance) + " more to start a new cycle.");
+                    MessageUtil.sendMessage(player, "&4| §r&cYou need " + entryFee.subtract(balance) + " more to start a new cycle.");
                 }
             }
         } catch (SQLException e) {

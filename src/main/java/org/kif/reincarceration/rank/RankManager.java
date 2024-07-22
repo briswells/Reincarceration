@@ -9,6 +9,7 @@ import org.kif.reincarceration.permission.PermissionManager;
 import org.kif.reincarceration.util.BroadcastUtil;
 import org.kif.reincarceration.util.MessageUtil;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 
 public class RankManager {
@@ -45,7 +46,7 @@ public class RankManager {
             return false;
         }
 
-        double rankUpCost = configManager.getRankUpCost(currentRank);
+        BigDecimal rankUpCost = configManager.getRankUpCost(currentRank);
         if (!economyManager.hasEnoughBalance(player, rankUpCost)) {
             MessageUtil.sendPrefixMessage(player, "&cYou do not have enough money to rank up.");
             return false;
@@ -60,16 +61,16 @@ public class RankManager {
         }
 
         int currentRank = getPlayerRank(player);
-        double rankUpCost = configManager.getRankUpCost(currentRank);
+        BigDecimal rankUpCost = configManager.getRankUpCost(currentRank);
 
         if (economyManager.withdrawMoney(player, rankUpCost)) {
             try {
                 int newRank = currentRank + 1;
                 setPlayerRank(player, newRank);
-                double currentBalance = economyManager.getBalance(player);
-                double storedBalance = dataManager.getStoredBalance(player);
-                dataManager.setStoredBalance(player, storedBalance + currentBalance);
-                economyManager.setBalance(player, 0);
+                BigDecimal currentBalance = economyManager.getBalance(player);
+                BigDecimal storedBalance = dataManager.getStoredBalance(player);
+                dataManager.setStoredBalance(player, storedBalance.add(currentBalance));
+                economyManager.setBalance(player, BigDecimal.ZERO);
 
                 BroadcastUtil.broadcastMessage("§c" + player.getName() + " has ranked up to " + configManager.getRankName(newRank));
 

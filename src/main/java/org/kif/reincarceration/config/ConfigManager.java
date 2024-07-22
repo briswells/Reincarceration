@@ -4,6 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.kif.reincarceration.Reincarceration;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,17 +21,17 @@ public class ConfigManager {
         plugin.reloadConfig();
     }
 
-    public double getEntryFee() {
-        return config.getDouble("economy.entry-fee", 1000);
+    public BigDecimal getEntryFee() {
+        return BigDecimal.valueOf(config.getDouble("economy.entry-fee", 1000));
     }
 
     public List<Integer> getRankUpCosts() {
         return config.getIntegerList("economy.rank-up-costs");
     }
 
-    public double getRankUpCost(int rank) {
+    public BigDecimal getRankUpCost(int rank) {
         List<Integer> costs = getRankUpCosts();
-        return rank < costs.size() ? costs.get(rank) : Double.MAX_VALUE;
+        return rank < costs.size() ? BigDecimal.valueOf(costs.get(rank)) : BigDecimal.valueOf(Double.MAX_VALUE);
     }
 
     public String getRankName(int rank) {

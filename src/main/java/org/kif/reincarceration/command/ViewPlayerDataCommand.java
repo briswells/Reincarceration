@@ -10,6 +10,7 @@ import org.kif.reincarceration.data.DataManager;
 import org.kif.reincarceration.data.DataModule;
 import org.kif.reincarceration.util.MessageUtil;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
@@ -67,7 +68,7 @@ public class ViewPlayerDataCommand implements CommandExecutor {
         int currentRank = dataManager.getPlayerRank(player);
         boolean inCycle = dataManager.isPlayerInCycle(player);
         int cycleCount = dataManager.getPlayerCycleCount(player);
-        double storedBalance = dataManager.getStoredBalance(player);
+        BigDecimal storedBalance = dataManager.getStoredBalance(player);
 
         MessageUtil.sendPrefixMessage(player, "&7Current Rank: &f" + currentRank);
         MessageUtil.sendPrefixMessage(player, "&7In Cycle: &f" + (inCycle ? "Yes" : "No"));
