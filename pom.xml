@@ -97,6 +97,11 @@
             <id>drtshock-repo</id>
             <url>https://nexus.hc.to/content/repositories/pub_releases</url>
         </repository>
+        <!-- Add chestshop repository for ChestShop -->
+        <repository>
+            <id>chestshop-repo</id>
+            <url>https://repo.minebench.de/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -131,18 +136,22 @@
             <systemPath>${project.basedir}/dependencies/PlayerVaultsX.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>me.gypopo</groupId>
-            <artifactId>EconomyShopGUI</artifactId>
-            <version>6.7.6</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/dependencies/EconomyShopGUI.jar</systemPath>
+            <groupId>com.github.Gypopo</groupId>
+            <artifactId>EconomyShopGUI-API</artifactId>
+            <version>1.7.1</version>
         </dependency>
         <dependency>
             <groupId>com.flyerzrule</groupId>
             <artifactId>CustomTags</artifactId>
-            <version>1.0</version>
+            <version>1.2</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/dependencies/CustomTags.jar</systemPath>
+            <systemPath>${project.basedir}/dependencies/CustomTags-1.2.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.acrobot.chestshop</groupId>
+            <artifactId>chestshop</artifactId>
+            <version>3.12</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
