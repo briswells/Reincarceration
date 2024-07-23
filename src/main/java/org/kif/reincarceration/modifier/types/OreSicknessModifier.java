@@ -9,21 +9,20 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.modifier.core.AbstractModifier;
 import org.kif.reincarceration.util.ConsoleUtil;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class OreSicknessModifier extends AbstractModifier implements Listener {
@@ -33,19 +32,26 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
     private final boolean effectOnSight;
     private final int effectDuration;
     private final int sightCheckRadius;
-    private final Map<UUID, BukkitRunnable> activeTasks = new HashMap<>();
+    private final double lineOfSightStep;
+    private final double fieldOfView;
+    private final long checkFrequency;
+    private final Map<UUID, BukkitRunnable> activeTasks = new ConcurrentHashMap<>();
 
     public OreSicknessModifier(Reincarceration plugin) {
         super("ore_sickness", "Ore Sickness", "Applies various effects when breaking or seeing certain ores");
         this.plugin = plugin;
 
         ConfigurationSection config = plugin.getConfig().getConfigurationSection("modifiers.ore_sickness");
+        assert config != null;
         this.effectOnBreak = config.getBoolean("effect_on_break", true);
         this.effectOnSight = config.getBoolean("effect_on_sight", true);
         this.effectDuration = config.getInt("effect_duration", 200);
         this.sightCheckRadius = config.getInt("sight_check_radius", 5);
+        this.lineOfSightStep = config.getDouble("line_of_sight_step", 0.1);
+        this.fieldOfView = Math.toRadians(config.getDouble("field_of_view", 70));
+        this.checkFrequency = config.getLong("check_frequency", 20);
 
-        loadOreEffects(config.getConfigurationSection("ore_effects"));
+        loadOreEffects(Objects.requireNonNull(config.getConfigurationSection("ore_effects")));
     }
 
     private void loadOreEffects(ConfigurationSection oresConfig) {
@@ -54,6 +60,7 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
             if (oreMaterial != null) {
                 String effectType = oresConfig.getString(oreName + ".type");
                 ConfigurationSection effectConfig = oresConfig.getConfigurationSection(oreName);
+                assert effectType != null;
                 OreEffect effect = createOreEffect(effectType, effectConfig);
                 if (effect != null) {
                     oreEffects.put(oreMaterial, effect);
@@ -66,18 +73,20 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         switch (effectType.toLowerCase()) {
             case "potion":
                 return new PotionOreEffect(
-                        PotionEffectType.getByName(config.getString("effect")),
+                        PotionEffectType.getByName(Objects.requireNonNull(config.getString("effect"))),
                         config.getInt("duration", effectDuration),
                         config.getInt("amplifier", 0)
                 );
-            case "teleport":
-                return new TeleportOreEffect(
-                        config.getInt("min_distance", 3),
-                        config.getInt("max_distance", 10),
-                        config.getStringList("allowed_blocks")
-                );
-            case "gravity_flip":
-                return new GravityFlipOreEffect(
+//            case "teleport":
+//                return new TeleportOreEffect(
+//                        config.getInt("min_distance", 3),
+//                        config.getInt("max_distance", 10),
+//                        config.getStringList("allowed_blocks")
+//                );
+            case "magnet":
+                return new MagnetOreEffect(
+                        config.getDouble("radius", 5),
+                        config.getBoolean("attract", true),
                         config.getInt("duration", 100)
                 );
             case "block_transform":
@@ -88,47 +97,45 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
                 );
             case "inventory_shuffle":
                 return new InventoryShuffleOreEffect();
-            case "magnet":
-                return new MagnetOreEffect(
-                        config.getDouble("radius", 5),
-                        config.getBoolean("attract", true),
-                        config.getInt("duration", 100)
-                );
-            case "ender_vision":
-                return new EnderVisionOreEffect(
-                        config.getInt("duration", 200)
-                );
             case "bouncy_blocks":
                 return new BouncyBlocksOreEffect(
                         config.getInt("radius", 5),
                         config.getInt("duration", 200)
                 );
-            case "vertigo":
-                return new VertigoOreEffect(
-                        config.getInt("duration", 100),
-                        (float) config.getDouble("max_rotation_per_tick", 15.0)
-                );
+//            case "vertigo":
+//                return new VertigoOreEffect(
+//                        config.getInt("duration", 100),
+//                        (float) config.getDouble("max_rotation_per_tick", 15.0)
+//                );
             case "inventory_weight":
                 return new InventoryWeightOreEffect(
                         config.getInt("duration", 200)
                 );
-            case "randomized_drops":
-                return new RandomizedDropsOreEffect(
-                        config.getInt("duration", 200)
-                );
             case "hunger":
                 return new HungerOreEffect(config.getInt("amount", 2));
-            case "item_drop":
-                return new ItemDropOreEffect(
-                        Material.valueOf(config.getString("item")),
-                        config.getInt("amount", 1)
-                );
+//            case "item_drop":
+//                return new ItemDropOreEffect(
+//                        Material.valueOf(config.getString("item")),
+//                        config.getInt("amount", 1)
+//                );
             case "sound":
                 return new SoundOreEffect(
                         Sound.valueOf(config.getString("sound")),
                         (float) config.getDouble("volume", 1.0),
                         (float) config.getDouble("pitch", 1.0)
                 );
+            case "sinking":
+                return new SinkingEffect(config);
+            case "collapse":
+                return new CollapseEffect(config);
+            case "fire":
+                return new FireEffect(config);
+            case "item_repulsion":
+                return new ItemRepulsionEffect(config);
+            case "player_repulsion":
+                return new PlayerRepulsionEffect(config);
+            case "avoidance":
+                return new AvoidanceEffect(config);
             default:
                 ConsoleUtil.sendError("Unknown effect type: " + effectType);
                 return null;
@@ -145,7 +152,7 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
                     checkPlayerSight(player);
                 }
             };
-            task.runTaskTimer(plugin, 0L, 20L);
+            task.runTaskTimer(plugin, 0L, checkFrequency);
             activeTasks.put(player.getUniqueId(), task);
         }
     }
@@ -173,36 +180,121 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         }
     }
 
-    private boolean hasLineOfSight(Player player, Block block) {
-        Location eyeLocation = player.getEyeLocation();
-        Vector direction = block.getLocation().add(0.5, 0.5, 0.5).subtract(eyeLocation).toVector().normalize();
-        double maxDistance = eyeLocation.distance(block.getLocation());
+    private Vector calculateViewDirection(Player player) {
+        Location location = player.getLocation();
+        double yaw = Math.toRadians(location.getYaw());
+        double pitch = Math.toRadians(location.getPitch());
 
-        for (double d = 0; d <= maxDistance; d += 0.5) {
-            Location checkLocation = eyeLocation.clone().add(direction.clone().multiply(d));
-            Block checkBlock = checkLocation.getBlock();
-
-            if (checkBlock.equals(block)) {
-                return true;
-            }
-
-            if (checkBlock.getType().isOccluding() && !checkBlock.equals(block)) {
-                return false;
-            }
+        if (Math.abs(pitch) > Math.PI / 2 - 0.001) {
+            pitch = Math.signum(pitch) * (Math.PI / 2 - 0.001);
         }
 
-        return false;
+        return new Vector(
+            -Math.sin(yaw) * Math.cos(pitch),
+            -Math.sin(pitch),
+            Math.cos(yaw) * Math.cos(pitch)
+        );
     }
 
-    private void checkPlayerSight(Player player) {
+    private Vector[] calculateVisionCone(Vector viewDirection) {
+        Vector up = new Vector(0, 1, 0);
+        Vector right = viewDirection.getCrossProduct(up).normalize();
+        Vector realUp = right.getCrossProduct(viewDirection).normalize();
+
+        double tanFov = Math.tan(fieldOfView / 2);
+        Vector topLeft = viewDirection.clone().add(realUp.clone().multiply(tanFov)).subtract(right.clone().multiply(tanFov));
+        Vector topRight = viewDirection.clone().add(realUp.clone().multiply(tanFov)).add(right.clone().multiply(tanFov));
+        Vector bottomLeft = viewDirection.clone().subtract(realUp.clone().multiply(tanFov)).subtract(right.clone().multiply(tanFov));
+        Vector bottomRight = viewDirection.clone().subtract(realUp.clone().multiply(tanFov)).add(right.clone().multiply(tanFov));
+
+        return new Vector[]{topLeft, topRight, bottomLeft, bottomRight};
+    }
+
+    private List<Block> findOreBlocksInRange(Player player) {
+        List<Block> oreBlocks = new ArrayList<>();
+        Location playerLoc = player.getLocation();
         for (int x = -sightCheckRadius; x <= sightCheckRadius; x++) {
             for (int y = -sightCheckRadius; y <= sightCheckRadius; y++) {
                 for (int z = -sightCheckRadius; z <= sightCheckRadius; z++) {
-                    Block block = player.getLocation().getBlock().getRelative(x, y, z);
-                    OreEffect effect = oreEffects.get(block.getType());
+                    Block block = playerLoc.getBlock().getRelative(x, y, z);
+                    if (oreEffects.containsKey(block.getType())) {
+                        oreBlocks.add(block);
+                    }
+                }
+            }
+        }
+        return oreBlocks;
+    }
 
-                    if (effect != null && hasLineOfSight(player, block)) {
+    private boolean isInVisionCone(Player player, Block block, Vector viewDirection, Vector topLeft, Vector topRight, Vector bottomLeft, Vector bottomRight) {
+        Vector playerEyeLocation = player.getEyeLocation().toVector();
+        Vector toBlock = block.getLocation().add(0.5, 0.5, 0.5).toVector().subtract(playerEyeLocation);
+
+        // Check for very close blocks
+        if (toBlock.length() <= 2.0) {
+            // For close blocks, check if the player is looking roughly in their direction
+            return toBlock.normalize().dot(viewDirection) > Math.cos(Math.toRadians(70)); // 70 degrees cone
+        }
+
+        if (toBlock.dot(viewDirection) <= 0) return false;
+
+        return isOnPositiveSide(toBlock, viewDirection, topLeft) &&
+                isOnPositiveSide(toBlock, viewDirection, topRight) &&
+                isOnPositiveSide(toBlock, bottomLeft, viewDirection) &&
+                isOnPositiveSide(toBlock, bottomRight, viewDirection);
+    }
+
+
+    private boolean isOnPositiveSide(Vector point, Vector planeNormal, Vector planePoint) {
+        return point.subtract(planePoint).dot(planeNormal) >= 0;
+    }
+
+    private boolean hasLineOfSight(Player player, Block block) {
+        Location eyeLoc = player.getEyeLocation();
+        Location blockLoc = block.getLocation().add(0.5, 0.5, 0.5);
+        double distance = eyeLoc.distance(blockLoc);
+
+        // For very close blocks, always return true
+        if (distance <= 2.0) {
+            return true;
+        }
+
+        Vector direction = blockLoc.toVector().subtract(eyeLoc.toVector()).normalize();
+
+    for (double d = 0; d < distance; d += lineOfSightStep) {
+            Location checkLoc = eyeLoc.clone().add(direction.clone().multiply(d));
+            Block checkBlock = checkLoc.getBlock();
+
+            if (checkBlock.equals(block)) return true;
+        if (checkBlock.getType().isOccluding() && !checkBlock.equals(block)) return false;
+        }
+
+        return true;
+    }
+
+
+    private void checkPlayerSight(Player player) {
+        Vector viewDirection = calculateViewDirection(player);
+        Vector[] visionCone = calculateVisionCone(viewDirection);
+        List<Block> oreBlocks = findOreBlocksInRange(player);
+
+        ConsoleUtil.sendDebug("Checking sight for " + player.getName() + ". Ores in range: " + oreBlocks.size());
+
+        for (Block block : oreBlocks) {
+            boolean inCone = isInVisionCone(player, block, viewDirection, visionCone[0], visionCone[1], visionCone[2], visionCone[3]);
+            ConsoleUtil.sendDebug("Ore at " + block.getLocation() + " in vision cone: " + inCone);
+
+            if (inCone) {
+                boolean hasLineOfSight = hasLineOfSight(player, block);
+                ConsoleUtil.sendDebug("Has line of sight to ore at " + block.getLocation() + ": " + hasLineOfSight);
+
+                if (hasLineOfSight) {
+                    OreEffect effect = oreEffects.get(block.getType());
+                    if (effect != null) {
                         effect.apply(player);
+                        ConsoleUtil.sendDebug("Applied effect for ore type: " + block.getType() + " to player: " + player.getName());
+                    } else {
+                        ConsoleUtil.sendDebug("No effect found for ore type: " + block.getType());
                     }
                 }
             }
@@ -230,6 +322,7 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         }
     }
 
+    // NOT STABLE
     private static class TeleportOreEffect implements OreEffect {
         private final int minDistance;
         private final int maxDistance;
@@ -238,13 +331,9 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         TeleportOreEffect(int minDistance, int maxDistance, List<String> allowedBlocksStrings) {
             this.minDistance = minDistance;
             this.maxDistance = maxDistance;
-            this.allowedBlocks = new ArrayList<>();
-            for (String blockName : allowedBlocksStrings) {
-                Material material = Material.getMaterial(blockName);
-                if (material != null) {
-                    allowedBlocks.add(material);
-                }
-            }
+            this.allowedBlocks = allowedBlocksStrings.stream()
+                    .map(Material::valueOf)
+                    .collect(Collectors.toList());
         }
 
         @Override
@@ -285,30 +374,6 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         }
     }
 
-    private static class GravityFlipOreEffect implements OreEffect {
-        private final int duration;
-
-        GravityFlipOreEffect(int duration) {
-            this.duration = duration;
-        }
-
-        @Override
-        public void apply(Player player) {
-            new BukkitRunnable() {
-                int ticks = 0;
-                @Override
-                public void run() {
-                    if (ticks >= duration) {
-                        this.cancel();
-                        return;
-                    }
-                    player.setVelocity(player.getVelocity().setY(0.1));
-                    ticks++;
-                }
-            }.runTaskTimer(Reincarceration.getPlugin(Reincarceration.class), 0L, 1L);
-        }
-    }
-
     private static class BlockTransformOreEffect implements OreEffect {
         private final Material fromMaterial;
         private final Material toMaterial;
@@ -339,13 +404,47 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
     private static class InventoryShuffleOreEffect implements OreEffect {
         @Override
         public void apply(Player player) {
+            // Get all inventory contents
             ItemStack[] contents = player.getInventory().getContents();
-            List<ItemStack> items = new ArrayList<>(Arrays.asList(contents));
-            Collections.shuffle(items);
-            player.getInventory().setContents(items.toArray(new ItemStack[0]));
+
+            // Lists to store items to be shuffled and slots to ignore
+            List<ItemStack> itemsToShuffle = new ArrayList<>();
+            Map<Integer, ItemStack> slotsToIgnore = new HashMap<>();
+
+            // Indices of armor slots and off hand slot
+            int[] armorSlots = {36, 37, 38, 39};
+            int offHandSlot = 40;
+
+            // Separate items to shuffle and items to ignore
+            for (int i = 0; i < contents.length; i++) {
+                int finalI = i;
+                if (Arrays.stream(armorSlots).anyMatch(slot -> slot == finalI) || i == offHandSlot) {
+                    slotsToIgnore.put(i, contents[i]);
+                } else {
+                    itemsToShuffle.add(contents[i]);
+                }
+            }
+
+            // Shuffle the items
+            Collections.shuffle(itemsToShuffle);
+
+            // Place shuffled items back into the inventory
+            int shuffleIndex = 0;
+            for (int i = 0; i < contents.length; i++) {
+                if (slotsToIgnore.containsKey(i)) {
+                    contents[i] = slotsToIgnore.get(i);
+                } else {
+                    contents[i] = itemsToShuffle.get(shuffleIndex);
+                    shuffleIndex++;
+                }
+            }
+
+            // Set the new inventory contents
+            player.getInventory().setContents(contents);
             player.updateInventory();
         }
     }
+
 
     private static class MagnetOreEffect implements OreEffect {
         private final double radius;
@@ -379,19 +478,6 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
                     ticks++;
                 }
             }.runTaskTimer(Reincarceration.getPlugin(Reincarceration.class), 0L, 1L);
-        }
-    }
-
-    private static class EnderVisionOreEffect implements OreEffect {
-        private final int duration;
-
-        EnderVisionOreEffect(int duration) {
-            this.duration = duration;
-        }
-
-        @Override
-        public void apply(Player player) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, duration, 0));
         }
     }
 
@@ -433,6 +519,7 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         }
     }
 
+    // NOT STABLE
     private static class VertigoOreEffect implements OreEffect {
         private final int duration;
         private final float maxRotationPerTick;
@@ -492,41 +579,6 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         }
     }
 
-    private static class RandomizedDropsOreEffect implements OreEffect {
-        private final int duration;
-        private final List<Material> possibleDrops;
-        private final Reincarceration plugin;
-
-        RandomizedDropsOreEffect(int duration) {
-            this.duration = duration;
-            this.possibleDrops = Arrays.stream(Material.values())
-                    .filter(Material::isItem)
-                    .collect(Collectors.toList());
-            this.plugin = Reincarceration.getPlugin(Reincarceration.class);
-        }
-
-        @Override
-        public void apply(Player player) {
-            Listener listener = new Listener() {
-                @EventHandler
-                public void onBlockBreak(BlockBreakEvent event) {
-                    if (event.getPlayer().equals(player)) {
-                        event.setCancelled(true);
-                        Material randomMaterial = possibleDrops.get(new Random().nextInt(possibleDrops.size()));
-                        event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), new ItemStack(randomMaterial));
-                        event.getBlock().setType(Material.AIR);
-                    }
-                }
-            };
-
-            Bukkit.getPluginManager().registerEvents(listener, plugin);
-
-            // Schedule a task to unregister the listener after the duration
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                BlockBreakEvent.getHandlerList().unregister(listener);
-            }, duration);
-        }
-    }
 
     private static class HungerOreEffect implements OreEffect {
         private final int amount;
@@ -542,6 +594,7 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         }
     }
 
+    // NOT STABLE
     private static class ItemDropOreEffect implements OreEffect {
         private final Material material;
         private final int amount;
@@ -573,4 +626,230 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
             player.playSound(player.getLocation(), sound, volume, pitch);
         }
     }
+
+    private class SinkingEffect implements OreEffect {
+        private final Set<Material> allowedBlocks;
+        private final int duration;
+        private final double sinkRate;
+
+        public SinkingEffect(ConfigurationSection config) {
+            this.allowedBlocks = config.getStringList("allowed_blocks").stream()
+                    .map(Material::valueOf).collect(Collectors.toSet());
+            this.duration = config.getInt("duration", 100);
+            this.sinkRate = config.getDouble("sink_rate", 0.1);
+        }
+
+        @Override
+        public void apply(Player player) {
+            new BukkitRunnable() {
+                int ticks = 0;
+                @Override
+                public void run() {
+                    if (ticks >= duration) {
+                        this.cancel();
+                        return;
+                    }
+                    Location loc = player.getLocation();
+                    Block blockBelow = loc.getBlock().getRelative(BlockFace.DOWN);
+
+                    if (!allowedBlocks.contains(blockBelow.getType())) {
+                        this.cancel();
+                        return;
+                    }
+
+                    // Move player slightly toward the center of the block when the effect first occurs
+                    if (ticks == 0) {
+                        loc.setX(loc.getBlockX() + 0.25);
+                        loc.setZ(loc.getBlockZ() + 0.25);
+                        player.teleport(loc);
+                    }
+
+                    player.teleport(loc.add(0, -sinkRate, 0));
+                    ticks++;
+                }
+            }.runTaskTimer(plugin, 0L, 1L);
+        }
+    }
+
+
+    public static class CollapseEffect implements OreEffect {
+        private final Set<Material> allowedBlocks;
+        private final int affectedRadius;
+
+        public CollapseEffect(ConfigurationSection config) {
+            this.allowedBlocks = config.getStringList("allowed_blocks").stream()
+                    .map(Material::valueOf).collect(Collectors.toSet());
+            this.affectedRadius = config.getInt("affected_radius", 3);
+        }
+
+        @Override
+        public void apply(Player player) {
+            Location playerLoc = player.getLocation();
+            int playerY = playerLoc.getBlockY();
+
+            for (int x = -affectedRadius; x <= affectedRadius; x++) {
+                for (int z = -affectedRadius; z <= affectedRadius; z++) {
+                    collapseColumn(playerLoc.getBlock().getRelative(x, 0, z), playerY);
+                }
+            }
+        }
+
+        private void collapseColumn(Block baseBlock, int playerY) {
+            for (int y = 1; y <= 5; y++) {
+                Block block = baseBlock.getRelative(0, y, 0);
+                if (block.getY() > playerY && allowedBlocks.contains(block.getType())) {
+                    if (canMoveDown(block)) {
+                        spawnFallingBlock(block);
+                        block.setType(Material.AIR);
+                    }
+                }
+            }
+        }
+
+        private void spawnFallingBlock(Block block) {
+            Location blockLocation = block.getLocation().add(0.5, 0, 0.5); // Center the falling block
+            FallingBlock fallingBlock = block.getWorld().spawnFallingBlock(blockLocation, block.getBlockData());
+            fallingBlock.setDropItem(false); // Prevent the block from dropping as an item
+            fallingBlock.setHurtEntities(false); // Ensure the block does not hurt entities
+        }
+
+        private boolean canMoveDown(Block block) {
+            Block blockBelow = block.getRelative(BlockFace.DOWN);
+            return blockBelow.getType().isAir();
+        }
+    }
+
+    private static class FireEffect implements OreEffect {
+        private final int duration;
+
+        public FireEffect(ConfigurationSection config) {
+            this.duration = config.getInt("duration", 100);
+        }
+
+        @Override
+        public void apply(Player player) {
+            player.setFireTicks(duration);
+        }
+    }
+
+    private class ItemRepulsionEffect implements OreEffect {
+        private final double radius;
+        private final double force;
+        private final int duration;
+
+        public ItemRepulsionEffect(ConfigurationSection config) {
+            this.radius = config.getDouble("radius", 5.0);
+            this.force = config.getDouble("force", 0.5);
+            this.duration = config.getInt("duration", 100);
+        }
+
+        @Override
+        public void apply(Player player) {
+            new BukkitRunnable() {
+                int ticks = 0;
+                @Override
+                public void run() {
+                    if (ticks >= duration) {
+                        this.cancel();
+                        return;
+                    }
+                    for (Entity entity : player.getNearbyEntities(radius, radius, radius)) {
+                        if (entity instanceof Item) {
+                            Vector direction = entity.getLocation().toVector().subtract(player.getLocation().toVector());
+                            entity.setVelocity(direction.normalize().multiply(force));
+                        }
+                    }
+                    ticks++;
+                }
+            }.runTaskTimer(plugin, 0L, 1L);
+        }
+    }
+
+    private class PlayerRepulsionEffect implements OreEffect {
+        private final double force;
+
+        public PlayerRepulsionEffect(ConfigurationSection config) {
+            this.force = config.getDouble("force", 1.0);
+        }
+
+        @Override
+        public void apply(Player player) {
+            Block oreBlock = getTargetBlock(player);
+            Vector direction = player.getLocation().toVector().subtract(oreBlock.getLocation().toVector());
+            player.setVelocity(direction.normalize().multiply(force));
+        }
+    }
+
+    private class AvoidanceEffect implements OreEffect {
+        private final Set<Material> allowedBlocks;
+        private final int movePeriod;
+
+        public AvoidanceEffect(ConfigurationSection config) {
+            this.allowedBlocks = config.getStringList("allowed_blocks").stream()
+                    .map(Material::valueOf)
+                    .collect(Collectors.toSet());
+            this.movePeriod = config.getInt("move_period", 20);
+        }
+
+        @Override
+        public void apply(Player player) {
+            Block oreBlock = getTargetBlock(player);
+            if (oreBlock != null && oreEffects.containsKey(oreBlock.getType())) {
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        switchOre(oreBlock);
+                    }
+                }.runTaskLater(plugin, movePeriod);
+            } else {
+                ConsoleUtil.sendDebug("Avoidance effect: No valid ore block found for player " + player.getName());
+            }
+        }
+
+        private void switchOre(Block oreBlock) {
+            List<Block> validAdjacentBlocks = new ArrayList<>();
+            boolean hasAirBlockAdjacent = false;
+
+            // Check for adjacent air block
+            for (BlockFace face : BlockFace.values()) {
+                Block adjacent = oreBlock.getRelative(face);
+                if (adjacent.getType() == Material.AIR) {
+                    hasAirBlockAdjacent = true;
+                    break;
+                }
+            }
+
+            if (hasAirBlockAdjacent) {
+                for (BlockFace face : BlockFace.values()) {
+                    Block adjacent = oreBlock.getRelative(face);
+                    if (allowedBlocks.contains(adjacent.getType())) {
+                        validAdjacentBlocks.add(adjacent);
+                    }
+                }
+
+                if (!validAdjacentBlocks.isEmpty()) {
+                    Block targetBlock = validAdjacentBlocks.get(new Random().nextInt(validAdjacentBlocks.size()));
+                    Material oreType = oreBlock.getType();
+                    Material targetType = targetBlock.getType();
+
+                    // Switch the blocks
+                    targetBlock.setType(oreType);
+                    oreBlock.setType(targetType);
+
+                    ConsoleUtil.sendDebug("Avoidance effect: Switched ore from " + oreBlock.getLocation() +
+                            " to " + targetBlock.getLocation() +
+                            ". Replaced " + targetType + " with " + oreType);
+                } else {
+                    ConsoleUtil.sendDebug("Avoidance effect: No valid adjacent blocks found for ore at " + oreBlock.getLocation());
+                }
+            } else {
+                ConsoleUtil.sendDebug("Avoidance effect: No adjacent air block found for ore at " + oreBlock.getLocation());
+            }
+        }
+    }
+
+    private Block getTargetBlock(Player player) {
+        return player.getTargetBlock(null, 5);
+    }
+
 }
