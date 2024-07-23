@@ -94,7 +94,7 @@ public class Reincarceration extends JavaPlugin {
 
             getServer().getPluginManager().registerEvents(new PayCommandListener(this), this);
 
-
+            getServer().getPluginManager().registerEvents(new ChestShopListener(this), this);
 
 
             // this one has a bad issue of unflagging items
