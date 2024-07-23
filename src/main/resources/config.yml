@@ -258,6 +258,12 @@ modifiers:
     allowed_hotbar_slots: 9
   lumberjack:
     enabled: true
+    provide_axe_on_death: false
+    special:
+      enabled: true
+      wolf_pack_chance: 0.1
+      wolf_pack_size_min: 1
+      wolf_pack_size_max: 6
     allowed_items:
       - BIRCH_LOG
       - BIRCH_PLANKS
