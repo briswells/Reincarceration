@@ -2,6 +2,9 @@ package org.kif.reincarceration.modifier.types;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Container;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -20,15 +23,14 @@ import java.util.Set;
 public class NeolithicModifier extends AbstractModifier {
     private final Reincarceration plugin;
     private final Set<Material> allowedTools;
-    private final Set<Material> allowedBlocks;
 
     public NeolithicModifier(Reincarceration plugin) {
         super("neolithic", "Neolithic", "Limits players to basic tools and provides unique gathering bonuses");
         this.plugin = plugin;
 
         ConfigurationSection config = plugin.getConfig().getConfigurationSection("modifiers.neolithic");
+        assert config != null;
         this.allowedTools = loadMaterialSet(config, "allowed_tools");
-        this.allowedBlocks = loadMaterialSet(config, "allowed_blocks");
     }
 
     @Override
@@ -39,42 +41,88 @@ public class NeolithicModifier extends AbstractModifier {
 
         if (!allowedTools.contains(itemInHand.getType()) && isTool(itemInHand.getType())) {
             event.setCancelled(true);
-            MessageUtil.sendPrefixMessage(player, "&cYou can't use advanced tools!");
+            MessageUtil.sendPrefixMessage(player, "&cYou can only use basic tools!");
             ConsoleUtil.sendDebug(player.getName() + " attempted to use " + itemInHand.getType() + " but was prevented by Neolithic Modifier");
             return true;
         }
 
-        if (!allowedBlocks.contains(block.getType())) {
-            event.setCancelled(true);
-            MessageUtil.sendPrefixMessage(player, "&cYou can't break this type of block!");
-            return true;
-        }
-
-        // Handle normal block breaking
-        event.setDropItems(false);
-        for (ItemStack drop : block.getDrops(itemInHand)) {
-            ItemUtil.addReincarcerationFlag(drop);
-            block.getWorld().dropItemNaturally(block.getLocation(), drop);
-        }
-
-        // Handle special cases (cactus and sugar cane)
-        if (block.getType() == Material.CACTUS || block.getType() == Material.SUGAR_CANE) {
-            handleConnectedBlocks(block);
-        }
+        // Handle block breaking
+        handleBlockBreak(event, block, player);
 
         return true; // We've handled this event
     }
 
-    private void handleConnectedBlocks(Block startBlock) {
-        Material material = startBlock.getType();
-        Block above = startBlock.getRelative(0, 1, 0);
-        while (above.getType() == material) {
-            ItemStack drop = new ItemStack(material);
+    private void handleBlockBreak(BlockBreakEvent event, Block block, Player player) {
+        // Cancel normal drops
+        event.setDropItems(false);
+
+        // Handle special cases first
+        if (handleSpecialCases(event)) {
+            return; // If it was a special case, we're done
+        }
+
+        // If not a special case, handle normal drops
+        List<ItemStack> drops = new ArrayList<>(block.getDrops(player.getInventory().getItemInMainHand()));
+        for (ItemStack drop : drops) {
             ItemUtil.addReincarcerationFlag(drop);
-            above.setType(Material.AIR);
-            above.getWorld().dropItemNaturally(above.getLocation(), drop);
-            ConsoleUtil.sendDebug("Dropped flagged connected block: " + material.name());
-            above = above.getRelative(0, 1, 0);
+            block.getWorld().dropItemNaturally(block.getLocation(), drop);
+            ConsoleUtil.sendDebug("Dropped flagged block item: " + drop.getType().name());
+        }
+
+        // Handle container contents if necessary
+        handleContainerContents(block);
+    }
+
+    private boolean handleSpecialCases(BlockBreakEvent event) {
+        Block block = event.getBlock();
+        if (block.getType() == Material.CACTUS || block.getType() == Material.SUGAR_CANE) {
+            if (!event.isCancelled()) {
+                breakConnectedBlocks(block, block.getType(), event.getPlayer());
+                return true; // We've handled this special case
+            } else {
+                ConsoleUtil.sendDebug("Block break was cancelled. Not handling connected blocks for " + block.getType());
+            }
+        }
+        return false; // Not a special case
+    }
+
+    private void breakConnectedBlocks(Block startBlock, Material material, Player player) {
+        List<Block> connectedBlocks = new ArrayList<>();
+        connectedBlocks.add(startBlock);
+
+        Block above = startBlock.getRelative(BlockFace.UP);
+        while (above.getType() == material && connectedBlocks.size() < 3) {
+            connectedBlocks.add(above);
+            above = above.getRelative(BlockFace.UP);
+        }
+
+        // Drop items for all connected blocks
+        for (Block block : connectedBlocks) {
+            dropFlaggedItem(block.getLocation(), material, player);
+            block.setType(Material.AIR);
+        }
+
+        ConsoleUtil.sendDebug("Broke and dropped " + connectedBlocks.size() + " connected " + material.name() + " blocks");
+    }
+
+    private void dropFlaggedItem(org.bukkit.Location location, Material material, Player player) {
+        ItemStack drop = new ItemStack(material);
+        ItemUtil.addReincarcerationFlag(drop);
+        player.getWorld().dropItemNaturally(location, drop);
+        ConsoleUtil.sendDebug("Dropped flagged item: " + material.name());
+    }
+
+    private void handleContainerContents(Block block) {
+        if (block.getState() instanceof Container) {
+            Container container = (Container) block.getState();
+            for (ItemStack item : container.getInventory().getContents()) {
+                if (item != null && !item.getType().isAir()) {
+                    block.getWorld().dropItemNaturally(block.getLocation(), item);
+                    ConsoleUtil.sendDebug("Dropped container item: " + item.getType().name() +
+                            ", Flagged: " + ItemUtil.hasReincarcerationFlag(item));
+                }
+            }
+            container.getInventory().clear();
         }
     }
 

@@ -42,38 +42,6 @@ public class CommandModule implements Module {
         ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
         GUIModule guiModule = plugin.getModuleManager().getModule(GUIModule.class);
 
-        PluginCommand reoffenderCommand = plugin.getCommand("reoffender");
-        if (reoffenderCommand != null) {
-            reoffenderCommand.setExecutor(new ReoffenderCommand(this, configManager, cycleModule, dataModule, economyModule));
-        }
-
-        PluginCommand rankUpCommand = plugin.getCommand("rankup");
-        if (rankUpCommand != null) {
-            rankUpCommand.setExecutor(new RankUpCommand(this, configManager, rankModule, dataModule, economyModule));
-        }
-
-        PluginCommand startCycleCommand = plugin.getCommand("startcycle");
-        if (startCycleCommand != null) {
-            startCycleCommand.setExecutor(new StartCycleCommand(this, configManager, cycleModule,
-                modifierModule.getModifierManager(), modifierModule.getModifierRegistry()));
-        }
-
-        PluginCommand completeCycleCommand = plugin.getCommand("completecycle");
-        if (completeCycleCommand != null) {
-            completeCycleCommand.setExecutor(new CompleteCycleCommand(this, configManager, cycleModule));
-        }
-
-        PluginCommand listModifiersCommand = plugin.getCommand("listmodifiers");
-        if (listModifiersCommand != null) {
-            listModifiersCommand.setExecutor(new ListModifiersCommand(this, configManager,
-                    modifierModule.getModifierRegistry(), dataModule.getDataManager()));
-        }
-
-        PluginCommand quitCycleCommand = plugin.getCommand("quitcycle");
-        if (quitCycleCommand != null) {
-            quitCycleCommand.setExecutor(new QuitCycleCommand(this, configManager, cycleModule));
-        }
-
         PluginCommand guiCommand = plugin.getCommand("rgui");
         if (guiCommand != null) {
             guiCommand.setExecutor(new GUICommand(this, configManager, cycleModule, dataModule, economyModule, guiModule));
