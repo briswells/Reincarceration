@@ -151,6 +151,13 @@
             <groupId>com.acrobot.chestshop</groupId>
             <artifactId>chestshop</artifactId>
             <version>3.12.2</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/dependencies/ChestShop.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q.worldguard</groupId>
+            <artifactId>worldguard-bukkit</artifactId>
+            <version>7.0.7</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
