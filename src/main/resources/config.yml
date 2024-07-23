@@ -209,13 +209,6 @@ modifiers:
       - STONE_HOE
       - WOODEN_SWORD
       - STONE_SWORD
-    allowed_blocks:
-      - DIRT
-      - SANDSTONE
-      - STONE
-      - NETHERRACK
-      - SNOW
-      - BIRCH_LOG
     double_drop_chance: 0.2
   hardcore:
     enabled: true
