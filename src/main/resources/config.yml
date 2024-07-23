@@ -72,86 +72,122 @@ allowed_container_title_patterns:
 # Modifier settings
 modifiers:
   ore_sickness:
-    # IDEAS: Fire, Item Repulsion, Player Repulsion, Sinking, Collapse, Mobs only they can see,
     effect_on_break: true
     effect_on_sight: true
     effect_duration: 200
     sight_check_radius: 5
+    line_of_sight_step: 0.1
+    field_of_view: 80
+    check_frequency: 20
     ore_effects:
-      IRON_ORE:
-        type: potion
-        effect: WEAKNESS
-        duration: 200
-        amplifier: 1
-
-      GOLD_ORE:
-        type: teleport
-        min_distance: 1
-        max_distance: 2
+      COAL_ORE:
+        type: collapse
         allowed_blocks:
           - STONE
           - DIRT
-          - GRASS_BLOCK
+          - SANDSTONE
+          - NETHERRACK
+          - NETHER_BRICKS
+          - RED_NETHER_BRICKS
+          - SNOW
+        affected_radius: 3
 
-      DIAMOND_ORE:
-        type: magnet
-        radius: 3
-        attract: true
-        duration: 100
-#        type: gravity_flip
-#        duration: 100
-
-      EMERALD_ORE:
-        type: block_transform
-        from_material: STONE
-        to_material: EMERALD_BLOCK
-        radius: 3
-
-      REDSTONE_ORE:
-        type: inventory_shuffle
-
-      LAPIS_ORE:
-        type: magnet
-        radius: 3
-        attract: true
-        duration: 100
-
-      COAL_ORE:
-        type: ender_vision
+      DEEPSLATE_COAL_ORE:
+        type: potion
+        effect: WITHER
         duration: 200
+        amplifier: 1
 
       COPPER_ORE:
+        type: hunger
+        amount: 5
+
+      DEEPSLATE_COPPER_ORE:
+        type: potion
+        effect: CONFUSION
+        duration: 200
+        amplifier: 1
+
+      IRON_ORE:
+        type: potion
+        effect: SLOW
+        duration: 200
+        amplifier: 1
+
+      DEEPSLATE_IRON_ORE:
+        type: inventory_weight
+        duration: 200
+
+      GOLD_ORE:
+        type: potion
+        effect: POISON
+        duration: 200
+        amplifier: 1
+
+      DEEPSLATE_GOLD_ORE:
+        type: potion
+        effect: POISON
+        duration: 100
+        amplifier: 2
+
+      DIAMOND_ORE:
+        type: player_repulsion
+        force: 3.0 # I think this level makes things fun
+
+      DEEPSLATE_DIAMOND_ORE:
+        type: item_repulsion # probably needs some work but concept is making it repel dropped items
+        radius: 5.0
+        force: 0.2
+        duration: 100
+
+      REDSTONE_ORE:
+        type: fire
+        duration: 100
+
+      DEEPSLATE_REDSTONE_ORE:
+        type: sinking
+        allowed_blocks:
+          - STONE
+          - DIRT
+          - SANDSTONE
+          - NETHERRACK
+          - SNOW
+          - NETHER_BRICKS
+          - RED_NETHER_BRICKS
+        duration: 40
+        sink_rate: 0.05
+
+      NETHER_GOLD_ORE:
+        type: sound
+        sound: BLOCK_ANVIL_PLACE
+        volume: 1.0
+        pitch: 1.0
+
+      ANCIENT_DEBRIS:
+        type: avoidance
+        allowed_blocks:
+          - STONE
+          - DIRT
+          - SANDSTONE
+          - NETHERRACK
+          - SNOW
+          - NETHER_BRICKS
+          - RED_NETHER_BRICKS
+        move_period: 5
+
+      LAPIS_ORE:
+        type: inventory_shuffle
+
+      SLIME_BLOCK:
         type: bouncy_blocks
         radius: 1
         duration: 200
 
-      NETHER_QUARTZ_ORE:
-        type: vertigo
-        duration: 25
-        max_rotation_per_tick: 2.0
-
-      NETHER_GOLD_ORE:
-        type: inventory_weight
-        duration: 200
-
-      ANCIENT_DEBRIS:
-        type: randomized_drops
-        duration: 30
-
-      DEEPSLATE_IRON_ORE:
-        type: hunger
-        amount: 5
-
-      DEEPSLATE_GOLD_ORE:
-        type: item_drop
-        item: SNOWBALL
-        amount: 1
-
-      DEEPSLATE_DIAMOND_ORE:
-        type: sound
-        sound: ENTITY_GHAST_SCREAM
-        volume: 1.0
-        pitch: 1.0
+      EMERALD_ORE:
+        type: block_transform
+        from_material: EMERALD_ORE
+        to_material: STONE
+        radius: 3
   combustion:
     enabled: true
     check_interval: 100
