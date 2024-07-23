@@ -78,7 +78,7 @@ public class Reincarceration extends JavaPlugin {
             // Flagging: items dropped by associated players breaking blocks
             getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
             // Flagging: items dropped by associated players killing entities
-            // getServer().getPluginManager().registerEvents(new MobDropListener(this), this);
+            getServer().getPluginManager().registerEvents(new MobDropListener(this), this);
             // Flagging: items fished by associated players
             getServer().getPluginManager().registerEvents(new FishingListener(this), this);
             // Flagging: items crafted utilizing flagged items only
@@ -89,16 +89,8 @@ public class Reincarceration extends JavaPlugin {
             // Prevention: Accessing Containers with unflagged items
             getServer().getPluginManager().registerEvents(new ContainerInteractionListener(this), this);
 
-
-            //// getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-
             getServer().getPluginManager().registerEvents(new PayCommandListener(this), this);
 
-
-
-
-            // this one has a bad issue of unflagging items
-////            getServer().getPluginManager().registerEvents(new InventoryChangeListener(this), this);
 
             getServer().getPluginManager().registerEvents(new ItemPickupListener(this), this);
 //            getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
