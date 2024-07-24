@@ -86,6 +86,8 @@ public class Reincarceration extends JavaPlugin {
             // Flagging: items smelted utilizing flagged items only
             getServer().getPluginManager().registerEvents(new ItemSmeltingListener(this), this);
 
+            getServer().getPluginManager().registerEvents(new InventoryCloseListener(this), this);
+
             // Prevention: Accessing Containers with unflagged items
             getServer().getPluginManager().registerEvents(new ContainerInteractionListener(this), this);
 
