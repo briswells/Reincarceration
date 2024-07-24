@@ -91,6 +91,7 @@ public class Reincarceration extends JavaPlugin {
 
             getServer().getPluginManager().registerEvents(new PayCommandListener(this), this);
 
+            getServer().getPluginManager().registerEvents(new ChestShopListener(this), this);
 
             getServer().getPluginManager().registerEvents(new ItemPickupListener(this), this);
 //            getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);

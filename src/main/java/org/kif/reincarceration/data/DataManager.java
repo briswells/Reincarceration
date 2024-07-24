@@ -160,11 +160,11 @@ public class DataManager {
         }
     }
 
-    public BigDecimal getStoredBalance(Player player) throws SQLException {
+    public BigDecimal getStoredBalance(UUID uuid) throws SQLException {
         String sql = "SELECT stored_balance FROM player_data WHERE uuid = ?";
         try (Connection conn = dataModule.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, player.getUniqueId().toString());
+            pstmt.setString(1, uuid.toString());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getBigDecimal("stored_balance");
@@ -177,14 +177,22 @@ public class DataManager {
         return BigDecimal.ZERO;
     }
 
+    public BigDecimal getStoredBalance(Player player) throws SQLException {
+        return getStoredBalance(player.getUniqueId());
+    }
+
     public void setStoredBalance(Player player, BigDecimal balance) throws SQLException {
+        setStoredBalance(player.getUniqueId(), balance);
+    }
+
+    public void setStoredBalance(UUID uuid, BigDecimal balance) throws SQLException {
         String sql = "UPDATE player_data SET stored_balance = ? WHERE uuid = ?";
         try (Connection conn = dataModule.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             conn.setAutoCommit(false);
             try {
                 pstmt.setBigDecimal(1, balance);
-                pstmt.setString(2, player.getUniqueId().toString());
+                pstmt.setString(2, uuid.toString());
                 pstmt.executeUpdate();
                 conn.commit();
             } catch (SQLException e) {
