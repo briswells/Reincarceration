@@ -115,7 +115,7 @@ public class AnglerModifier extends AbstractModifier implements Listener {
                 public void run() {
                     provideFishingRod(player);
                 }
-            }.runTaskLater(plugin, 1L);
+            }.runTaskLater(plugin, 5L);
         }
     }
 
@@ -125,12 +125,17 @@ public class AnglerModifier extends AbstractModifier implements Listener {
         if (isActive(player) && preventRodDurabilityLoss) {
             ItemStack fishingRod = player.getInventory().getItemInMainHand();
             if (fishingRod.getType() == Material.FISHING_ROD) {
-                // Restore durability using setDamage
-                if (fishingRod.getItemMeta() instanceof Damageable) {
-                    Damageable meta = (Damageable) fishingRod.getItemMeta();
-                    meta.setDamage(0);
-                    fishingRod.setItemMeta((ItemMeta) meta);
-                    ConsoleUtil.sendDebug("Restored durability of fishing rod for " + player.getName());
+                // Check if the fishing rod has any enchantments
+                if (fishingRod.getEnchantments().isEmpty()) {
+                    // Restore durability using setDamage
+                    if (fishingRod.getItemMeta() instanceof Damageable) {
+                        Damageable meta = (Damageable) fishingRod.getItemMeta();
+                        meta.setDamage(0);
+                        fishingRod.setItemMeta((ItemMeta) meta);
+                        ConsoleUtil.sendDebug("Restored durability of fishing rod for " + player.getName());
+                    }
+                } else {
+                    ConsoleUtil.sendDebug("Fishing rod is enchanted, not restoring durability for " + player.getName());
                 }
             }
         }
