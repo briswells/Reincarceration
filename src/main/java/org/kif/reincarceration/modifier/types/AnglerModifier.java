@@ -137,7 +137,7 @@ public class AnglerModifier extends AbstractModifier implements Listener {
     }
 
     @EventHandler
-    public void onPreTransaction(PreTransactionEvent event) {
+    public boolean handlePreTransaction(PreTransactionEvent event) {
         if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
                 event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
                 event.getTransactionType() == Transaction.Type.SHOPSTAND_SELL_SCREEN ||
@@ -163,12 +163,13 @@ public class AnglerModifier extends AbstractModifier implements Listener {
                             MessageUtil.sendPrefixMessage(player, "&cTransaction Denied - Attempted to sell prohibited items.");
                             ConsoleUtil.sendDebug("Transaction cancelled because item " + itemStack.getType() + " is not allowed.");
                             ConsoleUtil.sendDebug("Cancelled: " + event.isCancelled());
-                            return;
+                            return true;
                         }
                     }
                 }
             }
         }
+        return false;
     }
 
     private void provideFishingRod(Player player) {

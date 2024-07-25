@@ -6,7 +6,7 @@
 
     <groupId>org.kif</groupId>
     <artifactId>Reincarceration</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
 
     <name>Reincarceration</name>
@@ -141,8 +141,10 @@
         </dependency>
         <dependency>
             <groupId>com.github.Gypopo</groupId>
-            <artifactId>EconomyShopGUI-API</artifactId>
+            <artifactId>EconomyShopGUI</artifactId>
             <version>1.7.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/dependencies/EconomyShopGUI.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.flyerzrule</groupId>

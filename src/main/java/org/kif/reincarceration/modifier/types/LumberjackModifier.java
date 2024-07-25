@@ -229,6 +229,8 @@ public class LumberjackModifier extends AbstractModifier implements Listener {
     }
 
     public boolean handlePreTransaction(PreTransactionEvent event) {
+        ConsoleUtil.sendDebug("Lumberjack modifier handling pre-transaction for " + event.getPlayer().getName());
+
         if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
                 event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
                 event.getTransactionType() == Transaction.Type.SHOPSTAND_SELL_SCREEN ||
@@ -238,14 +240,6 @@ public class LumberjackModifier extends AbstractModifier implements Listener {
                 event.getTransactionType() == Transaction.Type.QUICK_SELL) {
 
             Player player = event.getPlayer();
-
-            if (areAllItemsFlagged(player)) {
-                ConsoleUtil.sendDebug("All items are flagged for player: " + player.getName());
-            } else {
-                MessageUtil.sendPrefixMessage(player, "&cTransaction Denied: Prohibited Items found on Player.");
-                event.setCancelled(true);
-                return true;
-            }
 
             ShopItem shopItem = event.getShopItem();
             if (shopItem != null) {
@@ -263,6 +257,8 @@ public class LumberjackModifier extends AbstractModifier implements Listener {
                         ConsoleUtil.sendDebug("Cancelled: " + event.isCancelled());
                         return true;
                     }
+                    ConsoleUtil.sendDebug("Checking item: " + itemStack.getType() + ", Allowed: " + allowedItems.contains(itemStack.getType()));
+
                 }
             }
         }

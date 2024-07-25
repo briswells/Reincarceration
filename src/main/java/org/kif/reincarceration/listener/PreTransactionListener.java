@@ -31,10 +31,11 @@ public class PreTransactionListener implements Listener {
 
         ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
         this.modifierManager = modifierModule.getModifierManager();
+        ConsoleUtil.sendDebug("PreTransactionListener Started");
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onPreTransaction(PreTransactionEvent event) throws SQLException {
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPreTransaction(PreTransactionEvent event) {
         Player player = event.getPlayer();
 
         ConsoleUtil.sendDebug("PreTransaction Entering for player: " + player.getName());
@@ -54,7 +55,13 @@ public class PreTransactionListener implements Listener {
             return;
         }
 
-        IModifier activeModifier = modifierManager.getActiveModifier(player);
+        IModifier activeModifier = null;
+        try {
+            activeModifier = modifierManager.getActiveModifier(player);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        ConsoleUtil.sendDebug("Active modifier: " + activeModifier);
         if (activeModifier != null && activeModifier.handlePreTransaction(event)) {
             // The modifier handled the event, so we're done
             return;
