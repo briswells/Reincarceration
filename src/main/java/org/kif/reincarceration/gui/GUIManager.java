@@ -204,12 +204,10 @@ public class GUIManager {
         Inventory inventory = Bukkit.createInventory(null, 27, ChatColor.RED + "Warning: Start Cycle");
 
         ItemStack warningSign = createGuiItem(Material.BARRIER, ChatColor.RED + "Warning!",
-                ChatColor.YELLOW + "Starting a cycle will kill your character!",
-                ChatColor.YELLOW + "Make sure you have stored your items safely.",
+                ChatColor.YELLOW + "Starting a cycle will kill you!",
+                ChatColor.YELLOW + "Ensure your items are stored!.",
                 ChatColor.YELLOW + "Selected Modifier: " + selectedModifier.getName(),
-                "",
-                ChatColor.GREEN + "Click the Emerald Block to confirm",
-                ChatColor.RED + "Click the Redstone Block to cancel");
+                "");
 
         ItemStack confirmItem = createGuiItem(Material.EMERALD_BLOCK, ChatColor.GREEN + "Confirm Start Cycle",
                 ChatColor.YELLOW + "Click to start the cycle with " + selectedModifier.getName());
