@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.inventory.ItemStack;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.core.CoreModule;
 import org.kif.reincarceration.cycle.CycleManager;
@@ -59,11 +60,12 @@ public class GUIListener implements Listener {
                 title.contains("Start Cycle") ||
                 title.contains("Rank Up") ||
                 title.contains("Modifier List") ||
-                title.contains("Available Modifiers") ||  // Add this
-                title.contains("Completed Modifiers") ||  // Add this
+                title.contains("Available Modifiers") ||
+                title.contains("Completed Modifiers") ||
                 title.contains("Online Players") ||
                 title.contains("Quit Cycle") ||
-                title.contains("Complete Cycle")) {
+                title.contains("Complete Cycle") ||
+                title.contains("Warning: Start Cycle")) {
             event.setCancelled(true);
 
             // Prevent any item movement, even within the inventory
@@ -93,6 +95,8 @@ public class GUIListener implements Listener {
             handleCompleteCycleMenu(player, event);
         } else if (title.startsWith(ChatColor.RED + "Quit Cycle")) {
             handleQuitCycleMenu(player, event);
+        } else if (title.startsWith(ChatColor.RED + "Warning: Start Cycle")) {
+            handleStartCycleWarningMenu(player, event);
         }
     }
 
@@ -145,13 +149,34 @@ public class GUIListener implements Listener {
             try {
                 IModifier modifier = modifierManager.getModifierByName(modifierName);
                 if (modifier != null) {
+                    guiManager.openStartCycleWarningGUI(player, modifier);
+                }
+            } catch (Exception e) {
+                player.sendMessage(ChatColor.RED + "Error selecting modifier: " + e.getMessage());
+            }
+        }
+    }
+
+    private void handleStartCycleWarningMenu(Player player, InventoryClickEvent event) {
+        ItemStack clickedItem = event.getCurrentItem();
+        if (clickedItem == null) return;
+
+        if (clickedItem.getType() == Material.EMERALD_BLOCK) {
+            // Confirm start cycle
+            String modifierName = ChatColor.stripColor(event.getInventory().getItem(13).getItemMeta().getLore().get(2));
+            modifierName = modifierName.substring(modifierName.lastIndexOf(":") + 2);
+            try {
+                IModifier modifier = modifierManager.getModifierByName(modifierName);
+                if (modifier != null) {
                     cycleManager.startNewCycle(player, modifier);
                     player.closeInventory();
-//                    player.sendMessage(ChatColor.GREEN + "You've started a new cycle with the " + modifierName + " modifier!");
                 }
             } catch (Exception e) {
                 player.sendMessage(ChatColor.RED + "Error starting cycle: " + e.getMessage());
             }
+        } else if (clickedItem.getType() == Material.REDSTONE_BLOCK) {
+            // Cancel and return to main menu
+            guiManager.openMainMenu(player);
         }
     }
 
@@ -213,6 +238,22 @@ public class GUIListener implements Listener {
         }
     }
 
+    private void handleAvailableModifiersMenu(Player player, InventoryClickEvent event) {
+        if (event.getCurrentItem().getType() == Material.BOOK) {
+            guiManager.openCompletedModifiersGUI(player, 0);
+        } else {
+            handleNavigationButtons(player, event, event.getView().getTitle());
+        }
+    }
+
+    private void handleCompletedModifiersMenu(Player player, InventoryClickEvent event) {
+        if (event.getCurrentItem().getType() == Material.CARTOGRAPHY_TABLE) {
+            guiManager.openAvailableModifiersGUI(player, 0);
+        } else {
+            handleNavigationButtons(player, event, event.getView().getTitle());
+        }
+    }
+
     private boolean handleNavigationButtons(Player player, InventoryClickEvent event, String guiName) {
         if (event.getCurrentItem().getType() == Material.RED_WOOL) {
             guiManager.openMainMenu(player);
@@ -232,32 +273,15 @@ public class GUIListener implements Listener {
         return false;
     }
 
-    private void handleAvailableModifiersMenu(Player player, InventoryClickEvent event) {
-        if (event.getCurrentItem().getType() == Material.BOOK) {
-            guiManager.openCompletedModifiersGUI(player, 0);
-        } else {
-            handleNavigationButtons(player, event, event.getView().getTitle());
-        }
-    }
-
-    private void handleCompletedModifiersMenu(Player player, InventoryClickEvent event) {
-        if (event.getCurrentItem().getType() == Material.CARTOGRAPHY_TABLE) {
-            guiManager.openAvailableModifiersGUI(player, 0);
-        } else {
-            handleNavigationButtons(player, event, event.getView().getTitle());
-        }
-    }
-
-
     private void openNextPage(Player player, String guiName, int currentPage) {
         if (guiName.startsWith(ChatColor.AQUA + "Start Cycle")) {
             guiManager.openStartCycleGUI(player, currentPage + 1);
         } else if (guiName.startsWith(ChatColor.AQUA + "Available Modifiers")) {
-            guiManager.openAvailableModifiersGUI(player, currentPage - 1);
+            guiManager.openAvailableModifiersGUI(player, currentPage + 1);
         } else if (guiName.startsWith(ChatColor.GOLD + "Completed Modifiers")) {
-            guiManager.openCompletedModifiersGUI(player, currentPage - 1);
+            guiManager.openCompletedModifiersGUI(player, currentPage + 1);
         } else if (guiName.startsWith(ChatColor.BLUE + "Online Players")) {
-            guiManager.openOnlinePlayersGUI(player, currentPage - 1);
+            guiManager.openOnlinePlayersGUI(player, currentPage + 1);
         }
     }
 

@@ -58,6 +58,13 @@ item_flagging:
     - EMERALD_BLOCK
     - LAPIS_BLOCK
     - NETHERITE_BLOCK
+    - COAL_BLOCK
+    - REDSTONE_BLOCK
+    - COPPER_BLOCK
+    - WATER_BUCKET
+    - OBSIDIAN
+    - LAVA_BUCKET
+    - ELYTRA
 
 blacklisted_containers:
   - ENDER_CHEST

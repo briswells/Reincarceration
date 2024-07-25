@@ -200,6 +200,31 @@ public class GUIManager {
         player.openInventory(inventory);
     }
 
+    public void openStartCycleWarningGUI(Player player, IModifier selectedModifier) {
+        Inventory inventory = Bukkit.createInventory(null, 27, ChatColor.RED + "Warning: Start Cycle");
+
+        ItemStack warningSign = createGuiItem(Material.BARRIER, ChatColor.RED + "Warning!",
+                ChatColor.YELLOW + "Starting a cycle will kill your character!",
+                ChatColor.YELLOW + "Make sure you have stored your items safely.",
+                ChatColor.YELLOW + "Selected Modifier: " + selectedModifier.getName(),
+                "",
+                ChatColor.GREEN + "Click the Emerald Block to confirm",
+                ChatColor.RED + "Click the Redstone Block to cancel");
+
+        ItemStack confirmItem = createGuiItem(Material.EMERALD_BLOCK, ChatColor.GREEN + "Confirm Start Cycle",
+                ChatColor.YELLOW + "Click to start the cycle with " + selectedModifier.getName());
+
+        ItemStack cancelItem = createGuiItem(Material.REDSTONE_BLOCK, ChatColor.RED + "Cancel",
+                ChatColor.YELLOW + "Click to return to the main menu");
+
+        inventory.setItem(13, warningSign);
+        inventory.setItem(11, confirmItem);
+        inventory.setItem(15, cancelItem);
+
+        player.openInventory(inventory);
+    }
+
+
     public void openRankUpGUI(Player player) {
         Inventory inventory = Bukkit.createInventory(null, 27, ChatColor.GREEN + "Rank Up");
 
@@ -223,46 +248,6 @@ public class GUIManager {
 
         player.openInventory(inventory);
     }
-
-//    public void openModifierListGUI(Player player, int page) {
-//        Inventory inventory = Bukkit.createInventory(null, 54, ChatColor.LIGHT_PURPLE + "Modifier List (Page " + (page + 1) + ")");
-//
-//        try {
-//            IModifier activeModifier = modifierManager.getActiveModifier(player);
-//            List<IModifier> availableModifiers = modifierManager.getAvailableModifiers(player);
-//            List<String> completedModifierIds = dataManager.getCompletedModifiers(player);
-//
-//            List<ItemStack> allModifierItems = new ArrayList<>();
-//
-//            if (activeModifier != null) {
-//                allModifierItems.add(createModifierItem(activeModifier, ChatColor.GREEN + "Active Modifier"));
-//            }
-//
-//            for (IModifier modifier : availableModifiers) {
-//                allModifierItems.add(createModifierItem(modifier, ChatColor.AQUA + "Available"));
-//            }
-//
-//            for (String modifierId : completedModifierIds) {
-//                IModifier modifier = modifierManager.getModifier(modifierId);
-//                if (modifier != null) {
-//                    allModifierItems.add(createModifierItem(modifier, ChatColor.GOLD + "Completed"));
-//                }
-//            }
-//
-//            int totalPages = (allModifierItems.size() + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE;
-//
-//            for (int i = page * ITEMS_PER_PAGE; i < Math.min((page + 1) * ITEMS_PER_PAGE, allModifierItems.size()); i++) {
-//                inventory.addItem(allModifierItems.get(i));
-//            }
-//
-//            setNavigationButtons(inventory, page, totalPages);
-//        } catch (SQLException e) {
-//            player.sendMessage(ChatColor.RED + "Error retrieving modifier data.");
-//            e.printStackTrace();
-//        }
-//
-//        player.openInventory(inventory);
-//    }
 
     public void openAvailableModifiersGUI(Player player, int page) {
         Inventory inventory = Bukkit.createInventory(null, 54, ChatColor.AQUA + "Available Modifiers (Page " + (page + 1) + ")");
