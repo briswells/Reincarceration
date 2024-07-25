@@ -45,18 +45,18 @@ public class PreTransactionListener implements Listener {
             return;
         }
 
-        IModifier activeModifier = modifierManager.getActiveModifier(player);
-        if (activeModifier != null && activeModifier.handlePreTransaction(event)) {
-            // The modifier handled the event, so we're done
-            return;
-        }
-
         if(areAllItemsFlagged(player)) {
             ConsoleUtil.sendDebug("All items are flagged for player: " + player.getName());
         } else {
 //            ConsoleUtil.sendDebug("Unflagged items found in inventory for player: " + player.getName());
             MessageUtil.sendPrefixMessage(player, "&cTransaction Denied: Prohibited Items found on Player.");
             event.setCancelled(true);
+            return;
+        }
+
+        IModifier activeModifier = modifierManager.getActiveModifier(player);
+        if (activeModifier != null && activeModifier.handlePreTransaction(event)) {
+            // The modifier handled the event, so we're done
             return;
         }
     }
