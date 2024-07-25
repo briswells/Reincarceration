@@ -80,7 +80,7 @@ public class GUIManager {
             }
 
             if (inCycle && !isMaxRank && player.hasPermission("reincarceration.rankup")) {
-                inventory.setItem(23, createGuiItem(Material.EMERALD, ChatColor.GREEN + "Rank Up", "Advance to the next rank"));
+                inventory.setItem(23, createGuiItem(Material.EMERALD, ChatColor.GREEN + "Rank Up", "Advance to the next rank ($" + configManager.getRankUpCost(rankManager.getPlayerRank(player)) + ")"));
             } else {
                 inventory.setItem(23, createDisabledGuiItem(Material.BARRIER, ChatColor.GRAY + "Rank Up", "You can't rank up now"));
             }
