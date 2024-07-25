@@ -63,6 +63,12 @@ public class BlockBreakListener implements Listener {
                 MessageUtil.sendPrefixMessage(player, "&cYou cannot break blocks in this area.");
                 return;
             }
+            // Check if the block is a sapling
+            if (block.getType().name().endsWith("_SAPLING")) {
+                ConsoleUtil.sendDebug("Prevented sapling drop for " + player.getName());
+                return; // Don't drop anything for saplings
+            }
+
             // Check if the item in hand is flagged
             ItemStack itemInHand = player.getInventory().getItemInMainHand();
             if (!ItemUtil.hasReincarcerationFlag(itemInHand) && !itemInHand.getType().isAir()) {
