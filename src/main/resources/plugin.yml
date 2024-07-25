@@ -6,7 +6,7 @@ depend: [Vault, LuckPerms, PlayerVaults, EconomyShopGUI, CustomTags, WorldGuard]
 description: A reoffender system plugin with challenges and ranks.
 
 commands:
-  rgui:
+  rc:
     description: Open the Reincarceration GUI
     usage: /<command>
     permission: reincarceration.gui

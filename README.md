@@ -36,7 +36,7 @@ After first run, a `config.yml` file will be generated in the `plugins/Reincarce
 
 ## Commands
 
-- `/rgui` - Open the Reincarceration GUI
+- `/rc` - Open the Reincarceration GUI
 - `/flagitem` - Adds a reincarceration flag to the item in your hand (admin)
 - `/inspectitem` - Inspects the item in your hand for reincarceration flag and provides item details (admin)
 - `/inspectinventory <player>` - Inspects a player's inventory for flagged or unflagged items (admin)

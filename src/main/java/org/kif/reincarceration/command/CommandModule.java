@@ -42,7 +42,7 @@ public class CommandModule implements Module {
         ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
         GUIModule guiModule = plugin.getModuleManager().getModule(GUIModule.class);
 
-        PluginCommand guiCommand = plugin.getCommand("rgui");
+        PluginCommand guiCommand = plugin.getCommand("rc");
         if (guiCommand != null) {
             guiCommand.setExecutor(new GUICommand(this, configManager, cycleModule, dataModule, economyModule, guiModule));
         }
