@@ -28,7 +28,7 @@ ranks:
 database:
   filename: "reincarceration_data.db"
 
-reoffender-vault-number: 11
+reoffender-vault-number: 15
 
 # Permission settings
 permissions:
