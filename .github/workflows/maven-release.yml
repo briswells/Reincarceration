@@ -1,0 +1,27 @@
+name: Build and Upload Release
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Build project
+        id: build
+        uses: KillionRevival/maven-builder-action@v1
+
+      - name: Upload Release Asset
+        id: release
+        uses: KillionRevival/release-action@v1
+        with:
+          jar-path: ${{ steps.build.outputs.jar-path }}
+        
