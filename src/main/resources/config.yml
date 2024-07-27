@@ -28,7 +28,7 @@ ranks:
 database:
   filename: "reincarceration_data.db"
 
-reoffender-vault-number: 11
+reoffender-vault-number: 15
 
 # Permission settings
 permissions:
@@ -73,8 +73,8 @@ blacklisted_containers:
   - TRAPPED_CHEST
 allowed_container_title_patterns:
   - "me.gypopo.economyshopgui.objects.TransactionMenu"
-  - "Buying"
-  - "Market"
+#  - "Buying"
+#  - "Market"
 
 # Modifier settings
 modifiers:
@@ -219,12 +219,15 @@ modifiers:
     double_drop_chance: 0.2
   hardcore:
     enabled: true
+    max_hearts: 10
+  decrepit:
+    enabled: true
     max_hearts: 1
   tortoise:
     enabled: true
-    slowness_level: 2           # Level of the slowness effect (1 for Slowness I, 2 for Slowness II, etc.)
-    resistance_level: 1         # Level of the resistance effect (1 for Resistance I, 2 for Resistance II, etc.)
-    mining_haste_level: 2       # Level of the mining haste effect (1 for Haste I, 2 for Haste II, etc.)
+    slowness_level: 3           # Level of the slowness effect (1 for Slowness I, 2 for Slowness II, etc.)
+    resistance_level: 2         # Level of the resistance effect (1 for Resistance I, 2 for Resistance II, etc.)
+    mining_haste_level: 1       # Level of the mining haste effect (1 for Haste I, 2 for Haste II, etc.)
     immobilization_duration: 5  # Duration in seconds that the player is immobilized after taking damage
   angler:
     enabled: true
@@ -261,10 +264,12 @@ modifiers:
     provide_axe_on_death: false
     special:
       enabled: true
-      wolf_pack_chance: 0.1
+      wolf_pack_chance: 0.01
       wolf_pack_size_min: 1
       wolf_pack_size_max: 6
     allowed_items:
       - BIRCH_LOG
       - BIRCH_PLANKS
       - BIRCH_SAPLING
+  gambler:
+    enabled: false

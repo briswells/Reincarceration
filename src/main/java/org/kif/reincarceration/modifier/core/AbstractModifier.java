@@ -2,10 +2,14 @@ package org.kif.reincarceration.modifier.core;
 
 import me.gypopo.economyshopgui.api.events.PostTransactionEvent;
 import me.gypopo.economyshopgui.api.events.PreTransactionEvent;
+import me.gypopo.economyshopgui.objects.ShopItem;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.kif.reincarceration.util.ConsoleUtil;
+import org.kif.reincarceration.util.ItemUtil;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -67,8 +71,29 @@ public abstract class AbstractModifier implements IModifier {
     }
 
     @Override
-    public boolean handlePreTransaction(PreTransactionEvent event) {
-        // Default implementation returns false, indicating that the PreTransactionListener should handle it
+    public boolean handleBuyTransaction(PreTransactionEvent event) {
+        ShopItem shopItem = event.getShopItem();
+        if (shopItem != null) {
+            ItemStack itemStack = shopItem.getItemToGive();
+            if (itemStack != null) {
+                ItemUtil.addReincarcerationFlag(itemStack);
+                ConsoleUtil.sendDebug(getName() + " modifier applied flag to purchased item: " + itemStack.getType() + " x" + event.getAmount());
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean handleSellTransaction(PreTransactionEvent event) {
+        Player player = event.getPlayer();
+        ShopItem shopItem = event.getShopItem();
+        if (shopItem != null) {
+            ItemStack itemStack = ((ShopItem) shopItem).getItemToGive();
+            if (itemStack != null) {
+                ConsoleUtil.sendDebug(getName() + " modifier allowing sale of item: " + itemStack.getType() + " x" + event.getAmount() + " by player " + player.getName());
+            }
+        }
+        // Default behavior: allow all sales
         return false;
     }
 

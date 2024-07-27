@@ -1,12 +1,17 @@
 package org.kif.reincarceration.gui;
 
+import me.gypopo.economyshopgui.api.events.PostTransactionEvent;
+import me.gypopo.economyshopgui.api.events.PreTransactionEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.core.CoreModule;
@@ -100,8 +105,6 @@ public class GUIListener implements Listener {
         }
     }
 
-
-
     private void handleMainMenu(Player player, InventoryClickEvent event) {
         if (event.getCurrentItem().getType() == Material.BARRIER) {
             // Do nothing for disabled items
@@ -144,15 +147,22 @@ public class GUIListener implements Listener {
     private void handleStartCycleMenu(Player player, InventoryClickEvent event) {
         if (handleNavigationButtons(player, event, event.getView().getTitle())) return;
 
-        if (event.getCurrentItem().getType() != Material.AIR) {
-            String modifierName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
-            try {
-                IModifier modifier = modifierManager.getModifierByName(modifierName);
-                if (modifier != null) {
-                    guiManager.openStartCycleWarningGUI(player, modifier);
+        ItemStack clickedItem = event.getCurrentItem();
+        if (clickedItem != null && clickedItem.getType() != Material.AIR) {
+            if (clickedItem.getType() == Material.RABBIT_FOOT) {
+                // Random Challenge selected
+                IModifier randomModifier = createRandomModifier();
+                guiManager.openStartCycleWarningGUI(player, randomModifier);
+            } else {
+                String modifierName = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
+                try {
+                    IModifier modifier = modifierManager.getModifierByName(modifierName);
+                    if (modifier != null) {
+                        guiManager.openStartCycleWarningGUI(player, modifier);
+                    }
+                } catch (Exception e) {
+                    player.sendMessage(ChatColor.RED + "Error selecting modifier: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                player.sendMessage(ChatColor.RED + "Error selecting modifier: " + e.getMessage());
             }
         }
     }
@@ -163,16 +173,25 @@ public class GUIListener implements Listener {
 
         if (clickedItem.getType() == Material.EMERALD_BLOCK) {
             // Confirm start cycle
-            String modifierName = ChatColor.stripColor(event.getInventory().getItem(13).getItemMeta().getLore().get(2));
-            modifierName = modifierName.substring(modifierName.lastIndexOf(":") + 2);
-            try {
-                IModifier modifier = modifierManager.getModifierByName(modifierName);
-                if (modifier != null) {
-                    cycleManager.startNewCycle(player, modifier);
-                    player.closeInventory();
+            ItemStack modifierItem = event.getInventory().getItem(13);
+            if (modifierItem != null && modifierItem.hasItemMeta() && modifierItem.getItemMeta().hasLore()) {
+                String modifierName = ChatColor.stripColor(modifierItem.getItemMeta().getLore().get(2));
+                modifierName = modifierName.substring(modifierName.lastIndexOf(":") + 2);
+                try {
+                    IModifier modifier;
+                    if ("Random Challenge".equals(modifierName)) {
+                        modifier = createRandomModifier();
+                    } else {
+                        modifier = modifierManager.getModifierByName(modifierName);
+                    }
+
+                    if (modifier != null) {
+                        cycleManager.startNewCycle(player, modifier);
+                        player.closeInventory();
+                    }
+                } catch (Exception e) {
+                    player.sendMessage(ChatColor.RED + "Error starting cycle: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                player.sendMessage(ChatColor.RED + "Error starting cycle: " + e.getMessage());
             }
         } else if (clickedItem.getType() == Material.REDSTONE_BLOCK) {
             // Cancel and return to main menu
@@ -295,5 +314,59 @@ public class GUIListener implements Listener {
         } else if (guiName.startsWith(ChatColor.BLUE + "Online Players")) {
             guiManager.openOnlinePlayersGUI(player, currentPage - 1);
         }
+    }
+
+    private IModifier createRandomModifier() {
+        return new IModifier() {
+            @Override
+            public String getId() { return "random"; }
+            @Override
+            public String getName() { return "Random Challenge"; }
+            @Override
+            public String getDescription() { return "A randomly selected challenge"; }
+            @Override
+            public void apply(Player player) {} // Empty implementation
+            @Override
+            public void remove(Player player) {} // Empty implementation
+            @Override
+            public boolean isActive(Player player) { return false; } // Always return false for the placeholder
+
+            @Override
+            public boolean handleBlockBreak(BlockBreakEvent event) {
+                return false;
+            }
+
+            @Override
+            public boolean handleFishing(PlayerFishEvent event) {
+                return false;
+            }
+
+            @Override
+            public boolean handleSellTransaction(PreTransactionEvent event) {
+                return false;
+            }
+
+            @Override
+            public boolean handleBuyTransaction(PreTransactionEvent event) {
+                return false;
+            }
+
+            @Override
+            public boolean handlePostTransaction(PostTransactionEvent event) {
+                return false;
+            }
+
+            @Override
+            public boolean handleVaultAccess(PlayerInteractEvent event) {
+                return false;
+            }
+            // Implement any other abstract methods from IModifier interface here
+            // For example:
+            // @Override
+            // public boolean handleBlockBreak(BlockBreakEvent event) { return false; }
+            // @Override
+            // public boolean handleFishing(PlayerFishEvent event) { return false; }
+            // Add any other methods required by your IModifier interface
+        };
     }
 }

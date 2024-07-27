@@ -18,7 +18,7 @@ public class HardcoreModifier extends AbstractModifier implements Listener {
     private final int maxHearts;
 
     public HardcoreModifier(Reincarceration plugin) {
-        super("hardcore", "Hardcore", "Limited hearts and one death means game over!");
+        super("hardcore", "Hardcore", "One death means game over!");
         this.plugin = plugin;
         this.maxHearts = plugin.getConfig().getInt("modifiers.hardcore.max_hearts", 1);
         ConsoleUtil.sendDebug("HardcoreModifier initialized with max hearts: " + maxHearts);

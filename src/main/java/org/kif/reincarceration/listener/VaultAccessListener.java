@@ -65,12 +65,12 @@ public class VaultAccessListener implements Listener {
 
             if(vaultNumber != reoffenderVaultNumber){
                 event.setCancelled(true);
-                MessageUtil.sendPrefixMessage(player, "&cYou can only access Vault #" + reoffenderVaultNumber + " while in the Reincarceration system.");
+                MessageUtil.sendPrefixMessage(player, "&cAccess to Regular Vault Denied.");
                 ConsoleUtil.sendDebug("Blocked " + player.getName() + " from accessing Vault #" + vaultNumber);
             }
         } else if (!isAssociated && vaultNumber == reoffenderVaultNumber) {
             event.setCancelled(true);
-            MessageUtil.sendPrefixMessage(player, "&cYou cannot access Vault #" + reoffenderVaultNumber + " outside the Reincarceration system.");
+            MessageUtil.sendPrefixMessage(player, "&cAccess to Reincarceration Vault Denied.");
             ConsoleUtil.sendDebug("Blocked " + player.getName() + " from accessing prestige Vault #" + reoffenderVaultNumber);
         }
     }

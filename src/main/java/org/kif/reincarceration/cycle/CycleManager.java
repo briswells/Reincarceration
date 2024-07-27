@@ -17,7 +17,9 @@ import org.kif.reincarceration.util.VaultUtil;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 public class CycleManager {
     private final CycleModule cycleModule;
@@ -27,6 +29,8 @@ public class CycleManager {
     private final RankManager rankManager;
     private final PermissionManager permissionManager;
     private final ModifierManager modifierManager;
+
+    private static final String RANDOM_MODIFIER_ID = "random";
 
     public CycleManager(Reincarceration plugin, CycleModule cycleModule, ConfigManager configManager,
                         DataManager dataManager, EconomyManager economyManager, RankManager rankManager,
@@ -53,23 +57,37 @@ public class CycleManager {
         if (economyManager.withdrawMoney(player, entryFee)) {
             try {
                 VaultUtil.ensureVaultCleared(player.getUniqueId().toString(), 3);
+
+                boolean isRandomSelection = RANDOM_MODIFIER_ID.equals(modifier.getId());
+
+                // If it's a random selection, choose a modifier
+                if (isRandomSelection) {
+                    List<IModifier> allAvailableModifiers = modifierManager.getAllAvailableModifiers(player);
+                    modifier = allAvailableModifiers.get(new Random().nextInt(allAvailableModifiers.size()));
+                }
+
                 dataManager.recordCycleStart(player, modifier.getId());
                 dataManager.setPlayerCycleStatus(player, true);
                 rankManager.setPlayerRank(player, 0);
                 dataManager.setStoredBalance(player, currentBalance);
                 economyManager.setBalance(player, BigDecimal.ZERO);
                 player.setHealth(0.0);
-                // apply the modifier after 5 seconds just to not interfere with the player's death
+                // modifierManager.applyModifier(player, modifier);
+                // apply the modifier after 3 seconds just to not interfere with the player's death
+                IModifier finalModifier = modifier;
                 Bukkit.getScheduler().runTaskLater(cycleModule.getPlugin(), () -> {
                     try {
-                        modifierManager.applyModifier(player, modifier);
+                        modifierManager.applyModifier(player, finalModifier);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
-                }, 100L);
-                //                modifierManager.applyModifier(player, modifier);
-                BroadcastUtil.broadcastMessage(
-                        "§c" + player.getName() + " has been redmitted under the " + modifier.getName() + " modifier");
+                }, 60L);
+
+                if (isRandomSelection) {
+                    BroadcastUtil.broadcastMessage("§c" + player.getName() + " randomly admitted with the " + modifier.getName() + " modifier");
+                } else {
+                    BroadcastUtil.broadcastMessage("§c" + player.getName() + " admitted with the " + modifier.getName() + " modifier");
+                }
             } catch (SQLException e) {
                 logSevere("Error starting new cycle: " + e.getMessage());
 

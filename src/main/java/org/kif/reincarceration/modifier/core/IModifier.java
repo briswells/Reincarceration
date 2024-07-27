@@ -16,7 +16,8 @@ public interface IModifier {
     boolean isActive(Player player);
     boolean handleBlockBreak(BlockBreakEvent event);
     boolean handleFishing(PlayerFishEvent event);
-    boolean handlePreTransaction(PreTransactionEvent event);
+    boolean handleBuyTransaction(PreTransactionEvent event);
+    boolean handleSellTransaction(PreTransactionEvent event);
     boolean handlePostTransaction(PostTransactionEvent event);
     boolean handleVaultAccess(PlayerInteractEvent event);
 }
