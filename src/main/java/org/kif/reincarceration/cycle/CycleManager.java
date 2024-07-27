@@ -62,8 +62,8 @@ public class CycleManager {
 
                 // If it's a random selection, choose a modifier
                 if (isRandomSelection) {
-                    List<IModifier> allAvailableModifiers = modifierManager.getAllAvailableModifiers(player);
-                    modifier = allAvailableModifiers.get(new Random().nextInt(allAvailableModifiers.size()));
+                    List<IModifier> availableModifiers = modifierManager.getAllAvailableModifiers(player);
+                    modifier = availableModifiers.get(new Random().nextInt(availableModifiers.size()));
                 }
 
                 dataManager.recordCycleStart(player, modifier.getId());
@@ -72,8 +72,8 @@ public class CycleManager {
                 dataManager.setStoredBalance(player, currentBalance);
                 economyManager.setBalance(player, BigDecimal.ZERO);
                 player.setHealth(0.0);
-                // modifierManager.applyModifier(player, modifier);
-                // apply the modifier after 3 seconds just to not interfere with the player's death
+
+                // Apply the modifier after 3 seconds to not interfere with the player's death
                 IModifier finalModifier = modifier;
                 Bukkit.getScheduler().runTaskLater(cycleModule.getPlugin(), () -> {
                     try {

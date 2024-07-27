@@ -88,11 +88,10 @@ public class ModifierModule implements Module {
                 modifierRegistry.registerModifier(lumberjackModifier);
                 plugin.getServer().getPluginManager().registerEvents(lumberjackModifier, plugin);
             }
-
             if (modifiersConfig.getBoolean("gambler.enabled", true)) {
                 GamblerModifier gamblerModifier = new GamblerModifier(plugin);
-                modifierManager.registerSecretModifier(gamblerModifier);
-//                plugin.getServer().getPluginManager().registerEvents(gamblerModifier, plugin);
+                modifierRegistry.registerModifier(gamblerModifier);
+                //plugin.getServer().getPluginManager().registerEvents(gamblerModifier, plugin);
             }
         }
     }

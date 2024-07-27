@@ -149,7 +149,7 @@ public class GUIManager {
 
             // Add Random Challenge option
             ItemStack randomItem = createGuiItem(Material.RABBIT_FOOT, ChatColor.GOLD + "Random Challenge",
-                ChatColor.YELLOW + "Click to start a cycle with a random modifier!");
+                    ChatColor.YELLOW + "Click to start a cycle with a random modifier!");
             inventory.setItem(45, randomItem);
 
             for (int i = page * ITEMS_PER_PAGE; i < Math.min((page + 1) * ITEMS_PER_PAGE, availableModifiers.size()); i++) {
@@ -166,7 +166,29 @@ public class GUIManager {
         player.openInventory(inventory);
     }
 
-        public void openPlayerInfoGUI(Player player) {
+    public void openStartCycleWarningGUI(Player player, IModifier selectedModifier) {
+        Inventory inventory = Bukkit.createInventory(null, 27, ChatColor.RED + "Warning: Start Cycle");
+
+        ItemStack warningSign = createGuiItem(Material.BARRIER, ChatColor.RED + "Warning!",
+                ChatColor.YELLOW + "Starting a cycle will kill you!",
+                ChatColor.YELLOW + "Ensure your items are stored!.",
+                ChatColor.YELLOW + "Selected Modifier: " + (selectedModifier.getId().equals("random") ? "Random Challenge" : selectedModifier.getName()),
+                "");
+
+        ItemStack confirmItem = createGuiItem(Material.EMERALD_BLOCK, ChatColor.GREEN + "Confirm Start Cycle",
+                ChatColor.YELLOW + "Click to start the cycle" + (selectedModifier.getId().equals("random") ? " with a random modifier" : " with " + selectedModifier.getName()));
+
+        ItemStack cancelItem = createGuiItem(Material.REDSTONE_BLOCK, ChatColor.RED + "Cancel",
+                ChatColor.YELLOW + "Click to return to the main menu");
+
+        inventory.setItem(13, warningSign);
+        inventory.setItem(11, confirmItem);
+        inventory.setItem(15, cancelItem);
+
+        player.openInventory(inventory);
+    }
+
+    public void openPlayerInfoGUI(Player player) {
         Inventory inventory = Bukkit.createInventory(null, 27, ChatColor.GOLD + "Player Info");
 
         try {
@@ -179,7 +201,7 @@ public class GUIManager {
             if (inCycle) {
                 inventory.setItem(11, createGuiItem(Material.DIAMOND_SWORD, ChatColor.AQUA + "Current Rank",
                         "Rank: " + configManager.getRankName(currentRank)
-                        ));
+                ));
 
                 inventory.setItem(13, createGuiItem(Material.GOLD_INGOT, ChatColor.YELLOW + "Economy",
                         "Balance: " + balance,
@@ -204,29 +226,6 @@ public class GUIManager {
         player.openInventory(inventory);
     }
 
-    public void openStartCycleWarningGUI(Player player, IModifier selectedModifier) {
-        Inventory inventory = Bukkit.createInventory(null, 27, ChatColor.RED + "Warning: Start Cycle");
-
-        ItemStack warningSign = createGuiItem(Material.BARRIER, ChatColor.RED + "Warning!",
-                ChatColor.YELLOW + "Starting a cycle will kill you!",
-                ChatColor.YELLOW + "Ensure your items are stored!.",
-                ChatColor.YELLOW + "Selected Modifier: " + selectedModifier.getName(),
-                "");
-
-        ItemStack confirmItem = createGuiItem(Material.EMERALD_BLOCK, ChatColor.GREEN + "Confirm Start Cycle",
-                ChatColor.YELLOW + "Click to start the cycle with " + selectedModifier.getName());
-
-        ItemStack cancelItem = createGuiItem(Material.REDSTONE_BLOCK, ChatColor.RED + "Cancel",
-                ChatColor.YELLOW + "Click to return to the main menu");
-
-        inventory.setItem(13, warningSign);
-        inventory.setItem(11, confirmItem);
-        inventory.setItem(15, cancelItem);
-
-        player.openInventory(inventory);
-    }
-
-
     public void openRankUpGUI(Player player) {
         Inventory inventory = Bukkit.createInventory(null, 27, ChatColor.GREEN + "Rank Up");
 
@@ -236,7 +235,7 @@ public class GUIManager {
 
         inventory.setItem(11, createGuiItem(Material.DIAMOND_SWORD, ChatColor.AQUA + "Current Rank",
                 "Rank: " + configManager.getRankName(currentRank)
-                ));
+        ));
 
         inventory.setItem(13, createGuiItem(Material.GOLD_INGOT, ChatColor.YELLOW + "Economy",
                 "Current Balance: " + balance,

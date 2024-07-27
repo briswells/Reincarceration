@@ -59,6 +59,11 @@ public abstract class AbstractModifier implements IModifier {
     }
 
     @Override
+    public boolean isSecret() {
+        return false; // By default, modifiers are not secret
+    }
+
+    @Override
     public boolean handleBlockBreak(BlockBreakEvent event) {
         // Default implementation returns false, indicating that the BlockBreakListener should handle it
         return false;

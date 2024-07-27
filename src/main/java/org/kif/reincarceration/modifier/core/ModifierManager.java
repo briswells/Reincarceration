@@ -6,23 +6,19 @@ import org.kif.reincarceration.permission.PermissionManager;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ModifierManager {
     private final ModifierModule modifierModule;
     private final DataManager dataManager;
     private final PermissionManager permissionManager;
     private final ModifierRegistry modifierRegistry;
-    private final List<IModifier> secretModifiers = new ArrayList<>();
 
     public ModifierManager(ModifierModule modifierModule, DataManager dataManager, PermissionManager permissionManager, ModifierRegistry modifierRegistry) {
         this.modifierModule = modifierModule;
         this.dataManager = dataManager;
         this.permissionManager = permissionManager;
         this.modifierRegistry = modifierRegistry;
-    }
-
-    public void registerSecretModifier(IModifier modifier) {
-        secretModifiers.add(modifier);
     }
 
     public void applyModifier(Player player, IModifier modifier) throws SQLException {
@@ -89,41 +85,27 @@ public class ModifierManager {
 
     public List<IModifier> getAvailableModifiers(Player player) throws SQLException {
         List<String> completedModifiers = getCompletedModifiers(player);
-        List<IModifier> availableModifiers = modifierRegistry.getAvailableModifiers(completedModifiers);
-
-        // Remove secret modifiers from the available list
-        availableModifiers.removeAll(secretModifiers);
-
-        return availableModifiers;
+        return modifierRegistry.getAllModifiers().stream()
+            .filter(modifier -> !completedModifiers.contains(modifier.getId()))
+            .filter(modifier -> !modifier.isSecret())
+            .collect(Collectors.toList());
     }
 
     public List<IModifier> getAllAvailableModifiers(Player player) throws SQLException {
         List<String> completedModifiers = getCompletedModifiers(player);
-        List<IModifier> allAvailableModifiers = modifierRegistry.getAvailableModifiers(completedModifiers);
-
-        // Include secret modifiers that haven't been completed
-        for (IModifier secretModifier : secretModifiers) {
-            if (!completedModifiers.contains(secretModifier.getId())) {
-                allAvailableModifiers.add(secretModifier);
-            }
-        }
-
-        return allAvailableModifiers;
+        return modifierRegistry.getAllModifiers().stream()
+            .filter(modifier -> !completedModifiers.contains(modifier.getId()))
+            .collect(Collectors.toList());
     }
 
     public int getTotalModifierCount() {
-        return modifierRegistry.getAllModifiers().size() + secretModifiers.size();
+        return modifierRegistry.getAllModifiers().size();
     }
 
     public IModifier getModifierByName(String name) {
         for (IModifier modifier : modifierRegistry.getAllModifiers()) {
             if (modifier.getName().equalsIgnoreCase(name)) {
                 return modifier;
-            }
-        }
-        for (IModifier secretModifier : secretModifiers) {
-            if (secretModifier.getName().equalsIgnoreCase(name)) {
-                return secretModifier;
             }
         }
         return null;

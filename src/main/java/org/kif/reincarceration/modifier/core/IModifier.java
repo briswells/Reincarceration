@@ -14,6 +14,7 @@ public interface IModifier {
     void apply(Player player);
     void remove(Player player);
     boolean isActive(Player player);
+    boolean isSecret();
     boolean handleBlockBreak(BlockBreakEvent event);
     boolean handleFishing(PlayerFishEvent event);
     boolean handleBuyTransaction(PreTransactionEvent event);
