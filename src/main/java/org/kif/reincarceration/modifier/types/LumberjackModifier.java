@@ -228,41 +228,59 @@ public class LumberjackModifier extends AbstractModifier implements Listener {
         Objects.requireNonNull(wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)).setBaseValue(4); // Set attack damage
     }
 
-    public boolean handlePreTransaction(PreTransactionEvent event) {
-        ConsoleUtil.sendDebug("Lumberjack modifier handling pre-transaction for " + event.getPlayer().getName());
+//    public boolean handlePreTransaction(PreTransactionEvent event) {
+//        ConsoleUtil.sendDebug("Lumberjack modifier handling pre-transaction for " + event.getPlayer().getName());
+//
+//        if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
+//                event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
+//                event.getTransactionType() == Transaction.Type.SHOPSTAND_SELL_SCREEN ||
+//                event.getTransactionType() == Transaction.Type.SELL_GUI_SCREEN ||
+//                event.getTransactionType() == Transaction.Type.SELL_ALL_COMMAND ||
+//                event.getTransactionType() == Transaction.Type.AUTO_SELL_CHEST ||
+//                event.getTransactionType() == Transaction.Type.QUICK_SELL) {
+//
+//            Player player = event.getPlayer();
+//
+//            ShopItem shopItem = event.getShopItem();
+//            if (shopItem != null) {
+//                ItemStack itemStack = shopItem.getItemToGive();
+//                ConsoleUtil.sendDebug("ShopItem: " + shopItem);
+//                ConsoleUtil.sendDebug("ItemStack: " + itemStack);
+//                if (itemStack != null) {
+//                    ConsoleUtil.sendDebug("Item Type: " + itemStack.getType());
+//                    ConsoleUtil.sendDebug("Item Amount: " + itemStack.getAmount());
+//                    ConsoleUtil.sendDebug("Item Meta: " + itemStack.getItemMeta());
+//                    if (!allowedItems.contains(itemStack.getType())) {
+//                        event.setCancelled(true);
+//                        MessageUtil.sendPrefixMessage(player, "&cTransaction Denied - Attempted to sell prohibited items.");
+//                        ConsoleUtil.sendDebug("Transaction cancelled because item " + itemStack.getType() + " is not allowed.");
+//                        ConsoleUtil.sendDebug("Cancelled: " + event.isCancelled());
+//                        return true;
+//                    }
+//                    ConsoleUtil.sendDebug("Checking item: " + itemStack.getType() + ", Allowed: " + allowedItems.contains(itemStack.getType()));
+//
+//                }
+//            }
+//        }
+//        return true;
+//    }
 
-        if (event.getTransactionType() == Transaction.Type.SELL_SCREEN ||
-                event.getTransactionType() == Transaction.Type.SELL_ALL_SCREEN ||
-                event.getTransactionType() == Transaction.Type.SHOPSTAND_SELL_SCREEN ||
-                event.getTransactionType() == Transaction.Type.SELL_GUI_SCREEN ||
-                event.getTransactionType() == Transaction.Type.SELL_ALL_COMMAND ||
-                event.getTransactionType() == Transaction.Type.AUTO_SELL_CHEST ||
-                event.getTransactionType() == Transaction.Type.QUICK_SELL) {
-
-            Player player = event.getPlayer();
-
-            ShopItem shopItem = event.getShopItem();
-            if (shopItem != null) {
-                ItemStack itemStack = shopItem.getItemToGive();
-                ConsoleUtil.sendDebug("ShopItem: " + shopItem);
-                ConsoleUtil.sendDebug("ItemStack: " + itemStack);
-                if (itemStack != null) {
-                    ConsoleUtil.sendDebug("Item Type: " + itemStack.getType());
-                    ConsoleUtil.sendDebug("Item Amount: " + itemStack.getAmount());
-                    ConsoleUtil.sendDebug("Item Meta: " + itemStack.getItemMeta());
-                    if (!allowedItems.contains(itemStack.getType())) {
-                        event.setCancelled(true);
-                        MessageUtil.sendPrefixMessage(player, "&cTransaction Denied - Attempted to sell prohibited items.");
-                        ConsoleUtil.sendDebug("Transaction cancelled because item " + itemStack.getType() + " is not allowed.");
-                        ConsoleUtil.sendDebug("Cancelled: " + event.isCancelled());
-                        return true;
-                    }
-                    ConsoleUtil.sendDebug("Checking item: " + itemStack.getType() + ", Allowed: " + allowedItems.contains(itemStack.getType()));
-
+    @Override
+    public boolean handleSellTransaction(PreTransactionEvent event) {
+        Player player = event.getPlayer();
+        ShopItem shopItem = event.getShopItem();
+        if (shopItem != null) {
+            ItemStack itemStack = shopItem.getItemToGive();
+            if (itemStack != null) {
+                if (!allowedItems.contains(itemStack.getType())) {
+                    event.setCancelled(true);
+                    MessageUtil.sendPrefixMessage(player, "&cTransaction Denied - Attempted to sell prohibited items.");
+                    ConsoleUtil.sendDebug("Lumberjack modifier cancelled transaction because item " + itemStack.getType() + " is not allowed.");
+                    return true;
                 }
             }
         }
-        return true;
+        return false;
     }
 
     private boolean areAllItemsFlagged(Player player) {

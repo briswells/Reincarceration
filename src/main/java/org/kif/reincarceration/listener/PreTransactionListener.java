@@ -1,7 +1,6 @@
 package org.kif.reincarceration.listener;
 
 import me.gypopo.economyshopgui.api.events.PreTransactionEvent;
-import me.gypopo.economyshopgui.objects.ShopItem;
 import me.gypopo.economyshopgui.util.Transaction;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,7 +17,7 @@ import org.kif.reincarceration.util.MessageUtil;
 import org.kif.reincarceration.permission.PermissionManager;
 
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.Objects;
 
 public class PreTransactionListener implements Listener {
     private final Reincarceration plugin;
@@ -28,7 +27,6 @@ public class PreTransactionListener implements Listener {
     public PreTransactionListener(Reincarceration plugin) {
         this.plugin = plugin;
         this.permissionManager = new PermissionManager(plugin);
-
         ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
         this.modifierManager = modifierModule.getModifierManager();
         ConsoleUtil.sendDebug("PreTransactionListener Started");
@@ -46,26 +44,67 @@ public class PreTransactionListener implements Listener {
             return;
         }
 
-        if(areAllItemsFlagged(player)) {
-            ConsoleUtil.sendDebug("All items are flagged for player: " + player.getName());
-        } else {
-//            ConsoleUtil.sendDebug("Unflagged items found in inventory for player: " + player.getName());
+        if (!areAllItemsFlagged(player)) {
             MessageUtil.sendPrefixMessage(player, "&cTransaction Denied: Prohibited Items found on Player.");
             event.setCancelled(true);
             return;
         }
 
-        IModifier activeModifier = null;
         try {
-            activeModifier = modifierManager.getActiveModifier(player);
+            IModifier activeModifier = modifierManager.getActiveModifier(player);
+            if (activeModifier != null) {
+                ConsoleUtil.sendDebug("Active modifier: " + activeModifier.getClass().getSimpleName());
+                boolean handled = false;
+
+                if (isBuyTransaction(event.getTransactionType())) {
+                    handled = activeModifier.handleBuyTransaction(event);
+                    ConsoleUtil.sendDebug("Buy transaction " + (handled ? "handled" : "not handled") + " by active modifier.");
+                } else if (isSellTransaction(event.getTransactionType())) {
+                    handled = activeModifier.handleSellTransaction(event);
+                    ConsoleUtil.sendDebug("Sell transaction " + (handled ? "handled" : "not handled") + " by active modifier.");
+                }
+
+                if (handled) {
+                    return;
+                }
+            }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        ConsoleUtil.sendDebug("Active modifier: " + activeModifier);
-        if (activeModifier != null && activeModifier.handlePreTransaction(event)) {
-            // The modifier handled the event, so we're done
+            ConsoleUtil.sendError("Error getting active modifier: " + e.getMessage());
+            event.setCancelled(true);
             return;
         }
+
+        // If no active modifier or the modifier didn't handle the transaction, apply default behavior
+        handleDefaultTransaction(event);
+    }
+
+    private void handleDefaultTransaction(PreTransactionEvent event) {
+        if (isBuyTransaction(event.getTransactionType())) {
+            // Default buy behavior: flag the item
+            ItemStack itemStack = Objects.requireNonNull(event.getShopItem()).getItemToGive();
+            if (itemStack != null) {
+                ItemUtil.addReincarcerationFlag(itemStack);
+                ConsoleUtil.sendDebug("Default behavior: Applied flag to purchased item: " + itemStack.getType() + " x" + event.getAmount());
+            }
+        }
+        // For sell transactions, we don't need to do anything by default
+    }
+
+    private boolean isBuyTransaction(Transaction.Type type) {
+        return type == Transaction.Type.BUY_SCREEN ||
+                type == Transaction.Type.BUY_STACKS_SCREEN ||
+                type == Transaction.Type.SHOPSTAND_BUY_SCREEN ||
+                type == Transaction.Type.QUICK_BUY;
+    }
+
+    private boolean isSellTransaction(Transaction.Type type) {
+        return type == Transaction.Type.SELL_SCREEN ||
+                type == Transaction.Type.SELL_ALL_SCREEN ||
+                type == Transaction.Type.SHOPSTAND_SELL_SCREEN ||
+                type == Transaction.Type.SELL_GUI_SCREEN ||
+                type == Transaction.Type.SELL_ALL_COMMAND ||
+                type == Transaction.Type.AUTO_SELL_CHEST ||
+                type == Transaction.Type.QUICK_SELL;
     }
 
     private boolean areAllItemsFlagged(Player player) {
@@ -75,6 +114,7 @@ public class PreTransactionListener implements Listener {
                 return false;
             }
         }
+        ConsoleUtil.sendDebug("All items are flagged for player: " + player.getName());
         return true;
     }
 }
