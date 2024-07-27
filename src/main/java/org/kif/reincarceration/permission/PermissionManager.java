@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class PermissionManager {
     private final Reincarceration plugin;
@@ -205,9 +206,36 @@ public class PermissionManager {
                 }
             }
 
+            // Update LuckPerms permission for completion count
+            updateCompletionPermission(player, cycleCount);
+
         } catch (SQLException e) {
             ConsoleUtil.sendError("Error updating tags for " + player.getName() + ": " + e.getMessage());
         }
+    }
+
+    private void updateCompletionPermission(Player player, int cycleCount) {
+        User user = luckPerms.getUserManager().getUser(player.getUniqueId());
+        if (user == null) {
+            ConsoleUtil.sendError("Unable to get LuckPerms user for " + player.getName());
+            return;
+        }
+
+        // Remove all existing completion permissions
+        Pattern completionPattern = Pattern.compile("reincarceration\\.completions\\.\\d+");
+        user.data().clear(node ->
+                node.getKey().startsWith("reincarceration.completions.") &&
+                        completionPattern.matcher(node.getKey()).matches()
+        );
+
+        // Add the new completion permission
+        String newPermission = "reincarceration.completions." + cycleCount;
+        user.data().add(Node.builder(newPermission).build());
+
+        // Save changes
+        luckPerms.getUserManager().saveUser(user);
+
+        ConsoleUtil.sendDebug("Updated completion permission for " + player.getName() + " to " + newPermission);
     }
 
     public boolean isAssociatedWithBaseGroup(Player player) {
