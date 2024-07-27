@@ -106,6 +106,13 @@
             <id>sk89q-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/KillionRevival/CustomTags</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -147,11 +154,10 @@
             <systemPath>${project.basedir}/dependencies/EconomyShopGUI.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>com.flyerzrule</groupId>
-            <artifactId>CustomTags</artifactId>
-            <version>1.2</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/dependencies/CustomTags-1.2.jar</systemPath>
+            <groupId>com.flyerzrule.mc.customtags</groupId>
+            <artifactId>customtags</artifactId>
+            <version>1.4</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.acrobot.chestshop</groupId>
