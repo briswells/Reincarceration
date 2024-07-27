@@ -63,6 +63,11 @@ public class ModifierModule implements Module {
                 modifierRegistry.registerModifier(hardcoreModifier);
                 plugin.getServer().getPluginManager().registerEvents(hardcoreModifier, plugin);
             }
+            if (modifiersConfig.getBoolean("decrepit.enabled", true)) {
+                DecrepitModifier decrepitModifier = new DecrepitModifier(plugin);
+                modifierRegistry.registerModifier(decrepitModifier);
+//                plugin.getServer().getPluginManager().registerEvents(decrepitModifier, plugin);
+            }
             if (modifiersConfig.getBoolean("tortoise.enabled", true)) {
                 TortoiseModifier tortoiseModifier = new TortoiseModifier(plugin);
                 modifierRegistry.registerModifier(tortoiseModifier);
@@ -82,6 +87,12 @@ public class ModifierModule implements Module {
                 LumberjackModifier lumberjackModifier = new LumberjackModifier(plugin);
                 modifierRegistry.registerModifier(lumberjackModifier);
                 plugin.getServer().getPluginManager().registerEvents(lumberjackModifier, plugin);
+            }
+
+            if (modifiersConfig.getBoolean("gambler.enabled", true)) {
+                GamblerModifier gamblerModifier = new GamblerModifier(plugin);
+                modifierManager.registerSecretModifier(gamblerModifier);
+//                plugin.getServer().getPluginManager().registerEvents(gamblerModifier, plugin);
             }
         }
     }
