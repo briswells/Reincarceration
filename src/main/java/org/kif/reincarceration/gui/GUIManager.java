@@ -75,7 +75,7 @@ public class GUIManager {
             boolean isMaxRank = configManager.isMaxRank(currentRank);
 
             if (!inCycle && player.hasPermission("reincarceration.startcycle")) {
-                inventory.setItem(21, createGuiItem(Material.IRON_BARS, ChatColor.GREEN + "Start Cycle", "Begin a new reincarceration cycle ($" + configManager.getEntryFee() + ")"));
+                inventory.setItem(21, createGuiItem(Material.IRON_BARS, ChatColor.GREEN + "Start Cycle", "Begin a new cycle ($" + configManager.getEntryFee() + ")"));
             } else {
                 inventory.setItem(21, createDisabledGuiItem(Material.BARRIER, ChatColor.GRAY + "Start Cycle", "You can't start a new cycle now"));
             }
