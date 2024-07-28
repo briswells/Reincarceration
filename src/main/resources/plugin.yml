@@ -1,5 +1,5 @@
 name: Reincarceration
-version: 1.0.3
+version: 1.0.4
 main: org.kif.reincarceration.Reincarceration
 api-version: 1.16
 depend: [Vault, LuckPerms, PlayerVaults, EconomyShopGUI, CustomTags, WorldGuard, ChestShop]
