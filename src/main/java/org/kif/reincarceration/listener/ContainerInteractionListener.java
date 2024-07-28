@@ -64,7 +64,14 @@ public class ContainerInteractionListener implements Listener {
             }
 
             if (isAllowedContainer(inventory)) {
-                // Allow access to EconomyShopGUI for all players
+                return;
+            }
+
+            // Check player's inventory for unflagged items
+            if (playerHasUnflaggedItems(player)) {
+                event.setCancelled(true);
+                MessageUtil.sendPrefixMessage(player, "&cYou have prohibitted items on your person. Please remove them before accessing this container.");
+                ConsoleUtil.sendDebug("Blocked inventory open for " + player.getName() + ": player has unflagged items");
                 return;
             }
 
@@ -78,9 +85,9 @@ public class ContainerInteractionListener implements Listener {
             // Start a repeating task to check for unflagged items
             BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
                 if (player.getOpenInventory().getTopInventory().equals(inventory)) {
-                    if (containsUnflaggedItem(inventory)) {
+                    if (containsUnflaggedItem(inventory) || playerHasUnflaggedItems(player)) {
                         player.closeInventory();
-                        MessageUtil.sendPrefixMessage(player, "&cThis container has been accessed by a prohibited player.");
+                        MessageUtil.sendPrefixMessage(player, "&cThis container has been closed due to prohibitted items detection.");
                         ConsoleUtil.sendDebug("Closed inventory for " + player.getName() + ": unflagged items detected");
                     }
                 } else {
@@ -141,7 +148,6 @@ public class ContainerInteractionListener implements Listener {
         }
 
         return false;
-
     }
 
     private boolean shouldIgnoreInventory(Inventory inventory) {
@@ -157,6 +163,15 @@ public class ContainerInteractionListener implements Listener {
 
     private boolean containsUnflaggedItem(Inventory inventory) {
         for (ItemStack item : inventory.getContents()) {
+            if (item != null && !item.getType().isAir() && !ItemUtil.hasReincarcerationFlag(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean playerHasUnflaggedItems(Player player) {
+        for (ItemStack item : player.getInventory().getContents()) {
             if (item != null && !item.getType().isAir() && !ItemUtil.hasReincarcerationFlag(item)) {
                 return true;
             }
