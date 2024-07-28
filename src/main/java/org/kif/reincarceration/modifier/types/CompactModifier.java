@@ -141,11 +141,43 @@ public class CompactModifier extends AbstractModifier implements Listener {
         if (item.getType() == Material.DEAD_BUSH) {
             event.setCancelled(true);
             event.getItem().remove();
+            return;
         }
 
-        if (getTotalItemsInAllowedSlots(player) >= (allowedInventorySlots + allowedHotbarSlots)) {
+        if (!hasSpaceForItem(player, item)) {
             event.setCancelled(true);
         }
+    }
+
+    private boolean hasSpaceForItem(Player player, ItemStack item) {
+        PlayerInventory inventory = player.getInventory();
+        int amount = item.getAmount();
+
+        // Check hotbar first
+        for (int i = 0; i < allowedHotbarSlots; i++) {
+            ItemStack slotItem = inventory.getItem(i);
+            if (slotItem == null || slotItem.getType() == Material.AIR) {
+                return true;
+            }
+            if (slotItem.isSimilar(item)) {
+                amount -= (slotItem.getMaxStackSize() - slotItem.getAmount());
+                if (amount <= 0) return true;
+            }
+        }
+
+        // Then check main inventory
+        for (int i = PLAYER_INVENTORY_SIZE - allowedInventorySlots; i < PLAYER_INVENTORY_SIZE; i++) {
+            ItemStack slotItem = inventory.getItem(i);
+            if (slotItem == null || slotItem.getType() == Material.AIR) {
+                return true;
+            }
+            if (slotItem.isSimilar(item)) {
+                amount -= (slotItem.getMaxStackSize() - slotItem.getAmount());
+                if (amount <= 0) return true;
+            }
+        }
+
+        return false;
     }
 
     @EventHandler
