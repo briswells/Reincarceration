@@ -1,15 +1,11 @@
 package org.kif.reincarceration.modifier.types;
 
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -28,9 +24,7 @@ import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.util.MessageUtil;
 
-import java.io.File;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -45,7 +39,7 @@ public class CompactModifier extends AbstractModifier implements Listener {
     private ItemStack restrictedSlotItem;
 
     public CompactModifier(Reincarceration plugin) {
-        super("compact", "Compact", "Limits the number of usable inventory slots");
+        super("compact", "Compact", "Limits the number of usable inventory slots and removes player vault access.");
         this.plugin = plugin;
         loadConfig();
     }
