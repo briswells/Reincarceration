@@ -63,6 +63,13 @@ public class BlockBreakListener implements Listener {
                 MessageUtil.sendPrefixMessage(player, "&cYou cannot break blocks in this area.");
                 return;
             }
+
+            // Check if the block is a snow block
+            if (block.getType() == Material.SNOW_BLOCK) {
+                handleSnowBlockBreak(event);
+                return;
+            }
+
             // Check if the block is a sapling
             if (block.getType().name().endsWith("_SAPLING")) {
                 ConsoleUtil.sendDebug("Prevented sapling drop for " + player.getName());
@@ -93,6 +100,24 @@ public class BlockBreakListener implements Listener {
                 event.setCancelled(true);
             }
         }
+    }
+
+    private void handleSnowBlockBreak(BlockBreakEvent event) {
+        event.setCancelled(true);  // Cancel the original event
+        Block block = event.getBlock();
+        Player player = event.getPlayer();
+
+        // Create a flagged snow block item
+        ItemStack snowBlock = new ItemStack(Material.SNOW_BLOCK);
+        ItemUtil.addReincarcerationFlag(snowBlock);
+
+        // Drop the flagged snow block
+        block.getWorld().dropItemNaturally(block.getLocation(), snowBlock);
+
+        // Set the block to air (break it)
+        block.setType(Material.AIR);
+
+        ConsoleUtil.sendDebug("Dropped flagged snow block for player: " + player.getName());
     }
 
     private boolean canBreakBlock(Player player, Block block) {
