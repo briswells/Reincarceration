@@ -54,6 +54,7 @@ public class CycleManager {
         }
 
         BigDecimal currentBalance = economyManager.getBalance(player);
+        player.setHealth(0.0);
         if (economyManager.withdrawMoney(player, entryFee)) {
             try {
                 VaultUtil.ensureVaultCleared(player.getUniqueId().toString(), 3);
@@ -71,7 +72,6 @@ public class CycleManager {
                 rankManager.setPlayerRank(player, 0);
                 dataManager.setStoredBalance(player, currentBalance);
                 economyManager.setBalance(player, BigDecimal.ZERO);
-                player.setHealth(0.0);
 
                 // Apply the modifier after 3 seconds to not interfere with the player's death
                 IModifier finalModifier = modifier;
