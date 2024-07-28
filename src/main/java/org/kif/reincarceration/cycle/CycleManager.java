@@ -73,7 +73,8 @@ public class CycleManager {
                 dataManager.setStoredBalance(player, currentBalance);
                 economyManager.setBalance(player, BigDecimal.ZERO);
 
-                // Apply the modifier after 3 seconds to not interfere with the player's death
+
+                // Apply the modifier after quarter of a second to not interfere with the player's death
                 IModifier finalModifier = modifier;
                 Bukkit.getScheduler().runTaskLater(cycleModule.getPlugin(), () -> {
                     try {
@@ -81,7 +82,7 @@ public class CycleManager {
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
-                }, 60L);
+                }, 5L);
 
                 if (isRandomSelection) {
                     BroadcastUtil.broadcastMessage("§c" + player.getName() + " randomly admitted with the " + modifier.getName() + " modifier");
