@@ -26,6 +26,9 @@ import org.kif.reincarceration.config.ConfigManager;
 import org.kif.reincarceration.rank.RankModule;
 import org.kif.reincarceration.util.MessageUtil;
 
+import java.util.List;
+import java.util.Random;
+
 public class GUIListener implements Listener {
     private final Reincarceration plugin;
     private final GUIManager guiManager;
@@ -180,6 +183,7 @@ public class GUIListener implements Listener {
                 try {
                     IModifier modifier;
                     if ("Random Challenge".equals(modifierName)) {
+                        // Use the placeholder random modifier
                         modifier = createRandomModifier();
                     } else {
                         modifier = modifierManager.getModifierByName(modifierName);
@@ -330,6 +334,11 @@ public class GUIListener implements Listener {
             public void remove(Player player) {} // Empty implementation
             @Override
             public boolean isActive(Player player) { return false; } // Always return false for the placeholder
+
+            @Override
+            public boolean isSecret() {
+                return false;
+            }
 
             @Override
             public boolean handleBlockBreak(BlockBreakEvent event) {

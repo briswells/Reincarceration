@@ -54,6 +54,7 @@ public class CycleManager {
         }
 
         BigDecimal currentBalance = economyManager.getBalance(player);
+        player.setHealth(0.0);
         if (economyManager.withdrawMoney(player, entryFee)) {
             try {
                 VaultUtil.ensureVaultCleared(player.getUniqueId().toString(), 3);
@@ -62,8 +63,8 @@ public class CycleManager {
 
                 // If it's a random selection, choose a modifier
                 if (isRandomSelection) {
-                    List<IModifier> allAvailableModifiers = modifierManager.getAllAvailableModifiers(player);
-                    modifier = allAvailableModifiers.get(new Random().nextInt(allAvailableModifiers.size()));
+                    List<IModifier> availableModifiers = modifierManager.getAllAvailableModifiers(player);
+                    modifier = availableModifiers.get(new Random().nextInt(availableModifiers.size()));
                 }
 
                 dataManager.recordCycleStart(player, modifier.getId());
@@ -71,9 +72,9 @@ public class CycleManager {
                 rankManager.setPlayerRank(player, 0);
                 dataManager.setStoredBalance(player, currentBalance);
                 economyManager.setBalance(player, BigDecimal.ZERO);
-                player.setHealth(0.0);
-                // modifierManager.applyModifier(player, modifier);
-                // apply the modifier after 3 seconds just to not interfere with the player's death
+
+
+                // Apply the modifier after quarter of a second to not interfere with the player's death
                 IModifier finalModifier = modifier;
                 Bukkit.getScheduler().runTaskLater(cycleModule.getPlugin(), () -> {
                     try {
@@ -81,7 +82,7 @@ public class CycleManager {
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
-                }, 60L);
+                }, 5L);
 
                 if (isRandomSelection) {
                     BroadcastUtil.broadcastMessage("§c" + player.getName() + " randomly admitted with the " + modifier.getName() + " modifier");

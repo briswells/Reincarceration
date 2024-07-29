@@ -59,6 +59,11 @@ public abstract class AbstractModifier implements IModifier {
     }
 
     @Override
+    public boolean isSecret() {
+        return false; // By default, modifiers are not secret
+    }
+
+    @Override
     public boolean handleBlockBreak(BlockBreakEvent event) {
         // Default implementation returns false, indicating that the BlockBreakListener should handle it
         return false;
@@ -78,9 +83,14 @@ public abstract class AbstractModifier implements IModifier {
             if (itemStack != null) {
                 ItemUtil.addReincarcerationFlag(itemStack);
                 ConsoleUtil.sendDebug(getName() + " modifier applied flag to purchased item: " + itemStack.getType() + " x" + event.getAmount());
+                return true;
+            } else {
+                ConsoleUtil.sendDebug(getName() + " modifier: ItemStack is null, couldn't apply flag");
             }
+        } else {
+            ConsoleUtil.sendDebug(getName() + " modifier: ShopItem is null");
         }
-        return true;
+        return false;
     }
 
     @Override

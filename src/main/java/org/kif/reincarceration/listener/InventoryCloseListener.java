@@ -14,8 +14,8 @@ import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.util.MessageUtil;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InventoryCloseListener implements Listener {
     private final Reincarceration plugin;
@@ -36,35 +36,48 @@ public class InventoryCloseListener implements Listener {
         Player player = (Player) event.getPlayer();
         ConsoleUtil.sendDebug("InventoryCloseListener: Processing inventory close for player " + player.getName());
 
-        // Check if the player is associated with the reincarceration system
         if (!permissionManager.isAssociatedWithBaseGroup(player)) {
             ConsoleUtil.sendDebug("InventoryCloseListener: Player " + player.getName() + " is not associated with reincarceration system");
             return;
         }
 
         PlayerInventory inventory = player.getInventory();
-        List<ItemStack> unflaggedItems = new ArrayList<>();
+        Map<Integer, ItemStack> unflaggedItems = new HashMap<>();
 
-        // Check all items in the player's inventory
-        for (ItemStack item : inventory.getContents()) {
-            if (item != null && !item.getType().isAir()) {
-                if (!ItemUtil.hasReincarcerationFlag(item)) {
-                    unflaggedItems.add(item.clone());  // Clone the item to avoid issues
-                    ConsoleUtil.sendDebug("InventoryCloseListener: Unflagged item found - " + item.getType().name());
-                }
+        // Check main inventory
+        for (int i = 0; i < inventory.getSize(); i++) {
+            ItemStack item = inventory.getItem(i);
+            if (isUnflaggedItem(item)) {
+                unflaggedItems.put(i, item.clone());
+                inventory.setItem(i, null);
             }
         }
 
-        // Remove and drop unflagged items
+        // Check armor contents
+        ItemStack[] armorContents = inventory.getArmorContents();
+        for (int i = 0; i < armorContents.length; i++) {
+            if (isUnflaggedItem(armorContents[i])) {
+                unflaggedItems.put(100 + i, armorContents[i].clone());
+                armorContents[i] = null;
+            }
+        }
+        inventory.setArmorContents(armorContents);
+
+        // Check off-hand item
+        ItemStack offHandItem = inventory.getItemInOffHand();
+        if (isUnflaggedItem(offHandItem)) {
+            unflaggedItems.put(200, offHandItem.clone());
+            inventory.setItemInOffHand(null);
+        }
+
+        // Drop unflagged items
         if (!unflaggedItems.isEmpty()) {
             Location dropLocation = player.getLocation();
-            for (ItemStack item : unflaggedItems) {
-                inventory.remove(item);
+            for (ItemStack item : unflaggedItems.values()) {
                 player.getWorld().dropItemNaturally(dropLocation, item);
                 ConsoleUtil.sendDebug("InventoryCloseListener: Dropped item - " + item.getType().name());
             }
 
-            // Update the inventory
             player.updateInventory();
 
             MessageUtil.sendPrefixMessage(player, "&cUnflagged items have been removed from your inventory.");
@@ -72,5 +85,9 @@ public class InventoryCloseListener implements Listener {
         } else {
             ConsoleUtil.sendDebug("InventoryCloseListener: No unflagged items found in " + player.getName() + "'s inventory");
         }
+    }
+
+    private boolean isUnflaggedItem(ItemStack item) {
+        return item != null && !item.getType().isAir() && !ItemUtil.hasReincarcerationFlag(item);
     }
 }

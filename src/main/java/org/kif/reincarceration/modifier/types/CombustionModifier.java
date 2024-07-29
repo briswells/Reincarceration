@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.modifier.core.AbstractModifier;
@@ -68,6 +69,12 @@ public class CombustionModifier extends AbstractModifier implements Listener {
         if (!player.isOnline()) {
             remove(player);
             return;
+        }
+
+        // Remove fire resistance effect if present
+        if (player.hasPotionEffect(PotionEffectType.FIRE_RESISTANCE)) {
+            player.removePotionEffect(PotionEffectType.FIRE_RESISTANCE);
+            ConsoleUtil.sendDebug("Removed fire resistance from " + player.getName());
         }
 
         ConsoleUtil.sendDebug("Checking fire for " + player.getName() + ". Current fire ticks: " + player.getFireTicks());

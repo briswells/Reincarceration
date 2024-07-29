@@ -52,42 +52,37 @@ public class PreTransactionListener implements Listener {
 
         try {
             IModifier activeModifier = modifierManager.getActiveModifier(player);
-            if (activeModifier != null) {
-                ConsoleUtil.sendDebug("Active modifier: " + activeModifier.getClass().getSimpleName());
-                boolean handled = false;
+            boolean handled = false;
 
-                if (isBuyTransaction(event.getTransactionType())) {
+            if (isBuyTransaction(event.getTransactionType())) {
+                if (activeModifier != null) {
                     handled = activeModifier.handleBuyTransaction(event);
                     ConsoleUtil.sendDebug("Buy transaction " + (handled ? "handled" : "not handled") + " by active modifier.");
-                } else if (isSellTransaction(event.getTransactionType())) {
+                }
+                if (!handled) {
+                    handleDefaultBuyTransaction(event);
+                }
+            } else if (isSellTransaction(event.getTransactionType())) {
+                if (activeModifier != null) {
                     handled = activeModifier.handleSellTransaction(event);
                     ConsoleUtil.sendDebug("Sell transaction " + (handled ? "handled" : "not handled") + " by active modifier.");
                 }
-
-                if (handled) {
-                    return;
-                }
+                // No default behavior for sell transactions
             }
         } catch (SQLException e) {
             ConsoleUtil.sendError("Error getting active modifier: " + e.getMessage());
             event.setCancelled(true);
-            return;
         }
-
-        // If no active modifier or the modifier didn't handle the transaction, apply default behavior
-        handleDefaultTransaction(event);
     }
 
-    private void handleDefaultTransaction(PreTransactionEvent event) {
-        if (isBuyTransaction(event.getTransactionType())) {
-            // Default buy behavior: flag the item
-            ItemStack itemStack = Objects.requireNonNull(event.getShopItem()).getItemToGive();
-            if (itemStack != null) {
-                ItemUtil.addReincarcerationFlag(itemStack);
-                ConsoleUtil.sendDebug("Default behavior: Applied flag to purchased item: " + itemStack.getType() + " x" + event.getAmount());
-            }
+    private void handleDefaultBuyTransaction(PreTransactionEvent event) {
+        ItemStack itemStack = event.getShopItem().getItemToGive();
+        if (itemStack != null) {
+            ItemUtil.addReincarcerationFlag(itemStack);
+            ConsoleUtil.sendDebug("Default behavior: Applied flag to purchased item: " + itemStack.getType() + " x" + event.getAmount());
+        } else {
+            ConsoleUtil.sendDebug("Default behavior: ItemStack is null, couldn't apply flag");
         }
-        // For sell transactions, we don't need to do anything by default
     }
 
     private boolean isBuyTransaction(Transaction.Type type) {

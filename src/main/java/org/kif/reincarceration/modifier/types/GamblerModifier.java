@@ -42,6 +42,11 @@ public class GamblerModifier extends AbstractModifier implements Listener {
         ConsoleUtil.sendDebug("Removed Gambler Modifier from " + player.getName());
     }
 
+    @Override
+    public boolean isSecret() {
+        return true;
+    }
+
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
