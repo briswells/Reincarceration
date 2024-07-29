@@ -18,6 +18,8 @@ jobs:
       - name: Build project
         id: build
         uses: KillionRevival/maven-builder-action@v1
+        with:
+          token: ${{ secrets.PAT }}
 
       - name: Upload Release Asset
         id: release
