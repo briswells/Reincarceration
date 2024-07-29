@@ -42,15 +42,12 @@ public class CommandModule implements Module {
         ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
         GUIModule guiModule = plugin.getModuleManager().getModule(GUIModule.class);
 
-        PluginCommand guiCommand = plugin.getCommand("rc");
-        if (guiCommand != null) {
-            guiCommand.setExecutor(new GUICommand(this, configManager, cycleModule, dataModule, economyModule, guiModule));
-        }
-
+        registerCommand("rc", new GUICommand(this, configManager, cycleModule, dataModule, economyModule, guiModule));
         registerCommand("flagitem", new FlagItemCommand(plugin));
         registerCommand("inspectitem", new InspectItemCommand(plugin));
         registerCommand("inspectinventory", new InspectInventoryCommand(plugin));
         registerCommand("viewplayerdata", new ViewPlayerDataCommand(plugin));
+        registerCommand("completeCycle", new CompleteCycleCommand(cycleModule));
     }
 
     private void registerCommand(String name, org.bukkit.command.CommandExecutor executor) {

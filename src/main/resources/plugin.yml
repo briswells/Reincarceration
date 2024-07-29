@@ -1,8 +1,17 @@
 name: Reincarceration
-version: 1.0.5
+version: ${project.version}
 main: org.kif.reincarceration.Reincarceration
 api-version: 1.16
-depend: [Vault, LuckPerms, PlayerVaults, EconomyShopGUI, CustomTags, WorldGuard, ChestShop]
+depend:
+  [
+    Vault,
+    LuckPerms,
+    PlayerVaults,
+    EconomyShopGUI,
+    CustomTags,
+    WorldGuard,
+    ChestShop,
+  ]
 description: A reoffender system plugin with challenges and ranks.
 
 commands:
@@ -27,6 +36,11 @@ commands:
     description: View all database data related to a player.
     usage: /<command> <player>
     permission: reincarceration.admin.viewplayerdata
+  completecycle:
+    description: Complete your current reincarceration cycle
+    usage: /<command>
+    permission: reincarceration.completecycle
+    permission-message: You don't have permission to use this command [reincarceration.completecycle].
 
 #  reoffender:
 #    description: Check your current reoffender status
@@ -43,11 +57,6 @@ commands:
 #    usage: /<command>
 #    permission: reincarceration.startcycle
 #    permission-message: You don't have permission to use this command [reincarceration.startcycle].
-#  completecycle:
-#    description: Complete your current reincarceration cycle
-#    usage: /<command>
-#    permission: reincarceration.completecycle
-#    permission-message: You don't have permission to use this command [reincarceration.completecycle].
 #  quitcycle:
 #    description: Quit your current reincarceration cycle
 #    usage: /<command>
