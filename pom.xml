@@ -110,7 +110,7 @@
         <dependency>
             <groupId>com.flyerzrule.mc.customtags</groupId>
             <artifactId>customtags</artifactId>
-            <version>1.4.1</version>
+            <version>1.4.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
