@@ -14,7 +14,8 @@ public class ModifierManager {
     private final PermissionManager permissionManager;
     private final ModifierRegistry modifierRegistry;
 
-    public ModifierManager(ModifierModule modifierModule, DataManager dataManager, PermissionManager permissionManager, ModifierRegistry modifierRegistry) {
+    public ModifierManager(ModifierModule modifierModule, DataManager dataManager, PermissionManager permissionManager,
+            ModifierRegistry modifierRegistry) {
         this.modifierModule = modifierModule;
         this.dataManager = dataManager;
         this.permissionManager = permissionManager;
@@ -83,19 +84,26 @@ public class ModifierManager {
         return dataManager.getCompletedModifiers(player);
     }
 
+    public List<IModifier> getCompletedIModifiers(Player player) throws SQLException {
+        List<String> completedModifiers = getCompletedModifiers(player);
+        return modifierRegistry.getAllModifiers().stream()
+                .filter(modifier -> completedModifiers.contains(modifier.getId()))
+                .collect(Collectors.toList());
+    }
+
     public List<IModifier> getAvailableModifiers(Player player) throws SQLException {
         List<String> completedModifiers = getCompletedModifiers(player);
         return modifierRegistry.getAllModifiers().stream()
-            .filter(modifier -> !completedModifiers.contains(modifier.getId()))
-            .filter(modifier -> !modifier.isSecret())
-            .collect(Collectors.toList());
+                .filter(modifier -> !completedModifiers.contains(modifier.getId()))
+                .filter(modifier -> !modifier.isSecret())
+                .collect(Collectors.toList());
     }
 
     public List<IModifier> getAllAvailableModifiers(Player player) throws SQLException {
         List<String> completedModifiers = getCompletedModifiers(player);
         return modifierRegistry.getAllModifiers().stream()
-            .filter(modifier -> !completedModifiers.contains(modifier.getId()))
-            .collect(Collectors.toList());
+                .filter(modifier -> !completedModifiers.contains(modifier.getId()))
+                .collect(Collectors.toList());
     }
 
     public int getTotalModifierCount() {

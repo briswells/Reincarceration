@@ -3,9 +3,13 @@ package org.kif.reincarceration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.kif.reincarceration.core.CoreModule;
 import org.kif.reincarceration.core.ModuleManager;
+import org.kif.reincarceration.api.API;
+import org.kif.reincarceration.api.ReincarcerationAPI;
 import org.kif.reincarceration.command.CommandModule;
 import org.kif.reincarceration.data.DataModule;
 import org.kif.reincarceration.economy.EconomyModule;
@@ -14,12 +18,15 @@ import org.kif.reincarceration.gui.GUIModule;
 import org.kif.reincarceration.listener.*;
 import org.kif.reincarceration.rank.RankModule;
 import org.kif.reincarceration.cycle.CycleModule;
+import org.kif.reincarceration.modifier.core.IModifier;
 import org.kif.reincarceration.modifier.core.ModifierModule;
 import org.kif.reincarceration.util.*;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.List;
 
-public class Reincarceration extends JavaPlugin {
+public class Reincarceration extends JavaPlugin implements ReincarcerationAPI {
     private ModuleManager moduleManager;
     private static final ConsoleCommandSender console = Bukkit.getConsoleSender();
 
@@ -27,6 +34,9 @@ public class Reincarceration extends JavaPlugin {
     public void onEnable() {
         // Initialize the ModuleManager
         this.moduleManager = new ModuleManager(this);
+
+        // Register API
+        this.getServer().getServicesManager().register(ReincarcerationAPI.class, this, this, ServicePriority.Normal);
 
         try {
             // Register modules with dependencies
@@ -134,5 +144,26 @@ public class Reincarceration extends JavaPlugin {
 
     public ModuleManager getModuleManager() {
         return moduleManager;
+    }
+
+    // API Methods
+    public boolean isPlayerInCycle(Player player) {
+        return API.isPlayerInCycle(this, player);
+    }
+
+    public IModifier getPlayerModifier(Player player) throws SQLException {
+        return API.getPlayerModifier(this, player);
+    }
+
+    public List<IModifier> getCompletedModifiers(Player player) throws SQLException {
+        return API.getCompletedModifiers(this, player);
+    }
+
+    public List<IModifier> getAvailableModifiers(Player player) throws SQLException {
+        return API.getAvailableModifiers(this, player);
+    }
+
+    public BigDecimal getStoredBalance(Player player) throws SQLException {
+        return API.getStoredBalance(this, player);
     }
 }
