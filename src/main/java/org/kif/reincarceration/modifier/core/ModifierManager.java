@@ -80,19 +80,19 @@ public class ModifierManager {
         removeModifier(player);
     }
 
-    public List<String> getCompletedModifiers(Player player) throws SQLException {
+    public List<String> getCompletedModifierIds(Player player) throws SQLException {
         return dataManager.getCompletedModifiers(player);
     }
 
-    public List<IModifier> getCompletedIModifiers(Player player) throws SQLException {
-        List<String> completedModifiers = getCompletedModifiers(player);
+    public List<IModifier> getCompletedModifiers(Player player) throws SQLException {
+        List<String> completedModifiers = getCompletedModifierIds(player);
         return modifierRegistry.getAllModifiers().stream()
                 .filter(modifier -> completedModifiers.contains(modifier.getId()))
                 .collect(Collectors.toList());
     }
 
     public List<IModifier> getAvailableModifiers(Player player) throws SQLException {
-        List<String> completedModifiers = getCompletedModifiers(player);
+        List<String> completedModifiers = getCompletedModifierIds(player);
         return modifierRegistry.getAllModifiers().stream()
                 .filter(modifier -> !completedModifiers.contains(modifier.getId()))
                 .filter(modifier -> !modifier.isSecret())
@@ -100,7 +100,7 @@ public class ModifierManager {
     }
 
     public List<IModifier> getAllAvailableModifiers(Player player) throws SQLException {
-        List<String> completedModifiers = getCompletedModifiers(player);
+        List<String> completedModifiers = getCompletedModifierIds(player);
         return modifierRegistry.getAllModifiers().stream()
                 .filter(modifier -> !completedModifiers.contains(modifier.getId()))
                 .collect(Collectors.toList());
