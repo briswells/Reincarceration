@@ -31,10 +31,8 @@ public class PermissionManager {
         this.plugin = plugin;
         this.configManager = plugin.getModuleManager().getConfigManager();
         this.luckPerms = plugin.getServer().getServicesManager().load(LuckPerms.class);
-
         DataModule dataModule = plugin.getModuleManager().getModule(DataModule.class);
         this.dataManager = dataModule.getDataManager();
-
         this.customTagsAPI = Objects
                 .requireNonNull(plugin.getServer().getServicesManager().getRegistration(CustomTagsAPI.class))
                 .getProvider();
@@ -242,10 +240,7 @@ public class PermissionManager {
         return isAssociatedWithBaseGroup(player.getUniqueId(), player.getName());
     }
 
-    public boolean isAssociatedWithBaseGroup(
-            UUID uuid,
-            String name
-    ) {
+    public boolean isAssociatedWithBaseGroup(UUID uuid, String name) {
         if (luckPerms == null) {
             plugin.getLogger().severe("LuckPerms not found! Unable to check base group association.");
             return false;
@@ -288,4 +283,66 @@ public class PermissionManager {
 
         return false;
     }
+
+    public void updateCompletionGroups(Player player) throws SQLException {
+        User user = luckPerms.getUserManager().getUser(player.getUniqueId());
+        if (user == null) {
+            ConsoleUtil.sendError("Unable to get LuckPerms user for " + player.getName());
+            return;
+        }
+
+        int cycleCount = dataManager.getPlayerCycleCount(player);
+        List<String> completedModifiers = dataManager.getCompletedModifiers(player);
+
+        // Remove all existing completion count groups
+        user.data().clear(node -> node.getKey().startsWith("group.reincarnation_completion_"));
+
+        // Add new completion count group if it exists
+        String completionCountGroup = "reincarnation_completion_" + cycleCount;
+        if (luckPerms.getGroupManager().getGroup(completionCountGroup) != null) {
+            user.data().add(InheritanceNode.builder(completionCountGroup).build());
+        } else {
+            ConsoleUtil.sendDebug("Completion count group does not exist: " + completionCountGroup);
+        }
+
+        // Remove all existing modifier completion groups
+        user.data().clear(node -> node.getKey().startsWith("group.reincarnation_modifier_"));
+
+        // Add new modifier completion groups if they exist
+        for (String modifierId : completedModifiers) {
+            String modifierGroup = "reincarnation_modifier_" + modifierId;
+            if (luckPerms.getGroupManager().getGroup(modifierGroup) != null) {
+                user.data().add(InheritanceNode.builder(modifierGroup).build());
+            } else {
+                ConsoleUtil.sendDebug("Modifier group does not exist: " + modifierGroup);
+            }
+        }
+
+        // Save changes
+        luckPerms.getUserManager().saveUser(user);
+
+        ConsoleUtil.sendDebug("Updated completion groups for " + player.getName() +
+                              ". Cycle count: " + cycleCount +
+                              ", Completed modifiers: " + String.join(", ", completedModifiers));
+    }
+
+    public void removeFromCompletionGroups(Player player) {
+        User user = luckPerms.getUserManager().getUser(player.getUniqueId());
+        if (user == null) {
+            ConsoleUtil.sendError("Unable to get LuckPerms user for " + player.getName());
+            return;
+        }
+
+        // Remove all completion count groups
+        user.data().clear(node -> node.getKey().startsWith("group.reincarnation_completion_"));
+
+        // Remove all modifier completion groups
+        user.data().clear(node -> node.getKey().startsWith("group.reincarnation_modifier_"));
+
+        // Save changes
+        luckPerms.getUserManager().saveUser(user);
+
+        ConsoleUtil.sendDebug("Removed all completion groups for " + player.getName());
+    }
+
 }

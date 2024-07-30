@@ -73,6 +73,8 @@ public class CycleManager {
                 dataManager.setStoredBalance(player, currentBalance);
                 economyManager.setBalance(player, BigDecimal.ZERO);
 
+                // Remove player from completion groups
+                permissionManager.removeFromCompletionGroups(player);
 
                 // Apply the modifier after quarter of a second to not interfere with the player's death
                 IModifier finalModifier = modifier;
@@ -144,6 +146,7 @@ public class CycleManager {
             dataManager.setStoredBalance(player, BigDecimal.ZERO);
 
             modifierManager.completeModifier(player, activeModifier);
+            permissionManager.updateCompletionGroups(player);
 
             int completedModifiersCount = dataManager.getCompletedModifierCount(player);
 
@@ -187,6 +190,8 @@ public class CycleManager {
             dataManager.setStoredBalance(player, BigDecimal.ZERO);
 
             modifierManager.removeModifier(player);
+            permissionManager.updateCompletionGroups(player);
+
             int completedModifiersCount = dataManager.getCompletedModifierCount(player);
 
             // Reset player's group to the initial entry group (e.g., "citizen")
