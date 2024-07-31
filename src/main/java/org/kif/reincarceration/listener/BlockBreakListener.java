@@ -26,7 +26,7 @@ import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.modifier.core.IModifier;
 import org.kif.reincarceration.modifier.core.ModifierManager;
-import org.kif.reincarceration.util.MessageUtil;
+import org.kif.reincarceration.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +58,14 @@ public class BlockBreakListener implements Listener {
         ConsoleUtil.sendDebug("Player " + player.getName() + " broke a block. Associated with base group: " + isAssociated);
 
         if (isAssociated) {
+            // Check if the block is in the blacklist
+            if (BlockBlacklist.isBlacklisted(block.getType())) {
+                event.setCancelled(true);
+                MessageUtil.sendPrefixMessage(player, "&cYou are not allowed to break this block.");
+                ConsoleUtil.sendDebug("Player " + player.getName() + " attempted to break a blacklisted block: " + block.getType());
+                return;
+            }
+
             if (!canBreakBlock(player, block)) {
                 event.setCancelled(true);
                 MessageUtil.sendPrefixMessage(player, "&cYou cannot break blocks in this area.");

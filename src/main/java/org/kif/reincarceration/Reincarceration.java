@@ -69,6 +69,7 @@ public class Reincarceration extends JavaPlugin implements IReincarcerationAPI {
             MessageUtil.initialize(this);
             ItemUtil.initialize(this);
             VaultUtil.initialize(this);
+            BlockBlacklist.initialize(this);
 
             // Register event listeners
 
@@ -111,6 +112,7 @@ public class Reincarceration extends JavaPlugin implements IReincarcerationAPI {
             //            getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
             // /rankup listener
             getServer().getPluginManager().registerEvents(new RankupListener(this), this);
+
 
             ConsoleUtil.sendSuccess("Reincarceration has been enabled!");
         } catch (SQLException e) {
