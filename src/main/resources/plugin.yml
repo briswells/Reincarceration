@@ -41,6 +41,11 @@ commands:
     usage: /<command>
     permission: reincarceration.completecycle
     permission-message: You don't have permission to use this command [reincarceration.completecycle].
+  rcreloadtags:
+    description: Reload a user's RC Custom Tags
+    usage: /<command> <player>
+    permission: reincarceration.admin.reloadtags
+    permission-message: You don't have permission to use this command [reincarceration.admin.reloadtags].
 
 #  reoffender:
 #    description: Check your current reoffender status
@@ -107,4 +112,7 @@ permissions:
     default: op
   reincarceration.admin.viewplayerdata:
     description: Allows viewing all database data for a player
+    default: op
+  reincarceration.admin.reloadtags:
+    description: Allows reloading a player's custom tags
     default: op
