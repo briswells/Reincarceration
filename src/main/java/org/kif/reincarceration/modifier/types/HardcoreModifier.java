@@ -15,51 +15,23 @@ import org.kif.reincarceration.util.ConsoleUtil;
 
 public class HardcoreModifier extends AbstractModifier implements Listener {
     private final Reincarceration plugin;
-    private final int maxHearts;
 
     public HardcoreModifier(Reincarceration plugin) {
         super("hardcore", "Hardcore", "One death means game over!");
         this.plugin = plugin;
-        this.maxHearts = plugin.getConfig().getInt("modifiers.hardcore.max_hearts", 1);
-        ConsoleUtil.sendDebug("HardcoreModifier initialized with max hearts: " + maxHearts);
+        ConsoleUtil.sendDebug("HardcoreModifier initialized");
     }
 
     @Override
     public void apply(Player player) {
         super.apply(player);
-        setMaxHealth(player);
-        ConsoleUtil.sendDebug("Applied Hardcore modifier to " + player.getName() + " with " + maxHearts + " max hearts");
+        ConsoleUtil.sendDebug("Applied Hardcore modifier to " + player.getName());
     }
 
     @Override
     public void remove(Player player) {
         super.remove(player);
-        resetMaxHealth(player);
         ConsoleUtil.sendDebug("Removed Hardcore modifier from " + player.getName());
-    }
-
-    private void setMaxHealth(Player player) {
-        AttributeInstance attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-        if (attribute != null) {
-            double oldValue = attribute.getBaseValue();
-            attribute.setBaseValue(maxHearts * 2); // Each heart is 2 health points
-            player.setHealth(attribute.getValue()); // Set current health to new max
-            ConsoleUtil.sendDebug("Set max health for " + player.getName() + " from " + oldValue + " to " + attribute.getBaseValue());
-        } else {
-            ConsoleUtil.sendDebug("Failed to set max health for " + player.getName() + ": Attribute is null");
-        }
-    }
-
-    private void resetMaxHealth(Player player) {
-        AttributeInstance attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-        if (attribute != null) {
-            double oldValue = attribute.getBaseValue();
-            attribute.setBaseValue(20); // Reset to default 10 hearts (20 health points)
-            player.setHealth(attribute.getValue()); // Set current health to new max
-            ConsoleUtil.sendDebug("Reset max health for " + player.getName() + " from " + oldValue + " to " + attribute.getBaseValue());
-        } else {
-            ConsoleUtil.sendDebug("Failed to reset max health for " + player.getName() + ": Attribute is null");
-        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
