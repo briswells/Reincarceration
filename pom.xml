@@ -6,10 +6,10 @@
 
     <groupId>org.kif</groupId>
     <artifactId>Reincarceration</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
     <packaging>jar</packaging>
 
-    <name>Reincarceration</name>
+    <name>reincarceration</name>
 
     <properties>
         <java.version>17</java.version>
