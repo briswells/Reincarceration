@@ -10,6 +10,12 @@ economy:
     - 65000
     - 100000
 
+start_location:
+  world: "world"
+  x: 233
+  y: 67
+  z: -82
+
 # Rank settings
 ranks:
   0:

@@ -1,6 +1,8 @@
 package org.kif.reincarceration.config;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.kif.reincarceration.Reincarceration;
 
@@ -80,5 +82,19 @@ public class ConfigManager {
 
     public BigDecimal getRandomModifierDiscount() {
         return BigDecimal.valueOf(config.getDouble("economy.random-modifier-discount", 0.0));
+    }
+
+    public Location getStartLocation() {
+        String worldName = config.getString("reincarceration.start_location.world", "world");
+        double x = config.getDouble("reincarceration.start_location.x", 0);
+        double y = config.getDouble("reincarceration.start_location.y", 64);
+        double z = config.getDouble("reincarceration.start_location.z", 0);
+
+        World world = plugin.getServer().getWorld(worldName);
+        if (world == null) {
+            world = plugin.getServer().getWorlds().get(0);
+        }
+
+        return new Location(world, x, y, z);
     }
 }

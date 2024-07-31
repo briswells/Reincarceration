@@ -1,6 +1,7 @@
 package org.kif.reincarceration.cycle;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.config.ConfigManager;
@@ -66,6 +67,10 @@ public class CycleManager {
             return;
         }
 
+        // Teleport the player to the start location
+        Location startLocation = configManager.getStartLocation();
+        player.teleport(startLocation);
+
         player.setHealth(0.0);
         if (economyManager.withdrawMoney(player, entryFee)) {
             try {
@@ -85,6 +90,8 @@ public class CycleManager {
 
                 // Remove player from completion groups
                 permissionManager.removeFromCompletionGroups(player);
+
+
 
                 // Apply the modifier after quarter of a second to not interfere with the player's death
                 IModifier finalModifier = modifier;
