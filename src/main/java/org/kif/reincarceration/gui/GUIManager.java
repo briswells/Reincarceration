@@ -149,7 +149,7 @@ public class GUIManager {
 
             // Add Random Challenge option
             ItemStack randomItem = createGuiItem(Material.RABBIT_FOOT, ChatColor.GOLD + "Random Challenge",
-                    ChatColor.YELLOW + "Click to start a cycle with a random modifier!");
+                    ChatColor.YELLOW + "Click to start a cycle with a random modifier!" + configManager.getRandomModifierDiscount() + "%");
             inventory.setItem(45, randomItem);
 
             for (int i = page * ITEMS_PER_PAGE; i < Math.min((page + 1) * ITEMS_PER_PAGE, availableModifiers.size()); i++) {

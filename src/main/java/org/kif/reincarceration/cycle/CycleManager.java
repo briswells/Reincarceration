@@ -48,18 +48,28 @@ public class CycleManager {
 
     public void startNewCycle(Player player, IModifier modifier) {
         BigDecimal entryFee = configManager.getEntryFee();
+        boolean isRandomSelection = RANDOM_MODIFIER_ID.equals(modifier.getId());
         if (!economyManager.hasEnoughBalance(player, entryFee)) {
             MessageUtil.sendPrefixMessage(player, "&cInsufficent Funds. Entry Fee: " + entryFee);
             return;
         }
 
         BigDecimal currentBalance = economyManager.getBalance(player);
+
+        if (isRandomSelection) {
+            BigDecimal discount = configManager.getRandomModifierDiscount();
+            entryFee = entryFee.multiply(BigDecimal.ONE.subtract(discount));
+        }
+
+        if (!economyManager.hasEnoughBalance(player, entryFee)) {
+            MessageUtil.sendPrefixMessage(player, "&cInsufficient Funds. Entry Fee: " + entryFee);
+            return;
+        }
+
         player.setHealth(0.0);
         if (economyManager.withdrawMoney(player, entryFee)) {
             try {
                 VaultUtil.ensureVaultCleared(player.getUniqueId().toString(), 3);
-
-                boolean isRandomSelection = RANDOM_MODIFIER_ID.equals(modifier.getId());
 
                 // If it's a random selection, choose a modifier
                 if (isRandomSelection) {
@@ -84,7 +94,7 @@ public class CycleManager {
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
-                }, 5L);
+                }, 60L);
 
                 if (isRandomSelection) {
                     BroadcastUtil.broadcastMessage("§c" + player.getName() + " randomly admitted with the " + modifier.getName() + " modifier");

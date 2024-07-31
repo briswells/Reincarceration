@@ -77,4 +77,8 @@ public class ConfigManager {
     public int getReoffenderVaultNumber() {
         return config.getInt("reoffender-vault-number", 11); // Default to vault 1 if not specified
     }
+
+    public BigDecimal getRandomModifierDiscount() {
+        return BigDecimal.valueOf(config.getDouble("economy.random-modifier-discount", 0.0));
+    }
 }
