@@ -3,6 +3,7 @@
 # Economy settings
 economy:
   entry-fee: 125000
+  random-modifier-discount: 0.2
   rank-up-costs:
     - 15000
     - 35000
@@ -52,6 +53,22 @@ item_flagging:
     - COMMAND_BLOCK
     - BARRIER
     - SHULKER_BOX
+    - WHITE_SHULKER_BOX
+    - ORANGE_SHULKER_BOX
+    - MAGENTA_SHULKER_BOX
+    - LIGHT_BLUE_SHULKER_BOX
+    - YELLOW_SHULKER_BOX
+    - LIME_SHULKER_BOX
+    - PINK_SHULKER_BOX
+    - GRAY_SHULKER_BOX
+    - LIGHT_GRAY_SHULKER_BOX
+    - CYAN_SHULKER_BOX
+    - PURPLE_SHULKER_BOX
+    - BLUE_SHULKER_BOX
+    - BROWN_SHULKER_BOX
+    - GREEN_SHULKER_BOX
+    - RED_SHULKER_BOX
+    - BLACK_SHULKER_BOX
     - DIAMOND_BLOCK
     - GOLD_BLOCK
     - IRON_BLOCK
@@ -203,6 +220,10 @@ modifiers:
     spread_radius: 5.0
     spread_fire_enabled: true
     combustion_chance: 0.1
+    boots:
+      durability: 1
+      repair_cost: 30
+      fire_protection_level: 2
   neolithic:
     enabled: true
     allowed_tools:

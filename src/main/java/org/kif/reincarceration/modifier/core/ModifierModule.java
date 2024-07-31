@@ -51,7 +51,9 @@ public class ModifierModule implements Module {
                 plugin.getServer().getPluginManager().registerEvents(oreSicknessModifier, plugin);
             }
             if (modifiersConfig.getBoolean("combustion.enabled", true)) {
-                modifierRegistry.registerModifier(new CombustionModifier(plugin));
+                CombustionModifier combustionModifier = new CombustionModifier(plugin);
+                modifierRegistry.registerModifier(combustionModifier);
+                plugin.getServer().getPluginManager().registerEvents(combustionModifier, plugin);
             }
             if (modifiersConfig.getBoolean("neolithic.enabled", true)) {
                 NeolithicModifier neolithicModifier = new NeolithicModifier(plugin);
