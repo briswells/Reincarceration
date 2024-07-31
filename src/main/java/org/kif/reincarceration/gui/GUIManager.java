@@ -118,7 +118,13 @@ public class GUIManager {
             statusLore.add("Cycles Completed: " + dataManager.getPlayerCycleCount(player));
             statusLore.add((inCycle ? "Currently in a cycle" : "Not in a cycle"));
             if (inCycle) {
-                statusLore.add("Active Modifier: " + modifierManager.getActiveModifier(player).getName());
+                IModifier activeModifier = modifierManager.getActiveModifier(player);
+                if (activeModifier != null) {
+                    statusLore.add("Active Modifier: " + activeModifier.getName());
+                } else {
+                    statusLore.add("Active Modifier: None");
+                    ConsoleUtil.sendDebug("Player " + player.getName() + " is in cycle but has no active modifier.");
+                }
             }
             ItemStack statusSummary = createGuiItem(Material.PAPER, ChatColor.GOLD + "Your Status", statusLore.toArray(new String[0]));
 
