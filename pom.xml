@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.kif</groupId>
-    <artifactId>Reincarceration</artifactId>
+    <artifactId>reincarceration</artifactId>
     <version>1.0.8</version>
     <packaging>jar</packaging>
 
