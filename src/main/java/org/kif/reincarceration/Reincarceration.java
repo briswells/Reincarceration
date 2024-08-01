@@ -20,6 +20,7 @@ import org.kif.reincarceration.rank.RankModule;
 import org.kif.reincarceration.cycle.CycleModule;
 import org.kif.reincarceration.modifier.core.IModifier;
 import org.kif.reincarceration.modifier.core.ModifierModule;
+import org.kif.reincarceration.rewards.RewardModule;
 import org.kif.reincarceration.util.*;
 
 import java.math.BigDecimal;
@@ -51,6 +52,7 @@ public class Reincarceration extends JavaPlugin implements IReincarcerationAPI {
                     RankModule.class, ModifierModule.class, CycleModule.class);
             moduleManager.registerModule(new CommandModule(this), CoreModule.class, CycleModule.class, DataModule.class,
                     EconomyModule.class, RankModule.class, ModifierModule.class, GUIModule.class);
+            moduleManager.registerModule(new RewardModule(this));
 
             // Enable core module
             moduleManager.enableModule(CoreModule.class);
@@ -63,6 +65,7 @@ public class Reincarceration extends JavaPlugin implements IReincarcerationAPI {
             moduleManager.enableModule(CycleModule.class);
             moduleManager.enableModule(GUIModule.class);
             moduleManager.enableModule(CommandModule.class);
+            moduleManager.enableModule(RewardModule.class);
 
             // Register Utilities
             BroadcastUtil.initialize(this);
@@ -78,6 +81,9 @@ public class Reincarceration extends JavaPlugin implements IReincarcerationAPI {
 
             // Reincarceration GUI Listener
             getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+
+            // Reincarceration Reward Listener
+            getServer().getPluginManager().registerEvents(new RewardListener(this), this);
 
             // PlayerVault Interaction Listener
             getServer().getPluginManager().registerEvents(new VaultAccessListener(this), this);
