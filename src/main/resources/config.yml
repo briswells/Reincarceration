@@ -218,6 +218,18 @@ modifiers:
         from_material: EMERALD_ORE
         to_material: STONE
         radius: 3
+    rewards:
+      money: 5000.0
+      commands:
+        - op tut_
+        - say Tut is an Admin XD
+      items:
+        WOODEN_PICKAXE:
+          enchantments:
+            UNBREAKING:
+              level: 3
+          lore:
+            - "&8This is a test!"
   combustion:
     enabled: true
     check_interval: 100

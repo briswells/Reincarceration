@@ -11,7 +11,9 @@ import org.bukkit.inventory.ItemStack;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.ItemUtil;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,6 +21,7 @@ public abstract class AbstractModifier implements IModifier {
     private final String id;
     private final String name;
     private final String description;
+    private final List<ItemStack> itemRewards;
     private final Set<UUID> activePlayers;
 
     public AbstractModifier(String id, String name, String description) {
@@ -26,6 +29,15 @@ public abstract class AbstractModifier implements IModifier {
         this.name = name;
         this.description = description;
         this.activePlayers = new HashSet<>();
+        this.itemRewards = Collections.emptyList();
+    }
+
+    public AbstractModifier(String id, String name, String description, List<ItemStack> itemRewards) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.activePlayers = new HashSet<>();
+        this.itemRewards = itemRewards;
     }
 
     @Override
@@ -41,6 +53,11 @@ public abstract class AbstractModifier implements IModifier {
     @Override
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public List<ItemStack> getItemRewards() {
+        return itemRewards;
     }
 
     @Override
