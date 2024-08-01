@@ -218,14 +218,14 @@ modifiers:
         from_material: EMERALD_ORE
         to_material: STONE
         radius: 3
-  combustion:
+  immolation:
     enabled: true
     check_interval: 100
     fire_duration: 200
     spread_fire_duration: 100
     spread_radius: 5.0
     spread_fire_enabled: true
-    combustion_chance: 0.1
+    immolation_chance: 0.1
     boots:
       durability: 1
       repair_cost: 30
