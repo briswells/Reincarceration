@@ -260,6 +260,17 @@ modifiers:
     enabled: true
     provide_rod_on_death: true
     prevent_rod_durability_loss: true
+    push_force: 0.5
+    push_interval: 5
+    min_water_size: 50
+    squid_speed: 0.5
+    fishing_pull_force: 0.05
+    fishing_pull_duration: 20
+    safeguard_threshold: 5
+    safeguard_upward_force: 1.0
+    safeguard_horizontal_force: 1.5
+    min_squid_spawn_distance: 8.0
+    max_squid_spawn_distance: 15.0
     allowed_items:
       - COD
       - SALMON
