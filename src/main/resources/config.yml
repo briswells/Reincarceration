@@ -3,7 +3,7 @@
 # Economy settings
 economy:
   entry-fee: 125000
-  random-modifier-discount: 0.2
+  random-modifier-discount: 0.5
   rank-up-costs:
     - 15000
     - 35000
@@ -54,7 +54,43 @@ item_flagging:
     - DIAMOND
     - IRON_INGOT
     - GOLD_INGOT
-  blacklist:
+blacklist:
+  - BEDROCK
+  - COMMAND_BLOCK
+  - BARRIER
+  - SHULKER_BOX
+  - WHITE_SHULKER_BOX
+  - ORANGE_SHULKER_BOX
+  - MAGENTA_SHULKER_BOX
+  - LIGHT_BLUE_SHULKER_BOX
+  - YELLOW_SHULKER_BOX
+  - LIME_SHULKER_BOX
+  - PINK_SHULKER_BOX
+  - GRAY_SHULKER_BOX
+  - LIGHT_GRAY_SHULKER_BOX
+  - CYAN_SHULKER_BOX
+  - PURPLE_SHULKER_BOX
+  - BLUE_SHULKER_BOX
+  - BROWN_SHULKER_BOX
+  - GREEN_SHULKER_BOX
+  - RED_SHULKER_BOX
+  - BLACK_SHULKER_BOX
+  - DIAMOND_BLOCK
+  - GOLD_BLOCK
+  - IRON_BLOCK
+  - EMERALD_BLOCK
+  - LAPIS_BLOCK
+  - NETHERITE_BLOCK
+  - COAL_BLOCK
+  - REDSTONE_BLOCK
+  - COPPER_BLOCK
+  - WATER_BUCKET
+  - OBSIDIAN
+  - LAVA_BUCKET
+  - ELYTRA
+
+block_blacklist:
+  blocks:
     - BEDROCK
     - COMMAND_BLOCK
     - BARRIER
@@ -84,10 +120,7 @@ item_flagging:
     - COAL_BLOCK
     - REDSTONE_BLOCK
     - COPPER_BLOCK
-    - WATER_BUCKET
     - OBSIDIAN
-    - LAVA_BUCKET
-    - ELYTRA
 
 blacklisted_containers:
   - ENDER_CHEST
@@ -162,7 +195,7 @@ modifiers:
 
       DIAMOND_ORE:
         type: player_repulsion
-        force: 3.0 # I think this level makes things fun
+        force: 10000.5 # I think this level makes things fun
 
       DEEPSLATE_DIAMOND_ORE:
         type: item_repulsion # probably needs some work but concept is making it repel dropped items
@@ -185,7 +218,7 @@ modifiers:
           - NETHER_BRICKS
           - RED_NETHER_BRICKS
         duration: 40
-        sink_rate: 0.05
+        sink_rate: 0.01
 
       NETHER_GOLD_ORE:
         type: sound
@@ -219,32 +252,67 @@ modifiers:
         to_material: STONE
         radius: 3
     rewards:
-      money: 5000.0
-      commands:
-        - op tut_
-        - say Tut is an Admin XD
-      commands_desc:
-        - "Ops Tut"
       items:
-        WOODEN_PICKAXE:
-          name: '&7 This is a name test!'
+        DIAMOND_PICKAXE:
+          name: "&9Strangely Fortuitous Pickaxe"
           enchantments:
+            FORTUNE:
+              level: 4
             UNBREAKING:
               level: 3
           lore:
-            - "&8This is a test!"
+            - "&dThis pickaxe was found at the end of a double rainbow."
+            - "&6What does it mean?"
   combustion:
     enabled: true
     check_interval: 100
     fire_duration: 200
     spread_fire_duration: 100
-    spread_radius: 5.0
+    spread_radius: 4.0
     spread_fire_enabled: true
-    combustion_chance: 0.1
+    combustion_chance: 0.01
     boots:
       durability: 1
       repair_cost: 30
       fire_protection_level: 2
+    rewards:
+      items:
+        NETHERITE_HELMET:
+          name: "&6F&ci&6r&ce&6f&ci&6g&ch&6e&cr&6'&cs &6H&ce&6l&cm&6e&ct"
+          enchantments:
+            FIRE_PROTECTION:
+              level: 5
+            PROTECTION:
+              level: 4
+            UNBREAKING:
+              level: 3
+        NETHERITE_CHESTPLATE:
+          name: "&6F&ci&6r&ce&6f&ci&6g&ch&6e&cr&6'&cs &6C&ch&6e&cs&6t&cp&6l&ca&6t&ce"
+          enchantments:
+            FIRE_PROTECTION:
+              level: 5
+            PROTECTION:
+              level: 4
+            UNBREAKING:
+              level: 3
+        NETHERITE_LEGGINGS:
+          name: "&6F&ci&6r&ce&6f&ci&6g&ch&6e&cr&6'&cs &cL&6e&cg&6g&ci&6n&cg&6s"
+          enchantments:
+            FIRE_PROTECTION:
+              level: 5
+            PROTECTION:
+              level: 4
+            UNBREAKING:
+              level: 3
+        NETHERITE_BOOTS:
+          name: "&6F&ci&6r&ce&6f&ci&6g&ch&6e&cr&6'&cs &6B&co&6o&ct&6s"
+          enchantments:
+            FIRE_PROTECTION:
+              level: 5
+            PROTECTION:
+              level: 4
+            UNBREAKING:
+              level: 3
   neolithic:
     enabled: true
     allowed_tools:
@@ -259,18 +327,124 @@ modifiers:
       - WOODEN_SWORD
       - STONE_SWORD
     double_drop_chance: 0.2
+    rewards:
+      items:
+        WOODEN_SWORD:
+          name: "&6Wooden-Epoxy Sword"
+          enchantments:
+            SHARPNESS:
+              level: 6
+            UNBREAKING:
+              level: 4
+            LOOTING:
+              level: 3
+            FIRE_ASPECT:
+              level: 2
+          lore:
+            - "&cA wooden sword enhanced with some nanotechnology."
+        WOODEN_SHOVEL:
+          name: "&6Wooden-Epoxy Shovel"
+          enchantments:
+            EFFICIENCY:
+              level: 7
+            UNBREAKING:
+              level: 4
+          lore:
+            - "&cA wooden shovel enhanced with some nanotechnology."
+        WOODEN_AXE:
+          name: "&6Wooden-Epoxy Axe"
+          enchantments:
+            EFFICIENCY:
+              level: 7
+            UNBREAKING:
+              level: 4
+          lore:
+            - "&cA wooden axe enhanced with some nanotechnology."
+        WOODEN_HOE:
+          name: "&6Wooden-Epoxy Hoe"
+          enchantments:
+            FORTUNE:
+              level: 4
+            UNBREAKING:
+              level: 4
+          lore:
+            - "&cA wooden hoe enhanced with some nanotechnology."
+        WOODEN_PICKAXE:
+          name: "&6Wooden-Epoxy Pickaxe"
+          enchantments:
+            EFFICIENCY:
+              level: 7
+            UNBREAKING:
+              level: 4
+            FORTUNE:
+              level: 4
+          lore:
+            - "&cA wooden pickaxe enhanced with some nanotechnology."
   hardcore:
     enabled: true
-    max_hearts: 10
+    rewards:
+      commands_desc:
+        - "1x T1, T2, T3 Precious Stone Slot"
+        - "1x Inventory Shulker Slot"
+      items:
+        TOTEM_OF_UNDYING:
+          amount: 2
+        NETHERITE_SWORD:
+          name: "&6Strongman's Sword"
+          enchantments:
+            SHARPNESS:
+              level: 5
+            UNBREAKING:
+              level: 3
+            LOOTING:
+              level: 3
+            MENDING:
+              level: 1
+            FIRE_ASPECT:
+              level: 2
+          lore:
+            - "&cA strong sword for a strong man."
   decrepit:
     enabled: true
     max_hearts: 1
+    rewards:
+      commands_desc:
+        - "1x T1, T2, T3 Precious Stone Slot"
+        - "1x Inventory Shulker Slot"
+      items:
+        NETHERITE_SWORD:
+          name: "&6Strongman's Sword"
+          enchantments:
+            SHARPNESS:
+              level: 5
+            UNBREAKING:
+              level: 3
+            LOOTING:
+              level: 3
+            MENDING:
+              level: 1
+            FIRE_ASPECT:
+              level: 2
+          lore:
+            - "&cA strong sword for a strong man."
   tortoise:
     enabled: true
     slowness_level: 3           # Level of the slowness effect (1 for Slowness I, 2 for Slowness II, etc.)
     resistance_level: 2         # Level of the resistance effect (1 for Resistance I, 2 for Resistance II, etc.)
     mining_haste_level: 1       # Level of the mining haste effect (1 for Haste I, 2 for Haste II, etc.)
     immobilization_duration: 5  # Duration in seconds that the player is immobilized after taking damage
+    rewards:
+      commands_desc:
+        - "Coming Soon: Firework Rocket Of Infinity"
+      items:
+        ELYTRA:
+          name: "&6The Rabbit's Wings"
+          enchantments:
+            UNBREAKING:
+              level: 3
+          lore:
+            - "&cYou won the race!"
+            - "&cWhere did the rabbit get these, anyway?"
   angler:
     enabled: true
     provide_rod_on_death: true
@@ -297,21 +471,50 @@ modifiers:
       - BONE
       - INK_SAC
       - BAMBOO
+    rewards:
+      items:
+        FISHING_ROD:
+          name: "&bBass' Nectar"
+          enchantments:
+            LURE:
+              level: 4
+            LUCK_OF_THE_SEA:
+              level: 4
+            UNBREAKING:
+              level: 3
+          lore:
+            - "&d Why is it pulsing?"
   compact:
     enabled: true
     allowed_inventory_slots: 9
     allowed_hotbar_slots: 9
+    rewards:
+      commands_desc:
+        - "1x Inventory Shulker Slot"
   lumberjack:
     enabled: true
     provide_axe_on_death: false
     special:
       enabled: true
-      wolf_pack_chance: 0.01
+      wolf_pack_chance: 0.05
       wolf_pack_size_min: 1
       wolf_pack_size_max: 6
     allowed_items:
       - BIRCH_LOG
       - BIRCH_PLANKS
       - BIRCH_SAPLING
+    rewards:
+      items:
+        NETHERITE_AXE:
+          name: "&6Draven's Axe"
+          enchantments:
+            SHARPNESS:
+              level: 6
+            EFFICIENCY:
+              level: 6
+            UNBREAKING:
+              level: 3
+          lore:
+            - "&4There's some blood on this thing..."
   gambler:
     enabled: false
