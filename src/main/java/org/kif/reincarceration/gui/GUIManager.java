@@ -58,7 +58,7 @@ public class GUIManager {
 
         // Initialize modifier materials
         modifierMaterials.put("ore_sickness", Material.DEEPSLATE_DIAMOND_ORE);
-        modifierMaterials.put("combustion", Material.BLAZE_POWDER);
+        modifierMaterials.put("immolation", Material.BLAZE_POWDER);
         modifierMaterials.put("compact", Material.CHEST);
         modifierMaterials.put("angler", Material.FISHING_ROD);
         modifierMaterials.put("tortoise", Material.TURTLE_HELMET);
@@ -384,7 +384,7 @@ public class GUIManager {
 
         boolean inCycle = cycleManager.isPlayerInCycle(player);
         int currentRank = rankManager.getPlayerRank(player);
-        boolean canComplete = inCycle && configManager.isMaxRank(currentRank);
+        boolean canComplete = inCycle && configManager.isMaxRank(currentRank) && economyManager.hasEnoughBalance(player, configManager.getRankUpCost(currentRank));
 
         inventory.setItem(11, createGuiItem(Material.BOOK, ChatColor.YELLOW + "Current Status",
                 "In Cycle: " + (inCycle ? "Yes" : "No"),

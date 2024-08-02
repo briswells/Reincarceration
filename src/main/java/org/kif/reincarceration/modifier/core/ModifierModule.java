@@ -50,15 +50,15 @@ public class ModifierModule implements Module {
                 modifierRegistry.registerModifier(oreSicknessModifier);
                 plugin.getServer().getPluginManager().registerEvents(oreSicknessModifier, plugin);
             }
-            if (modifiersConfig.getBoolean("combustion.enabled", true)) {
-                CombustionModifier combustionModifier = new CombustionModifier(plugin);
-                modifierRegistry.registerModifier(combustionModifier);
-                plugin.getServer().getPluginManager().registerEvents(combustionModifier, plugin);
+            if (modifiersConfig.getBoolean("immolation.enabled", true)) {
+                ImmolationModifier immolationModifier = new ImmolationModifier(plugin);
+                modifierRegistry.registerModifier(immolationModifier);
+                plugin.getServer().getPluginManager().registerEvents(immolationModifier, plugin);
             }
             if (modifiersConfig.getBoolean("neolithic.enabled", true)) {
                 NeolithicModifier neolithicModifier = new NeolithicModifier(plugin);
                 modifierRegistry.registerModifier(neolithicModifier);
-//                plugin.getServer().getPluginManager().registerEvents(neolithicModifier, plugin);
+                plugin.getServer().getPluginManager().registerEvents(neolithicModifier, plugin);
             }
             if (modifiersConfig.getBoolean("hardcore.enabled", true)) {
                 HardcoreModifier hardcoreModifier = new HardcoreModifier(plugin);
