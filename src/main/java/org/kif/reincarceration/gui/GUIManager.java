@@ -1,5 +1,6 @@
 package org.kif.reincarceration.gui;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -10,6 +11,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.config.ConfigManager;
 import org.kif.reincarceration.cycle.CycleManager;
 import org.kif.reincarceration.data.DataManager;
@@ -17,14 +19,19 @@ import org.kif.reincarceration.economy.EconomyManager;
 import org.kif.reincarceration.modifier.core.ModifierManager;
 import org.kif.reincarceration.rank.RankManager;
 import org.kif.reincarceration.permission.PermissionManager;
+import org.kif.reincarceration.rewards.CycleReward;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.modifier.core.IModifier;
+import org.kif.reincarceration.util.RewardUtil;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GUIManager {
+    private final Reincarceration plugin;
     private final GUIModule guiModule;
     private final ConfigManager configManager;
     private final CycleManager cycleManager;
@@ -36,9 +43,10 @@ public class GUIManager {
     private final Map<String, Material> modifierMaterials = new HashMap<>();
     private static final int ITEMS_PER_PAGE = 45;
 
-    public GUIManager(GUIModule guiModule, ConfigManager configManager, CycleManager cycleManager,
+    public GUIManager(final Reincarceration plugin, GUIModule guiModule, ConfigManager configManager, CycleManager cycleManager,
                       DataManager dataManager, EconomyManager economyManager, RankManager rankManager,
                       PermissionManager permissionManager, ModifierManager modifierManager) {
+        this.plugin = plugin;
         this.guiModule = guiModule;
         this.configManager = configManager;
         this.cycleManager = cycleManager;
@@ -75,7 +83,7 @@ public class GUIManager {
             boolean isMaxRank = configManager.isMaxRank(currentRank);
 
             if (!inCycle && player.hasPermission("reincarceration.startcycle")) {
-                inventory.setItem(21, createGuiItem(Material.IRON_BARS, ChatColor.GREEN + "Start Cycle", "Begin a new cycle ($" + configManager.getEntryFee() + ")"));
+                inventory.setItem(21, createGuiItem(Material.IRON_BARS, ChatColor.GREEN + "Start Cycle", "Begin a new cycle ($" + configManager.getEntryFee() + ")", "All Cycles reward a plaque with the cycle name, date, and time it took you to complete it!"));
             } else {
                 inventory.setItem(21, createDisabledGuiItem(Material.BARRIER, ChatColor.GRAY + "Start Cycle", "You can't start a new cycle now"));
             }
@@ -160,7 +168,7 @@ public class GUIManager {
 
             for (int i = page * ITEMS_PER_PAGE; i < Math.min((page + 1) * ITEMS_PER_PAGE, availableModifiers.size()); i++) {
                 IModifier modifier = availableModifiers.get(i);
-                inventory.addItem(createModifierItem(modifier, ChatColor.AQUA + "Available"));
+                inventory.addItem(createModifierItem(modifier, ChatColor.AQUA + "Available", true));
             }
 
             setNavigationButtons(inventory, page, totalPages);
@@ -168,6 +176,29 @@ public class GUIManager {
             player.sendMessage(ChatColor.RED + "Error retrieving available modifiers.");
             e.printStackTrace();
         }
+
+        player.openInventory(inventory);
+    }
+
+    public void openRewardItemGUI(Player player, IModifier modifier) {
+        final CycleReward reward = RewardUtil.getCycleRewardForModifier(modifier, plugin);
+        if (reward == null) {
+            return;
+        }
+        Inventory inventory = Bukkit.createInventory(null, 27, ChatColor.GOLD + "Cycle Rewards");
+        final List<ItemStack> items = reward.getItems()
+                .stream()
+                .map(RewardUtil::buildItemStackFromRewardItem)
+                .toList();
+        for (int i = 0; i < Math.min(18, items.size()); i++) {
+            final ItemStack item = items.get(i);
+            inventory.setItem(i, item);
+        }
+
+        ItemStack cancelItem = createGuiItem(Material.REDSTONE_BLOCK, ChatColor.RED + "Cancel",
+                ChatColor.YELLOW + "Click to return to the main menu");
+
+        inventory.setItem(22, cancelItem);
 
         player.openInventory(inventory);
     }
@@ -272,14 +303,14 @@ public class GUIManager {
 
             for (int i = page * ITEMS_PER_PAGE; i < Math.min((page + 1) * ITEMS_PER_PAGE, availableModifiers.size()); i++) {
                 IModifier modifier = availableModifiers.get(i);
-                inventory.addItem(createModifierItem(modifier, ChatColor.AQUA + "Available"));
+                inventory.addItem(createModifierItem(modifier, ChatColor.AQUA + "Available", true));
             }
 
             setNavigationButtons(inventory, page, totalPages);
 
             // Display current modifier if in cycle
             if (activeModifier != null) {
-                inventory.setItem(53, createModifierItem(activeModifier, ChatColor.GREEN + "Active Modifier"));
+                inventory.setItem(53, createModifierItem(activeModifier, ChatColor.GREEN + "Active Modifier", false));
             }
 
             inventory.setItem(45, createGuiItem(Material.BOOK, ChatColor.GOLD + "Completed Modifiers", "View completed modifiers"));
@@ -310,7 +341,7 @@ public class GUIManager {
 
             for (int i = page * ITEMS_PER_PAGE; i < Math.min((page + 1) * ITEMS_PER_PAGE, completedModifiers.size()); i++) {
                 IModifier modifier = completedModifiers.get(i);
-                inventory.addItem(createModifierItem(modifier, ChatColor.GOLD + "Completed"));
+                inventory.addItem(createModifierItem(modifier, ChatColor.GOLD + "Completed", false));
             }
 
             setNavigationButtons(inventory, page, totalPages);
@@ -318,7 +349,7 @@ public class GUIManager {
             // Display current modifier if in cycle
             IModifier activeModifier = modifierManager.getActiveModifier(player);
             if (activeModifier != null) {
-                inventory.setItem(53, createModifierItem(activeModifier, ChatColor.GREEN + "Active Modifier"));
+                inventory.setItem(53, createModifierItem(activeModifier, ChatColor.GREEN + "Active Modifier", false));
             }
 
             inventory.setItem(45, createGuiItem(Material.CARTOGRAPHY_TABLE, ChatColor.AQUA + "Available Modifiers", "View available modifiers"));
@@ -435,7 +466,7 @@ public class GUIManager {
         return wrappedText;
     }
 
-    private ItemStack createModifierItem(IModifier modifier, String status) {
+    private ItemStack createModifierItem(IModifier modifier, String status, boolean appendRewards) {
         Material material = modifierMaterials.getOrDefault(modifier.getId(), Material.ENDER_PEARL);
         ItemStack item = new ItemStack(material, 1);
         ItemMeta meta = item.getItemMeta();
@@ -445,6 +476,13 @@ public class GUIManager {
         // Use ChatColor.GRAY for the description text
         lore.addAll(wrapText(ChatColor.GRAY + modifier.getDescription(), 40));
         meta.setLore(lore);
+        final List<Component> loreComponents = meta.lore();
+        final CycleReward reward = RewardUtil.getCycleRewardForModifier(modifier, plugin);
+        if (reward != null && appendRewards) {
+            loreComponents.add(Component.text(""));
+            loreComponents.addAll(RewardUtil.getRewardLore(reward));
+        }
+        meta.lore(loreComponents);
         item.setItemMeta(meta);
         return item;
     }

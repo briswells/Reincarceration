@@ -223,8 +223,11 @@ modifiers:
       commands:
         - op tut_
         - say Tut is an Admin XD
+      commands_desc:
+        - "Ops Tut"
       items:
         WOODEN_PICKAXE:
+          name: '&7 This is a name test!'
           enchantments:
             UNBREAKING:
               level: 3

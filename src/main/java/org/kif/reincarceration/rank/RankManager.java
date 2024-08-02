@@ -67,10 +67,6 @@ public class RankManager {
             try {
                 int newRank = currentRank + 1;
                 setPlayerRank(player, newRank);
-                BigDecimal currentBalance = economyManager.getBalance(player);
-                BigDecimal storedBalance = dataManager.getStoredBalance(player);
-                dataManager.setStoredBalance(player, storedBalance.add(currentBalance));
-                economyManager.setBalance(player, BigDecimal.ZERO);
 
                 BroadcastUtil.broadcastMessage("§c" + player.getName() + " has ranked up to " + configManager.getRankName(newRank));
 

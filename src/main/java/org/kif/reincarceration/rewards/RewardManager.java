@@ -5,13 +5,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.kif.reincarceration.Reincarceration;
+import org.kif.reincarceration.data.DataModule;
 import org.kif.reincarceration.economy.EconomyModule;
+import org.kif.reincarceration.entity.CycleHistory;
 import org.kif.reincarceration.modifier.core.IModifier;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.RewardUtil;
 
 import java.io.Console;
 import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -20,11 +24,13 @@ import java.util.stream.Collectors;
 
 public class RewardManager {
     private final EconomyModule economyModule;
+    private final DataModule dataModule;
     private final Reincarceration plugin;
     private final ConcurrentHashMap<UUID, IModifier> playersNeedingRewards;
 
     public RewardManager(Reincarceration plugin) {
         this.economyModule = plugin.getModuleManager().getModule(EconomyModule.class);
+        this.dataModule = plugin.getModuleManager().getModule(DataModule.class);
         this.plugin = plugin;
         playersNeedingRewards = new ConcurrentHashMap<>();
     }
@@ -57,13 +63,33 @@ public class RewardManager {
                         command
                 );
             }
+            CycleHistory history;
+            try {
+                history = dataModule.getDataManager()
+                                    .getLastCycleHistoryForId(
+                                            player.getUniqueId(),
+                                            modifier.getId()
+                                    );
+            } catch (SQLException e) {
+                history = null;
+                ConsoleUtil.sendError("Could not get cycle history, returning null.");
+            }
 
             final List<ItemStack> itemStackList = reward.getItems()
                                                         .stream()
                                                         .map(RewardUtil::buildItemStackFromRewardItem)
                                                         .toList();
+
             // will a player ever not be able to fit items? this is called on respawn
             itemStackList.forEach(item -> player.getInventory().addItem(item));
+            if (history != null) {
+                player.getInventory().addItem(RewardUtil.getPaintingRewardItem(
+                        modifier,
+                        history.getStartTime(),
+                        history.getEndTime()
+                    )
+                );
+            }
             playersNeedingRewards.remove(player.getUniqueId());
         }
     }

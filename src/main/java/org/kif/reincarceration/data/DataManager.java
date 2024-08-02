@@ -1,6 +1,7 @@
 package org.kif.reincarceration.data;
 
 import org.bukkit.entity.Player;
+import org.kif.reincarceration.entity.CycleHistory;
 import org.kif.reincarceration.util.ConsoleUtil;
 
 import java.math.BigDecimal;
@@ -342,6 +343,60 @@ public class DataManager {
             }
         } catch (SQLException e) {
             logSevere("Error completing cycle: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public CycleHistory getLastCycleHistoryForId(
+            final UUID playerId,
+            final String modifierId
+    ) throws SQLException {
+        String sql =
+                "SELECT id, player_uuid, modifier_id, start_time, end_time, completed " +
+                "FROM cycle_history                                            " +
+                "WHERE ? = player_uuid                                         " +
+                "ORDER BY end_time DESC                                        " +
+                "LIMIT 1"                                                        ;
+        try (Connection conn = getConnection(); PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setString(1, playerId.toString());
+            final ResultSet resultSet = statement.executeQuery();
+            return CycleHistory.builder()
+                               .id(resultSet.getInt("id"))
+                               .playerId(UUID.fromString(resultSet.getString("player_uuid")))
+                               .modifierId(resultSet.getString("modifier_id"))
+                               .startTime(resultSet.getTimestamp("start_time").toLocalDateTime())
+                               .endTime(resultSet.getTimestamp("end_time").toLocalDateTime())
+                               .completed(resultSet.getBoolean("completed"))
+                               .build();
+        } catch (SQLException e) {
+            logSevere("Error getting cycle history: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public List<CycleHistory> getCycleHistoryForPlayer(
+            final UUID playerId
+    ) throws SQLException {
+        final ArrayList<CycleHistory> histories = new ArrayList<>();
+        String sql = "SELECT id, player_uuid, modifier_id, start_time, end_time, completed FROM cycle_history WHERE ? = player_uuid";
+        try (Connection conn = getConnection(); PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setString(1, playerId.toString());
+            final ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                histories.add(
+                        CycleHistory.builder()
+                                    .id(resultSet.getInt("id"))
+                                    .playerId(UUID.fromString(resultSet.getString("player_uuid")))
+                                    .modifierId(resultSet.getString("modifier_id"))
+                                    .startTime(resultSet.getTimestamp("start_time").toLocalDateTime())
+                                    .endTime(resultSet.getTimestamp("end_time").toLocalDateTime())
+                                    .completed(resultSet.getBoolean("completed"))
+                                    .build()
+                );
+            }
+            return histories;
+        } catch (SQLException e) {
+            logSevere("Error getting cycle history: " + e.getMessage());
             throw e;
         }
     }

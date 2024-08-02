@@ -9,6 +9,7 @@ import org.kif.reincarceration.economy.EconomyModule;
 import org.kif.reincarceration.modifier.core.ModifierModule;
 import org.kif.reincarceration.permission.PermissionManager;
 import org.kif.reincarceration.rank.RankModule;
+import org.kif.reincarceration.rewards.RewardModule;
 import org.kif.reincarceration.util.ConsoleUtil;
 
 public class CycleModule implements Module {
@@ -26,6 +27,7 @@ public class CycleModule implements Module {
         EconomyModule economyModule = plugin.getModuleManager().getModule(EconomyModule.class);
         RankModule rankModule = plugin.getModuleManager().getModule(RankModule.class);
         ModifierModule modifierModule = plugin.getModuleManager().getModule(ModifierModule.class);
+        RewardModule rewardModule = plugin.getModuleManager().getModule(RewardModule.class);
 
         if (coreModule == null || dataModule == null || economyModule == null || rankModule == null
                 || modifierModule == null) {
@@ -37,7 +39,7 @@ public class CycleModule implements Module {
 
         this.cycleManager = new CycleManager(plugin, this, configManager, dataModule.getDataManager(),
                 economyModule.getEconomyManager(), rankModule.getRankManager(),
-                permissionManager, modifierModule.getModifierManager());
+                permissionManager, modifierModule.getModifierManager(), rewardModule.getRewardManager());
 
         ConsoleUtil.sendSuccess("Cycle Module enabled");
     }

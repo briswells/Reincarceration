@@ -62,10 +62,10 @@ public class Reincarceration extends JavaPlugin implements IReincarcerationAPI {
             moduleManager.enableModule(EconomyModule.class);
             moduleManager.enableModule(RankModule.class);
             moduleManager.enableModule(ModifierModule.class);
+            moduleManager.enableModule(RewardModule.class);
             moduleManager.enableModule(CycleModule.class);
             moduleManager.enableModule(GUIModule.class);
             moduleManager.enableModule(CommandModule.class);
-            moduleManager.enableModule(RewardModule.class);
 
             // Register Utilities
             BroadcastUtil.initialize(this);

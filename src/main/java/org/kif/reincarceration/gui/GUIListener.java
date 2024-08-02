@@ -26,6 +26,8 @@ import org.kif.reincarceration.config.ConfigManager;
 import org.kif.reincarceration.rank.RankModule;
 import org.kif.reincarceration.util.MessageUtil;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -73,7 +75,8 @@ public class GUIListener implements Listener {
                 title.contains("Online Players") ||
                 title.contains("Quit Cycle") ||
                 title.contains("Complete Cycle") ||
-                title.contains("Warning: Start Cycle")) {
+                title.contains("Warning: Start Cycle") ||
+                title.contains("Cycle Rewards")) {
             event.setCancelled(true);
 
             // Prevent any item movement, even within the inventory
@@ -105,6 +108,8 @@ public class GUIListener implements Listener {
             handleQuitCycleMenu(player, event);
         } else if (title.startsWith(ChatColor.RED + "Warning: Start Cycle")) {
             handleStartCycleWarningMenu(player, event);
+        } else if (title.startsWith(ChatColor.GOLD + "Cycle Rewards")) {
+            handleRewardsMenu(player, event);
         }
     }
 
@@ -156,7 +161,19 @@ public class GUIListener implements Listener {
                 // Random Challenge selected
                 IModifier randomModifier = createRandomModifier();
                 guiManager.openStartCycleWarningGUI(player, randomModifier);
-            } else {
+            }
+            else if (event.isRightClick()) {
+                String modifierName = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
+                try {
+                    IModifier modifier = modifierManager.getModifierByName(modifierName);
+                    if (modifier != null) {
+                        guiManager.openRewardItemGUI(player, modifier);
+                    }
+                } catch (Exception e) {
+                    player.sendMessage(ChatColor.RED + "Error selecting modifier: " + e.getMessage());
+                }
+            }
+            else {
                 String modifierName = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
                 try {
                     IModifier modifier = modifierManager.getModifierByName(modifierName);
@@ -168,6 +185,13 @@ public class GUIListener implements Listener {
                 }
             }
         }
+    }
+
+    private void handleRewardsMenu(Player player, InventoryClickEvent event) {
+        ItemStack clickedItem = event.getCurrentItem();
+        if (clickedItem == null) return;
+        if (clickedItem.getType() != Material.REDSTONE_BLOCK) return;
+        guiManager.openMainMenu(player);
     }
 
     private void handleStartCycleWarningMenu(Player player, InventoryClickEvent event) {
@@ -328,6 +352,8 @@ public class GUIListener implements Listener {
             public String getName() { return "Random Challenge"; }
             @Override
             public String getDescription() { return "A randomly selected challenge"; }
+            @Override
+            public List<ItemStack> getItemRewards() { return new ArrayList<>(); }
             @Override
             public void apply(Player player) {} // Empty implementation
             @Override
