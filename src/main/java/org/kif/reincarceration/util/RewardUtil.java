@@ -177,7 +177,7 @@ public class RewardUtil {
         lore.add(Component.text("Rewards:")
                           .decoration(TextDecoration.ITALIC, false)
                           .color(TextColor.color(0x50B2C0)));
-        if (reward.getMoney() != null && !reward.getMoney().equals(BigDecimal.ZERO)) {
+        if (reward.getMoney() != null && !(reward.getMoney().compareTo(BigDecimal.ZERO) == 0)) {
             lore.add(
                     Component.text("Money: $" + reward.getMoney())
                              .color(TextColor.color(0xFF4000))
