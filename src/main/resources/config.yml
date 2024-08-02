@@ -243,7 +243,6 @@ modifiers:
       - STONE_HOE
       - WOODEN_SWORD
       - STONE_SWORD
-    double_drop_chance: 0.2
   hardcore:
     enabled: true
     max_hearts: 10
