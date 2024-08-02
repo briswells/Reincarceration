@@ -353,7 +353,7 @@ public class GUIManager {
 
         boolean inCycle = cycleManager.isPlayerInCycle(player);
         int currentRank = rankManager.getPlayerRank(player);
-        boolean canComplete = inCycle && configManager.isMaxRank(currentRank);
+        boolean canComplete = inCycle && configManager.isMaxRank(currentRank) && economyManager.hasEnoughBalance(player, configManager.getRankUpCost(currentRank));
 
         inventory.setItem(11, createGuiItem(Material.BOOK, ChatColor.YELLOW + "Current Status",
                 "In Cycle: " + (inCycle ? "Yes" : "No"),
