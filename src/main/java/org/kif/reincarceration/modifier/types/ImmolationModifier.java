@@ -8,8 +8,6 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.block.Action;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -29,7 +27,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-public class CombustionModifier extends AbstractModifier implements Listener {
+public class ImmolationModifier extends AbstractModifier implements Listener {
     private final Reincarceration plugin;
     private final Map<UUID, BukkitTask> activeTasks = new HashMap<>();
     private final Random random = new Random();
@@ -39,25 +37,25 @@ public class CombustionModifier extends AbstractModifier implements Listener {
     private int spreadFireDuration;
     private double spreadRadius;
     private boolean spreadFireEnabled;
-    private double combustionChance;
+    private double immolationChance;
 
-    public CombustionModifier(Reincarceration plugin) {
-        super("combustion", "Combustion", "Players will spontaneously combust, advised to keep close to water sources");
+    public ImmolationModifier(Reincarceration plugin) {
+        super("immolation", "Immolation", "Players will spontaneously combust, advised to keep close to water sources");
         this.plugin = plugin;
         loadConfig();
     }
 
     private void loadConfig() {
-        ConfigurationSection config = plugin.getConfig().getConfigurationSection("modifiers.combustion");
+        ConfigurationSection config = plugin.getConfig().getConfigurationSection("modifiers.immolation");
         if (config != null) {
             checkInterval = config.getInt("check_interval", 100);
             fireDuration = config.getInt("fire_duration", 200);
             spreadFireDuration = config.getInt("spread_fire_duration", 100);
             spreadRadius = config.getDouble("spread_radius", 5.0);
             spreadFireEnabled = config.getBoolean("spread_fire_enabled", true);
-            combustionChance = config.getDouble("combustion_chance", 0.1);
+            immolationChance = config.getDouble("immolation_chance", 0.1);
         } else {
-            ConsoleUtil.sendError("Combustion modifier configuration not found. Using default values.");
+            ConsoleUtil.sendError("Immolation modifier configuration not found. Using default values.");
         }
     }
 
@@ -66,20 +64,20 @@ public class CombustionModifier extends AbstractModifier implements Listener {
         super.apply(player);
         BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> checkAndApplyFire(player), 0L, checkInterval);
         activeTasks.put(player.getUniqueId(), task);
-        ConsoleUtil.sendDebug("CombustionModifier applied to " + player.getName());
-        ConsoleUtil.sendDebug("CombustionModifier Active on " + player.getName() + "? " + isActive(player));
+        ConsoleUtil.sendDebug("ImmolationModifier applied to " + player.getName());
+        ConsoleUtil.sendDebug("ImmolationModifier Active on " + player.getName() + "? " + isActive(player));
     }
 
     @Override
     public void remove(Player player) {
-        ConsoleUtil.sendDebug("CombustionModifier Active on " + player.getName() + "? " + isActive(player));
+        ConsoleUtil.sendDebug("ImmolationModifier Active on " + player.getName() + "? " + isActive(player));
         super.remove(player);
         BukkitTask task = activeTasks.remove(player.getUniqueId());
         if (task != null) {
             task.cancel();
         }
         player.setFireTicks(0);
-        ConsoleUtil.sendDebug("CombustionModifier removed from " + player.getName());
+        ConsoleUtil.sendDebug("ImmolationModifier removed from " + player.getName());
     }
 
     private void checkAndApplyFire(Player player) {
@@ -87,7 +85,7 @@ public class CombustionModifier extends AbstractModifier implements Listener {
             remove(player);
             return;
         }
-        ConsoleUtil.sendDebug("CombustionModifier Active on " + player.getName() + "? " + isActive(player));
+        ConsoleUtil.sendDebug("ImmolationModifier Active on " + player.getName() + "? " + isActive(player));
 
         // Remove fire resistance effect if present
         if (player.hasPotionEffect(PotionEffectType.FIRE_RESISTANCE)) {
@@ -103,7 +101,7 @@ public class CombustionModifier extends AbstractModifier implements Listener {
             if (spreadFireEnabled) {
                 spreadFireToNearbyPlayers(player);
             }
-        } else if (random.nextDouble() < combustionChance) {
+        } else if (random.nextDouble() < immolationChance) {
             player.setFireTicks(fireDuration);
             ConsoleUtil.sendDebug(player.getName() + " spontaneously combusted. Fire ticks: " + player.getFireTicks());
         }
@@ -124,7 +122,7 @@ public class CombustionModifier extends AbstractModifier implements Listener {
     public void onEntityCombust(EntityCombustEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
-            ConsoleUtil.sendDebug("CombustionModifier Active on onEntityCombust " + player.getName() + "? " + isActive(player));
+            ConsoleUtil.sendDebug("ImmolationModifier Active on onEntityCombust " + player.getName() + "? " + isActive(player));
             if (isActive(player)) {
                 event.setDuration(fireDuration);
                 ConsoleUtil.sendDebug("EntityCombustEvent: Set fire duration for " + player.getName() + " to " + fireDuration);
@@ -148,8 +146,8 @@ public class CombustionModifier extends AbstractModifier implements Listener {
 
 
     private void equipFireResistantBoots(Player player) {
-        ConfigurationSection config = plugin.getConfig().getConfigurationSection("modifiers.combustion.boots");
-        ConsoleUtil.sendDebug("CombustionModifier Active on " + player.getName() + "? " + isActive(player));
+        ConfigurationSection config = plugin.getConfig().getConfigurationSection("modifiers.immolation.boots");
+        ConsoleUtil.sendDebug("ImmolationModifier Active on " + player.getName() + "? " + isActive(player));
         int durability = config != null ? config.getInt("durability", 5) : 5;
         int repairCost = config != null ? config.getInt("repair_cost", 30) : 30;
         int fireProtectionLevel = config != null ? config.getInt("fire_protection_level", 2) : 2;

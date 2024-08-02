@@ -218,14 +218,14 @@ modifiers:
         from_material: EMERALD_ORE
         to_material: STONE
         radius: 3
-  combustion:
+  immolation:
     enabled: true
     check_interval: 100
     fire_duration: 200
     spread_fire_duration: 100
     spread_radius: 5.0
     spread_fire_enabled: true
-    combustion_chance: 0.1
+    immolation_chance: 0.1
     boots:
       durability: 1
       repair_cost: 30
@@ -243,7 +243,6 @@ modifiers:
       - STONE_HOE
       - WOODEN_SWORD
       - STONE_SWORD
-    double_drop_chance: 0.2
   hardcore:
     enabled: true
     max_hearts: 10
@@ -260,6 +259,17 @@ modifiers:
     enabled: true
     provide_rod_on_death: true
     prevent_rod_durability_loss: true
+    push_force: 0.5
+    push_interval: 5
+    min_water_size: 50
+    squid_speed: 0.5
+    fishing_pull_force: 0.05
+    fishing_pull_duration: 20
+    safeguard_threshold: 5
+    safeguard_upward_force: 1.0
+    safeguard_horizontal_force: 1.5
+    min_squid_spawn_distance: 8.0
+    max_squid_spawn_distance: 15.0
     allowed_items:
       - COD
       - SALMON
