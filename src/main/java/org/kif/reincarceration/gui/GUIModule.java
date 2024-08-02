@@ -36,7 +36,7 @@ public class GUIModule implements Module {
         ConfigManager configManager = coreModule.getConfigManager();
         PermissionManager permissionManager = new PermissionManager(plugin);
 
-        this.guiManager = new GUIManager(this, configManager, cycleModule.getCycleManager(),
+        this.guiManager = new GUIManager(plugin, this, configManager, cycleModule.getCycleManager(),
                 dataModule.getDataManager(), economyModule.getEconomyManager(), rankModule.getRankManager(),
                 permissionManager, modifierModule.getModifierManager());
 

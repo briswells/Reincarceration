@@ -11,6 +11,7 @@ import org.kif.reincarceration.modifier.core.IModifier;
 import org.kif.reincarceration.modifier.core.ModifierManager;
 import org.kif.reincarceration.permission.PermissionManager;
 import org.kif.reincarceration.rank.RankManager;
+import org.kif.reincarceration.rewards.RewardManager;
 import org.kif.reincarceration.util.BroadcastUtil;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.MessageUtil;
@@ -30,12 +31,13 @@ public class CycleManager {
     private final RankManager rankManager;
     private final PermissionManager permissionManager;
     private final ModifierManager modifierManager;
+    private final RewardManager rewardManager;
 
     private static final String RANDOM_MODIFIER_ID = "random";
 
     public CycleManager(Reincarceration plugin, CycleModule cycleModule, ConfigManager configManager,
                         DataManager dataManager, EconomyManager economyManager, RankManager rankManager,
-                        PermissionManager permissionManager, ModifierManager modifierManager) {
+                        PermissionManager permissionManager, ModifierManager modifierManager, RewardManager rewardManager) {
         this.cycleModule = cycleModule;
         this.configManager = configManager;
         this.dataManager = dataManager;
@@ -43,6 +45,7 @@ public class CycleManager {
         this.rankManager = rankManager;
         this.permissionManager = permissionManager;
         this.modifierManager = modifierManager;
+        this.rewardManager = rewardManager;
 
         ConsoleUtil.sendSuccess("CycleManager initialized with all required components");
     }
@@ -156,6 +159,7 @@ public class CycleManager {
             IModifier activeModifier = modifierManager.getActiveModifier(player);
 
             dataManager.recordCycleCompletion(player, true);
+            rewardManager.setPlayerNeedsReward(player, activeModifier);
             dataManager.setPlayerCycleStatus(player, false);
             dataManager.incrementPlayerCycleCount(player);
             rankManager.setPlayerRank(player, 0);
