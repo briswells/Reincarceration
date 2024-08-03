@@ -383,7 +383,7 @@ modifiers:
     enabled: true
     rewards:
       commands_desc:
-        - "1x T1, T2, T3 Precious Stone Slot"
+        - "1x T1 Precious Stone Slot"
         - "1x Inventory Shulker Slot"
       items:
         TOTEM_OF_UNDYING:
@@ -408,7 +408,7 @@ modifiers:
     max_hearts: 1
     rewards:
       commands_desc:
-        - "1x T1, T2, T3 Precious Stone Slot"
+        - "1x T1 Precious Stone Slot"
         - "1x Inventory Shulker Slot"
       items:
         NETHERITE_SWORD:
