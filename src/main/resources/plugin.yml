@@ -11,6 +11,7 @@ depend:
     CustomTags,
     WorldGuard,
     ChestShop,
+    KillionCommons
   ]
 description: A reoffender system plugin with challenges and ranks.
 
@@ -50,6 +51,11 @@ commands:
     description: Force a player to quit their current reincarceration cycle (admin only)
     usage: /<command> <player>
     permission: reincarceration.admin.forcequit
+    permission-message: You don't have permission to use this command.
+  forcereset:
+    description: Force reset a player's reincarceration data and remove them from the system (admin only)
+    usage: /<command> <player>
+    permission: reincarceration.admin.forcereset
     permission-message: You don't have permission to use this command.
 
 #  reoffender:
@@ -123,6 +129,9 @@ permissions:
     default: op
   reincarceration.admin.forcequit:
     description: Allows forcefully removing a player from their cycle
+    default: op
+  reincarceration.admin.forcereset:
+    description: Allows forcefully resetting a player's reincarceration data
     default: op
   reincarceration.admin.invisible:
     description: Makes the player invisible in the online players GUI
