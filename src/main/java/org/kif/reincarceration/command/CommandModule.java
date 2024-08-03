@@ -49,6 +49,7 @@ public class CommandModule implements Module {
         registerCommand("viewplayerdata", new ViewPlayerDataCommand(plugin));
         registerCommand("completeCycle", new CompleteCycleCommand(cycleModule));
         registerCommand("rcreloadtags", new ReloadTagsCommand(plugin));
+        registerCommand("forcequit", new ForceQuitCommand(cycleModule));
     }
 
     private void registerCommand(String name, org.bukkit.command.CommandExecutor executor) {

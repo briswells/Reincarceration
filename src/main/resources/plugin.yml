@@ -46,6 +46,11 @@ commands:
     usage: /<command> <player>
     permission: reincarceration.admin.reloadtags
     permission-message: You don't have permission to use this command [reincarceration.admin.reloadtags].
+  forcequit:
+    description: Force a player to quit their current reincarceration cycle (admin only)
+    usage: /<command> <player>
+    permission: reincarceration.admin.forcequit
+    permission-message: You don't have permission to use this command.
 
 #  reoffender:
 #    description: Check your current reoffender status
@@ -115,4 +120,7 @@ permissions:
     default: op
   reincarceration.admin.reloadtags:
     description: Allows reloading a player's custom tags
+    default: op
+  reincarceration.admin.forcequit:
+    description: Allows forcefully removing a player from their cycle
     default: op
