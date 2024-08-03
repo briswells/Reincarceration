@@ -168,5 +168,12 @@
             <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>co.killionrevival</groupId>
+            <artifactId>killioncommons</artifactId>
+            <version>1.1.6-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/dependencies/killioncommons.jar</systemPath>
+        </dependency>
     </dependencies>
 </project>
