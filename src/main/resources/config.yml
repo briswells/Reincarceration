@@ -10,7 +10,7 @@ economy:
     - 65000
     - 100000
 
-start_location:
+start_location: # This was meant to just send them to the prison but suffocating them at the location also works
   world: "world"
   x: 233
   y: 67
@@ -153,7 +153,7 @@ modifiers:
           - NETHER_BRICKS
           - RED_NETHER_BRICKS
           - SNOW
-        affected_radius: 3
+        affected_radius: 4
 
       DEEPSLATE_COAL_ORE:
         type: potion
@@ -163,7 +163,7 @@ modifiers:
 
       COPPER_ORE:
         type: hunger
-        amount: 5
+        amount: 2
 
       DEEPSLATE_COPPER_ORE:
         type: potion
@@ -195,7 +195,7 @@ modifiers:
 
       DIAMOND_ORE:
         type: player_repulsion
-        force: 10000.5 # I think this level makes things fun
+        force: 3.0 # I think this level makes things fun
 
       DEEPSLATE_DIAMOND_ORE:
         type: item_repulsion # probably needs some work but concept is making it repel dropped items
@@ -475,12 +475,14 @@ modifiers:
       - SADDLE
       - NAME_TAG
       - TRIPWIRE_HOOK
-      - ROTTEN_FLESH
       - STICK
-      - STRING
-      - BONE
       - INK_SAC
       - BAMBOO
+    disallowed_swap_items:
+      - COD 60
+      - SALMON 25
+      - TROPICAL_FISH 2
+      - PUFFERFISH 13
     rewards:
       items:
         FISHING_ROD:
