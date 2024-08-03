@@ -124,3 +124,6 @@ permissions:
   reincarceration.admin.forcequit:
     description: Allows forcefully removing a player from their cycle
     default: op
+  reincarceration.admin.invisible:
+    description: Makes the player invisible in the online players GUI
+    default: op
