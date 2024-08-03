@@ -9,7 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Squid;
+import org.bukkit.entity.GlowSquid;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
@@ -25,16 +25,18 @@ import org.kif.reincarceration.modifier.core.AbstractModifier;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.util.MessageUtil;
-
+import org.bukkit.entity.Item;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AnglerModifier extends AbstractModifier implements Listener {
     private final Reincarceration plugin;
     private boolean provideRodOnDeath;
     private boolean preventRodDurabilityLoss;
     private final Set<Material> allowedItems;
+    private final Map<Material, Integer> disallowedSwapItems = new EnumMap<>(Material.class);
     private final Map<UUID, BukkitRunnable> activeWaterTasks;
-    private final Map<UUID, Squid> activeSquids;
+    private final Map<UUID, GlowSquid> activeSquids;
     private final Map<UUID, FishingData> playerFishingData;
     private final Map<UUID, Boolean> playerInWaterStatus;
 
@@ -50,6 +52,10 @@ public class AnglerModifier extends AbstractModifier implements Listener {
     private double safeguardHorizontalForce;
     private double minSquidSpawnDistance;
     private double maxSquidSpawnDistance;
+
+    // Fish materials - not configurable
+
+
 
     private static class FishingData {
         Vector waterDirection;
@@ -105,6 +111,34 @@ public class AnglerModifier extends AbstractModifier implements Listener {
                 ConsoleUtil.sendError("No allowed items specified in Angler modifier config. Using default values.");
                 initializeDefaultAllowedItems();
             }
+            List<String> swapListList = config.getStringList("disallowed_swap_items");
+            if (!swapListList.isEmpty()) {
+                for (String item : swapListList) {
+                    try {
+                        String[] parts = item.split(" ");
+                        if (parts.length != 2) {
+                            throw new IllegalArgumentException("Invalid format");
+                        }
+                        Material material = Material.valueOf(parts[0].toUpperCase());
+                        int weight = Integer.parseInt(parts[1]);
+                        disallowedSwapItems.put(material, weight);
+                    } catch (IllegalArgumentException e) {
+                        if (e instanceof NumberFormatException) {
+                            ConsoleUtil.sendError("Invalid weight in Angler modifier config: " + item);
+                        } else {
+                            ConsoleUtil.sendError("Invalid material or format in Angler modifier config: " + item);
+                        }
+                        if (!disallowedSwapItems.isEmpty()) {
+                            disallowedSwapItems.clear();
+                        }
+                        initializeDefaultDisallowedSwapItems();
+                        break;
+                    }
+                }
+            } else {
+                ConsoleUtil.sendError("No allowed items specified in Angler modifier config. Using default values.");
+                initializeDefaultDisallowedSwapItems();
+            }
         } else {
             ConsoleUtil.sendError("Angler modifier configuration not found. Using default values.");
             this.provideRodOnDeath = true;
@@ -154,12 +188,18 @@ public class AnglerModifier extends AbstractModifier implements Listener {
         allowedItems.add(Material.SADDLE);
         allowedItems.add(Material.NAME_TAG);
         allowedItems.add(Material.TRIPWIRE_HOOK);
-        allowedItems.add(Material.ROTTEN_FLESH);
         allowedItems.add(Material.STICK);
-        allowedItems.add(Material.STRING);
-        allowedItems.add(Material.BONE);
         allowedItems.add(Material.INK_SAC);
         allowedItems.add(Material.BAMBOO);
+        allowedItems.add(Material.COOKED_COD);
+        allowedItems.add(Material.COOKED_SALMON);
+    }
+
+    private void initializeDefaultDisallowedSwapItems() {
+        disallowedSwapItems.put(Material.COD, 60);
+        disallowedSwapItems.put(Material.SALMON, 25);
+        disallowedSwapItems.put(Material.TROPICAL_FISH, 2);
+        disallowedSwapItems.put(Material.PUFFERFISH, 13);
     }
 
     @Override
@@ -196,6 +236,18 @@ public class AnglerModifier extends AbstractModifier implements Listener {
         if (!isActive(player)) return;
 
         if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH || event.getState() == PlayerFishEvent.State.CAUGHT_ENTITY) {
+            Item caughtItem = (Item) event.getCaught();
+            if (caughtItem != null) {
+                ConsoleUtil.sendDebug("Angler - Caught ITEM: " + caughtItem.getItemStack().getType());
+                if (!allowedItems.contains(caughtItem.getItemStack().getType())) {
+                    Material randomFish = getRandomFish();
+                    ItemStack newItem = new ItemStack(randomFish);
+                    ItemUtil.addReincarcerationFlag(newItem);
+                    caughtItem.setItemStack(newItem);
+                    ConsoleUtil.sendDebug("Angler - Changed caught item to: " + newItem.getType());
+                }
+
+            }
             handleFishingPull(player);
         }
 
@@ -234,16 +286,6 @@ public class AnglerModifier extends AbstractModifier implements Listener {
             playerInWaterStatus.put(player.getUniqueId(), false);
         }
     }
-
-//    private boolean isPlayerInOrOnWater(Player player) {
-//        Location loc = player.getLocation();
-//        Block block = loc.getBlock();
-//        Block blockBelow = block.getRelative(BlockFace.DOWN);
-//
-//        // Check if the player is in water or if the block below is water
-//        return block.getType() == Material.WATER ||
-//                (blockBelow.getType() == Material.WATER && loc.getY() % 1 == 0);
-//    }
 
     private boolean isPlayerInOrOnWater(Player player) {
         Block block = player.getLocation().getBlock();
@@ -410,7 +452,7 @@ public class AnglerModifier extends AbstractModifier implements Listener {
     private void spawnSquid(Player player) {
         Location spawnLoc = findWaterSpawnLocation(player.getLocation());
         if (spawnLoc != null) {
-            Squid squid = player.getWorld().spawn(spawnLoc, Squid.class);
+            GlowSquid squid = player.getWorld().spawn(spawnLoc, GlowSquid.class);
             activeSquids.put(player.getUniqueId(), squid);
             pursuePlayer(squid, player);
             ConsoleUtil.sendDebug("Spawned squid for " + player.getName() + " at " + spawnLoc);
@@ -441,7 +483,7 @@ public class AnglerModifier extends AbstractModifier implements Listener {
         return null;
     }
 
-    private void pursuePlayer(Squid squid, Player player) {
+    private void pursuePlayer(GlowSquid squid, Player player) {
         new BukkitRunnable() {
             int ticks = 0;
             int outOfWaterTicks = 0;
@@ -483,7 +525,7 @@ public class AnglerModifier extends AbstractModifier implements Listener {
     }
 
     private void removeSquid(Player player) {
-        Squid squid = activeSquids.remove(player.getUniqueId());
+        GlowSquid squid = activeSquids.remove(player.getUniqueId());
         if (squid != null) {
             squid.remove();
         }
@@ -543,6 +585,20 @@ public class AnglerModifier extends AbstractModifier implements Listener {
             player.getInventory().addItem(item);
             ConsoleUtil.sendDebug("Provided fishing rod to " + player.getName());
         }
+    }
+
+    private Material getRandomFish() {
+        int totalWeight = disallowedSwapItems.values().stream().mapToInt(Integer::intValue).sum();
+        int randomWeight = ThreadLocalRandom.current().nextInt(totalWeight);
+        int currentWeight = 0;
+
+        for (Map.Entry<Material, Integer> entry : disallowedSwapItems.entrySet()) {
+            currentWeight += entry.getValue();
+            if (randomWeight < currentWeight) {
+                return entry.getKey();
+            }
+        }
+        return Material.COD; // Default to COD if something goes wrong
     }
 
     public void reloadConfig() {
