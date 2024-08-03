@@ -363,7 +363,9 @@ public class GUIManager {
     }
 
     public void openOnlinePlayersGUI(Player player, int page) {
-        List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
+        List<Player> onlinePlayers = Bukkit.getOnlinePlayers().stream()
+                .filter(p -> !p.hasPermission("reincarceration.admin.invisible"))
+                .collect(Collectors.toList());
         int totalPages = (onlinePlayers.size() + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE;
 
         Inventory inventory = Bukkit.createInventory(null, 54, ChatColor.BLUE + "Online Players (Page " + (page + 1) + ")");

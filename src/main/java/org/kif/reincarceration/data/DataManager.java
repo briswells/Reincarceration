@@ -401,6 +401,47 @@ public class DataManager {
         }
     }
 
+    public void clearPlayerData(Player player) throws SQLException {
+        clearPlayerDataTable(player);
+        clearCycleHistoryTable(player);
+        clearCompletedModifiersTable(player);
+        clearActiveModifiersTable(player);
+
+        ConsoleUtil.sendDebug("Finished clearing all data for player: " + player.getName());
+    }
+
+    private void clearPlayerDataTable(Player player) throws SQLException {
+        String sql = "DELETE FROM player_data WHERE uuid = ?";
+        executeDelete(sql, player, "player_data");
+    }
+
+    private void clearCycleHistoryTable(Player player) throws SQLException {
+        String sql = "DELETE FROM cycle_history WHERE player_uuid = ?";
+        executeDelete(sql, player, "cycle_history");
+    }
+
+    private void clearCompletedModifiersTable(Player player) throws SQLException {
+        String sql = "DELETE FROM completed_modifiers WHERE player_uuid = ?";
+        executeDelete(sql, player, "completed_modifiers");
+    }
+
+    private void clearActiveModifiersTable(Player player) throws SQLException {
+        String sql = "DELETE FROM active_modifiers WHERE player_uuid = ?";
+        executeDelete(sql, player, "active_modifiers");
+    }
+
+    private void executeDelete(String sql, Player player, String tableName) throws SQLException {
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, player.getUniqueId().toString());
+            int rowsAffected = pstmt.executeUpdate();
+            ConsoleUtil.sendDebug("Cleared " + rowsAffected + " rows from " + tableName + " for player: " + player.getName());
+        } catch (SQLException e) {
+            ConsoleUtil.sendError("Error clearing data from " + tableName + " for player " + player.getName() + ": " + e.getMessage());
+            throw e;
+        }
+    }
+
     // Update this method to use dataModule directly
     public Connection getConnection () throws SQLException {
         return dataModule.getConnection();
