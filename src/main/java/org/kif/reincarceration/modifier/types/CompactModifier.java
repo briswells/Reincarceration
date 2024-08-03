@@ -35,9 +35,19 @@ public class CompactModifier extends AbstractModifier implements Listener {
     private int allowedHotbarSlots;
     private static final int HOTBAR_SIZE = 9;
     private static final int PLAYER_INVENTORY_SIZE = 36; // 27 main inventory + 9 hotbar
+    private int currentInventorySize;
+    private Set<Integer> allowedSlotSet = IntStream.range(0, PLAYER_INVENTORY_SIZE + HOTBAR_SIZE)
+            .boxed()
+            .collect(Collectors.toSet());
     private static final int INVENTORY_ROW_SIZE = 9;
     private ItemStack restrictedSlotItem;
-
+    // Define allowed slot types
+    private static final Set<InventoryType.SlotType> allowedSlotTypes = Set.of(
+            InventoryType.SlotType.CRAFTING,
+            InventoryType.SlotType.FUEL,
+            InventoryType.SlotType.ARMOR,
+            InventoryType.SlotType.RESULT
+    );
     public CompactModifier(Reincarceration plugin) {
         super("compact", "Compact", "Limits the number of usable inventory slots and removes player vault access.");
         this.plugin = plugin;
@@ -80,17 +90,8 @@ public class CompactModifier extends AbstractModifier implements Listener {
         Player player = (Player) event.getWhoClicked();
         if (!isActive(player)) return;
 
-        int slot = event.getRawSlot();
-        int playerInvSlot = event.getView().convertSlot(slot);
-
-        // Allow interactions with allowed hotbar slots
-        if (playerInvSlot < allowedHotbarSlots) return;
-
-        // Allow interactions with the allowed inventory slots
-        if (playerInvSlot >= PLAYER_INVENTORY_SIZE - allowedInventorySlots) return;
-
-        // Allow interactions with armor and offhand slots
-        if (playerInvSlot >= PLAYER_INVENTORY_SIZE) return;
+        // Don't need to check for allowed slots for several slot types
+        if( allowedSlotTypes.contains(event.getSlotType()) ) return;
 
         // Prevent interaction with restricted slot item (dead bush)
         if (event.getCurrentItem() != null && event.getCurrentItem().isSimilar(restrictedSlotItem)) {
@@ -98,8 +99,16 @@ public class CompactModifier extends AbstractModifier implements Listener {
             return;
         }
 
-        // Cancel interactions with restricted slots
-        event.setCancelled(true);
+        int topInventorySize = event.getView().getTopInventory().getSize();
+        checkAllowedSet(topInventorySize);
+
+        int slot = event.getRawSlot();
+        ConsoleUtil.sendDebug("InventoryClickEvent: Raw Slot = " + slot);
+        if (!allowedSlotSet.contains(slot)) {
+            event.setCancelled(true);
+            return;
+        }
+        return;
     }
 
     @EventHandler
@@ -108,19 +117,17 @@ public class CompactModifier extends AbstractModifier implements Listener {
         Player player = (Player) event.getWhoClicked();
         if (!isActive(player)) return;
 
-        Set<Integer> allowedSlotSet = IntStream.range(0, allowedHotbarSlots)
-                .boxed()
-                .collect(Collectors.toSet());
-        allowedSlotSet.addAll(IntStream.range(PLAYER_INVENTORY_SIZE - allowedInventorySlots, PLAYER_INVENTORY_SIZE)
-                .boxed()
-                .collect(Collectors.toSet()));
+        int topInventorySize = event.getView().getTopInventory().getSize();
+        checkAllowedSet(topInventorySize);
 
-        Set<Integer> affectedPlayerSlots = event.getRawSlots().stream()
-                .map(event.getView()::convertSlot)
-                .filter(slot -> slot < PLAYER_INVENTORY_SIZE)
-                .collect(Collectors.toSet());
+        boolean hasDisallowedSlot = event.getRawSlots().stream()
+                .anyMatch(slot -> !allowedSlotSet.contains(slot));
+        // Debug statements
+        ConsoleUtil.sendDebug("InventoryDragEvent: Raw Slots = " + event.getRawSlots());
+        boolean allSlotsOfType = event.getRawSlots().stream()
+                .allMatch(slot -> allowedSlotTypes.contains(event.getView().getSlotType(slot)));
 
-        if (!allowedSlotSet.containsAll(affectedPlayerSlots)) {
+        if (hasDisallowedSlot && !allSlotsOfType) {
             event.setCancelled(true);
         }
     }
@@ -190,7 +197,9 @@ public class CompactModifier extends AbstractModifier implements Listener {
         if (!(event.getPlayer() instanceof Player)) return;
         Player player = (Player) event.getPlayer();
         if (!isActive(player)) return;
-
+        int topInventorySize = event.getView().getTopInventory().getSize();
+        checkAllowedSet(topInventorySize);
+        ConsoleUtil.sendDebug("Top Size: " + topInventorySize + ", Slot Set = " + allowedSlotSet);
         if (event.getInventory().getType() == InventoryType.CRAFTING || event.getInventory().getType() == InventoryType.PLAYER) {
             removeDisallowedDeadBushes(player);
         }
@@ -324,6 +333,20 @@ public class CompactModifier extends AbstractModifier implements Listener {
         ItemStack deadBush = new ItemStack(Material.DEAD_BUSH);
         ItemUtil.addReincarcerationFlag(deadBush);
         return deadBush;
+    }
+
+    private void  checkAllowedSet(int topInventorySize) {
+        if (currentInventorySize == (PLAYER_INVENTORY_SIZE + topInventorySize)) return;
+
+        currentInventorySize = PLAYER_INVENTORY_SIZE + topInventorySize;
+        allowedSlotSet.clear();
+        allowedSlotSet = IntStream.range(0, PLAYER_INVENTORY_SIZE + topInventorySize)
+                .boxed()
+                .collect(Collectors.toSet());
+        allowedSlotSet.removeAll(IntStream.range(topInventorySize, topInventorySize + PLAYER_INVENTORY_SIZE - allowedInventorySlots - allowedHotbarSlots)
+                .boxed()
+                .collect(Collectors.toSet()));
+        return;
     }
 
     public boolean handleVaultAccess(PlayerInteractEvent event) {
