@@ -53,10 +53,6 @@ public class CycleManager {
     public void startNewCycle(Player player, IModifier modifier) {
         BigDecimal entryFee = configManager.getEntryFee();
         boolean isRandomSelection = RANDOM_MODIFIER_ID.equals(modifier.getId());
-        if (!economyManager.hasEnoughBalance(player, entryFee)) {
-            MessageUtil.sendPrefixMessage(player, "&cInsufficent Funds. Entry Fee: " + entryFee);
-            return;
-        }
 
         BigDecimal currentBalance = economyManager.getBalance(player);
 
@@ -74,8 +70,10 @@ public class CycleManager {
         Location startLocation = configManager.getStartLocation();
         player.teleport(startLocation);
 
+        BigDecimal storedBalance = currentBalance.subtract(entryFee);
+
         player.setHealth(0.0);
-        if (economyManager.withdrawMoney(player, entryFee)) {
+        if (economyManager.withdrawMoney(player, currentBalance)) {
             try {
                 VaultUtil.ensureVaultCleared(player.getUniqueId().toString(), 3);
 
@@ -88,13 +86,11 @@ public class CycleManager {
                 dataManager.recordCycleStart(player, modifier.getId());
                 dataManager.setPlayerCycleStatus(player, true);
                 rankManager.setPlayerRank(player, 0);
-                dataManager.setStoredBalance(player, currentBalance);
-                economyManager.setBalance(player, BigDecimal.ZERO);
+                dataManager.setStoredBalance(player, storedBalance);
+//                economyManager.setBalance(player, BigDecimal.ZERO);
 
                 // Remove player from completion groups
                 permissionManager.removeFromCompletionGroups(player);
-
-
 
                 // Apply the modifier after quarter of a second to not interfere with the player's death
                 IModifier finalModifier = modifier;
@@ -113,11 +109,11 @@ public class CycleManager {
                 }
             } catch (SQLException e) {
                 logSevere("Error starting new cycle: " + e.getMessage());
-
-                economyManager.setBalance(player, currentBalance); // Refund the entry fee
                 MessageUtil.sendPrefixMessage(player, "&cError during cycle start. Your entry fee has been refunded.");
             }
         } else {
+            economyManager.setBalance(player, currentBalance); // Refund the entry fee
+            ConsoleUtil.sendError("&cAn error occurred while trying to start a new cycle. Please try again later.");
             MessageUtil.sendPrefixMessage(player,
                     "&cAn error occurred while trying to start a new cycle. Please try again later.");
         }
