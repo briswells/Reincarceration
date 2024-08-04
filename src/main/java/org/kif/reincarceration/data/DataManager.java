@@ -73,11 +73,11 @@ public class DataManager {
         }
     }
 
-    public boolean isPlayerInCycle(Player player) throws SQLException {
+    public boolean isPlayerInCycle(UUID playerUuid) throws SQLException {
         String sql = "SELECT in_cycle FROM player_data WHERE uuid = ?";
         try (Connection conn = dataModule.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, player.getUniqueId().toString());
+            pstmt.setString(1, playerUuid.toString());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getBoolean("in_cycle");
@@ -85,6 +85,10 @@ public class DataManager {
             }
         }
         return false;
+    }
+
+    public boolean isPlayerInCycle(Player player) throws SQLException {
+        return isPlayerInCycle(player.getUniqueId());
     }
 
     public boolean isPlayerInCycleUUID(UUID playerUUID) throws SQLException {
