@@ -286,9 +286,23 @@ public class GUIListener implements Listener {
     }
 
     private void handleAvailableModifiersMenu(Player player, InventoryClickEvent event) {
+        if (event.getCurrentItem() == null) return;
+
         if (event.getCurrentItem().getType() == Material.BOOK) {
             guiManager.openCompletedModifiersGUI(player, 0);
-        } else {
+        }
+        else if (event.isRightClick()) {
+            String modifierName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
+            try {
+                IModifier modifier = modifierManager.getModifierByName(modifierName);
+                if (modifier != null) {
+                    guiManager.openRewardItemGUI(player, modifier);
+                }
+            } catch (Exception e) {
+                player.sendMessage(ChatColor.RED + "Error selecting modifier: " + e.getMessage());
+            }
+        }
+        else {
             handleNavigationButtons(player, event, event.getView().getTitle());
         }
     }
