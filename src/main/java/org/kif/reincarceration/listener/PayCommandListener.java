@@ -1,6 +1,7 @@
 package org.kif.reincarceration.listener;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -54,7 +55,12 @@ public class PayCommandListener implements Listener {
 
             Player recipient = Bukkit.getPlayer(recipientName);
             if (recipient == null) {
-                return; // Let the normal economy plugin handle invalid players
+                // check just to make sure...
+                final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(recipientName);
+                if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getPlayer() == null) {
+                    return; // get out!
+                }
+                recipient = offlinePlayer.getPlayer();
             }
 
             boolean senderInSystem = dataManager.isPlayerInCycle(sender);
