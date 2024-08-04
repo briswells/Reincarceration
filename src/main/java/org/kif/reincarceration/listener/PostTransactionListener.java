@@ -37,7 +37,7 @@ public class PostTransactionListener implements Listener {
         Player player = event.getPlayer();
         ConsoleUtil.sendDebug("Player: " + player.getName());
 
-        if (!permissionManager.isAssociatedWithBaseGroup(player)) {
+        if (!permissionManager.isAssociatedWithBaseGroup(player.getUniqueId())) {
             ConsoleUtil.sendDebug("Player is not associated with the base group. Exiting.");
             return;
         }

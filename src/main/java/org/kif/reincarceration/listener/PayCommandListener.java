@@ -1,6 +1,7 @@
 package org.kif.reincarceration.listener;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -52,13 +53,18 @@ public class PayCommandListener implements Listener {
                 return; // Let the normal economy plugin handle invalid amounts
             }
 
-            Player recipient = Bukkit.getPlayer(recipientName);
+            OfflinePlayer recipient = Bukkit.getPlayer(recipientName);
             if (recipient == null) {
-                return; // Let the normal economy plugin handle invalid players
+                // check just to make sure...
+                final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(recipientName);
+                if (!offlinePlayer.hasPlayedBefore() || offlinePlayer.getPlayer() == null) {
+                    return; // get out!
+                }
+                recipient = offlinePlayer.getPlayer();
             }
 
             boolean senderInSystem = dataManager.isPlayerInCycle(sender);
-            boolean recipientInSystem = dataManager.isPlayerInCycle(recipient);
+            boolean recipientInSystem = dataManager.isPlayerInCycle(recipient.getUniqueId());
 
             // Only intervene if at least one player is in the reincarceration system
             if (senderInSystem || recipientInSystem) {
@@ -78,32 +84,36 @@ public class PayCommandListener implements Listener {
         }
     }
 
-    private void handleSenderInSystem(Player sender, Player recipient, BigDecimal amount) throws SQLException {
+    private void handleSenderInSystem(Player sender, OfflinePlayer recipient, BigDecimal amount) throws SQLException {
         BigDecimal storedBalance = dataManager.getStoredBalance(sender);
         if (storedBalance.compareTo(amount) >= 0) {
             dataManager.setStoredBalance(sender, storedBalance.subtract(amount));
-            if (permissionManager.isAssociatedWithBaseGroup(recipient)) {
+            if (permissionManager.isAssociatedWithBaseGroup(recipient.getUniqueId())) {
                 // Recipient is also in the system, add to their stored balance
-                BigDecimal recipientStoredBalance = dataManager.getStoredBalance(recipient);
-                dataManager.setStoredBalance(recipient, recipientStoredBalance.add(amount));
+                BigDecimal recipientStoredBalance = dataManager.getStoredBalance(recipient.getUniqueId());
+                dataManager.setStoredBalance(recipient.getUniqueId(), recipientStoredBalance.add(amount));
             } else {
                 // Recipient is outside the system, add to their regular balance
                 economyManager.depositMoney(recipient, amount);
             }
             MessageUtil.sendPrefixMessage(sender, "&aYou have sent $" + amount.toPlainString() + " to " + recipient.getName() + ".");
-            MessageUtil.sendPrefixMessage(recipient, "&aYou have received $" + amount.toPlainString() + " from " + sender.getName() + ".");
+            if (recipient.getPlayer() != null) {
+                MessageUtil.sendPrefixMessage(recipient.getPlayer(), "&aYou have received $" + amount.toPlainString() + " from " + sender.getName() + ".");
+            }
         } else {
             MessageUtil.sendPrefixMessage(sender, "&cYou don't have enough stored balance to send $" + amount.toPlainString() + ".");
         }
     }
 
-    private void handleRecipientInSystem(Player sender, Player recipient, BigDecimal amount) throws SQLException {
+    private void handleRecipientInSystem(Player sender, OfflinePlayer recipient, BigDecimal amount) throws SQLException {
         if (economyManager.hasEnoughBalance(sender, amount)) {
             economyManager.withdrawMoney(sender, amount);
-            BigDecimal recipientStoredBalance = dataManager.getStoredBalance(recipient);
-            dataManager.setStoredBalance(recipient, recipientStoredBalance.add(amount));
+            BigDecimal recipientStoredBalance = dataManager.getStoredBalance(recipient.getUniqueId());
+            dataManager.setStoredBalance(recipient.getUniqueId(), recipientStoredBalance.add(amount));
             MessageUtil.sendPrefixMessage(sender, "&aYou have sent $" + amount.toPlainString() + " to " + recipient.getName() + "'s stored balance.");
-            MessageUtil.sendPrefixMessage(recipient, "&aYou have received $" + amount.toPlainString() + " in your stored balance from " + sender.getName() + ".");
+            if (recipient.getPlayer() != null) {
+                MessageUtil.sendPrefixMessage(recipient.getPlayer(), "&aYou have received $" + amount.toPlainString() + " in your stored balance from " + sender.getName() + ".");
+            }
         } else {
             MessageUtil.sendPrefixMessage(sender, "&cYou don't have enough money to send $" + amount.toPlainString() + ".");
         }

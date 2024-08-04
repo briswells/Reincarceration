@@ -39,7 +39,7 @@ public class PreTransactionListener implements Listener {
         ConsoleUtil.sendDebug("PreTransaction Entering for player: " + player.getName());
         ConsoleUtil.sendDebug("Transaction type: " + event.getTransactionType());
 
-        if (!permissionManager.isAssociatedWithBaseGroup(player)) {
+        if (!permissionManager.isAssociatedWithBaseGroup(player.getUniqueId())) {
             ConsoleUtil.sendDebug("Player is not associated with the base group. Exiting.");
             return;
         }

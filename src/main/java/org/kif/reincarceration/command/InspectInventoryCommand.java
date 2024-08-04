@@ -42,7 +42,7 @@ public class InspectInventoryCommand implements CommandExecutor {
             return true;
         }
 
-        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(target);
+        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(target.getUniqueId());
         List<ItemStack> violatingItems = new ArrayList<>();
 
         for (ItemStack item : target.getInventory().getContents()) {

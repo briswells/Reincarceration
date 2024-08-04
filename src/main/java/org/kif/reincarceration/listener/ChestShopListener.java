@@ -33,7 +33,7 @@ public class ChestShopListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onCurrencyTransfer(final CurrencyTransferEvent event) {
         final UUID seller = event.getReceiver();
-        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(seller, seller.toString());
+        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(seller);
 
         if (!isAssociated) {
             return;

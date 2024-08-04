@@ -50,7 +50,7 @@ public class VaultAccessListener implements Listener {
         if (vaultNumber == -1) return; // Not a PlayerVault sign
 
         int reoffenderVaultNumber = configManager.getReoffenderVaultNumber();
-        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player);
+        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player.getUniqueId());
 
         ConsoleUtil.sendDebug("Player " + player.getName() + " attempting to access Vault #" + vaultNumber +
                 ". Associated: " + isAssociated + ", Reoffender Vault: " + reoffenderVaultNumber);

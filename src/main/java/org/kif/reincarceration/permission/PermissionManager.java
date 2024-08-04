@@ -236,11 +236,7 @@ public class PermissionManager {
         ConsoleUtil.sendDebug("Updated completion permission for " + player.getName() + " to " + newPermission);
     }
 
-    public boolean isAssociatedWithBaseGroup(Player player) {
-        return isAssociatedWithBaseGroup(player.getUniqueId(), player.getName());
-    }
-
-    public boolean isAssociatedWithBaseGroup(UUID uuid, String name) {
+    public boolean isAssociatedWithBaseGroup(UUID uuid) {
         if (luckPerms == null) {
             plugin.getLogger().severe("LuckPerms not found! Unable to check base group association.");
             return false;
@@ -250,7 +246,7 @@ public class PermissionManager {
         User user = luckPerms.getUserManager().getUser(uuid);
 
         if (user == null) {
-            plugin.getLogger().warning("Unable to get LuckPerms user for " + name);
+            plugin.getLogger().warning("Unable to get LuckPerms user for " + uuid);
             return false;
         }
 

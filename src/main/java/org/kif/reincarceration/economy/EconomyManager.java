@@ -2,6 +2,7 @@ package org.kif.reincarceration.economy;
 
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.kif.reincarceration.util.ConsoleUtil;
 
@@ -54,7 +55,7 @@ public class EconomyManager {
         }
     }
 
-    public void depositMoney(Player player, BigDecimal amount) {
+    public void depositMoney(OfflinePlayer player, BigDecimal amount) {
         ConsoleUtil.sendDebug("Depositing " + amount + " to " + player.getName());
         try {
             EconomyResponse response = getEconomy().depositPlayer(player, amount.doubleValue());
