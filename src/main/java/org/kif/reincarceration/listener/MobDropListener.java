@@ -30,7 +30,7 @@ public class MobDropListener implements Listener {
 
         Player killer = event.getEntity().getKiller();
 
-        if (killer != null && permissionManager.isAssociatedWithBaseGroup(killer)) {
+        if (killer != null && permissionManager.isAssociatedWithBaseGroup(killer.getUniqueId())) {
             List<ItemStack> drops = event.getDrops();
             for (ItemStack drop : drops) {
                 if (drop != null) {
