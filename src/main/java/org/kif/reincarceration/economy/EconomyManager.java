@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.kif.reincarceration.util.ConsoleUtil;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class EconomyManager {
     private final EconomyModule economyModule;
@@ -77,7 +78,7 @@ public class EconomyManager {
             double balance = getEconomy().getBalance(player);
             ConsoleUtil.sendDebug(String.format("Retrieved balance for %s: %.2f",
                     player.getName(), balance));
-            return BigDecimal.valueOf(balance);
+            return BigDecimal.valueOf(balance).setScale(2, RoundingMode.CEILING);
         } catch (IllegalStateException e) {
             logSevere("Failed to get balance: " + e.getMessage());
             return BigDecimal.ZERO;

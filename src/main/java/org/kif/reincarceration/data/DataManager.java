@@ -5,6 +5,7 @@ import org.kif.reincarceration.entity.CycleHistory;
 import org.kif.reincarceration.util.ConsoleUtil;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -172,7 +173,7 @@ public class DataManager {
             pstmt.setString(1, uuid.toString());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getBigDecimal("stored_balance");
+                    return rs.getBigDecimal("stored_balance").setScale(2, RoundingMode.CEILING);
                 }
             }
         } catch (SQLException e) {
