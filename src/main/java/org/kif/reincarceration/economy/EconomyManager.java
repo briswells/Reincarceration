@@ -40,7 +40,7 @@ public class EconomyManager {
     public boolean withdrawMoney(Player player, BigDecimal amount) {
         ConsoleUtil.sendDebug("Withdrawing " + amount + " from " + player.getName());
         try {
-            EconomyResponse response = getEconomy().withdrawPlayer(player, amount.doubleValue());
+            EconomyResponse response = getEconomy().withdrawPlayer(player, amount.setScale(2, RoundingMode.FLOOR).doubleValue());
             if (response.transactionSuccess()) {
                 ConsoleUtil.sendDebug(String.format("Withdrew %.2f from %s. New balance: %.2f",
                         amount, player.getName(), response.balance));
@@ -78,7 +78,7 @@ public class EconomyManager {
             double balance = getEconomy().getBalance(player);
             ConsoleUtil.sendDebug(String.format("Retrieved balance for %s: %.2f",
                     player.getName(), balance));
-            return BigDecimal.valueOf(balance).setScale(2, RoundingMode.CEILING);
+            return BigDecimal.valueOf(balance).setScale(2, RoundingMode.FLOOR);
         } catch (IllegalStateException e) {
             logSevere("Failed to get balance: " + e.getMessage());
             return BigDecimal.ZERO;

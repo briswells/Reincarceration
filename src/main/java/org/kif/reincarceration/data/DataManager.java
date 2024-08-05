@@ -173,7 +173,7 @@ public class DataManager {
             pstmt.setString(1, uuid.toString());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getBigDecimal("stored_balance").setScale(2, RoundingMode.CEILING);
+                    return rs.getBigDecimal("stored_balance").setScale(2, RoundingMode.FLOOR);
                 }
             }
         } catch (SQLException e) {
