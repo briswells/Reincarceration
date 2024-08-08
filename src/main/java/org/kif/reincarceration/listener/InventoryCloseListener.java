@@ -36,7 +36,7 @@ public class InventoryCloseListener implements Listener {
         Player player = (Player) event.getPlayer();
         ConsoleUtil.sendDebug("InventoryCloseListener: Processing inventory close for player " + player.getName());
 
-        if (!permissionManager.isAssociatedWithBaseGroup(player)) {
+        if (!permissionManager.isAssociatedWithBaseGroup(player.getUniqueId())) {
             ConsoleUtil.sendDebug("InventoryCloseListener: Player " + player.getName() + " is not associated with reincarceration system");
             return;
         }

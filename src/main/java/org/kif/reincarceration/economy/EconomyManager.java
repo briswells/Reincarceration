@@ -2,10 +2,12 @@ package org.kif.reincarceration.economy;
 
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.kif.reincarceration.util.ConsoleUtil;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class EconomyManager {
     private final EconomyModule economyModule;
@@ -38,7 +40,7 @@ public class EconomyManager {
     public boolean withdrawMoney(Player player, BigDecimal amount) {
         ConsoleUtil.sendDebug("Withdrawing " + amount + " from " + player.getName());
         try {
-            EconomyResponse response = getEconomy().withdrawPlayer(player, amount.doubleValue());
+            EconomyResponse response = getEconomy().withdrawPlayer(player, amount.setScale(2, RoundingMode.FLOOR).doubleValue());
             if (response.transactionSuccess()) {
                 ConsoleUtil.sendDebug(String.format("Withdrew %.2f from %s. New balance: %.2f",
                         amount, player.getName(), response.balance));
@@ -54,7 +56,7 @@ public class EconomyManager {
         }
     }
 
-    public void depositMoney(Player player, BigDecimal amount) {
+    public void depositMoney(OfflinePlayer player, BigDecimal amount) {
         ConsoleUtil.sendDebug("Depositing " + amount + " to " + player.getName());
         try {
             EconomyResponse response = getEconomy().depositPlayer(player, amount.doubleValue());
@@ -76,7 +78,7 @@ public class EconomyManager {
             double balance = getEconomy().getBalance(player);
             ConsoleUtil.sendDebug(String.format("Retrieved balance for %s: %.2f",
                     player.getName(), balance));
-            return BigDecimal.valueOf(balance);
+            return BigDecimal.valueOf(balance).setScale(2, RoundingMode.FLOOR);
         } catch (IllegalStateException e) {
             logSevere("Failed to get balance: " + e.getMessage());
             return BigDecimal.ZERO;

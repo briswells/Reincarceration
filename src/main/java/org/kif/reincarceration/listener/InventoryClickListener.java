@@ -32,7 +32,7 @@ public class InventoryClickListener implements Listener {
 
         if (player.isOp()) return;
 
-        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player);
+        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player.getUniqueId());
 
         if (!isAssociated) return;
 

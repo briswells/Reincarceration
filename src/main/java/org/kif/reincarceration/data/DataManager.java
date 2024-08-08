@@ -5,6 +5,7 @@ import org.kif.reincarceration.entity.CycleHistory;
 import org.kif.reincarceration.util.ConsoleUtil;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,11 +74,11 @@ public class DataManager {
         }
     }
 
-    public boolean isPlayerInCycle(Player player) throws SQLException {
+    public boolean isPlayerInCycle(UUID playerUuid) throws SQLException {
         String sql = "SELECT in_cycle FROM player_data WHERE uuid = ?";
         try (Connection conn = dataModule.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, player.getUniqueId().toString());
+            pstmt.setString(1, playerUuid.toString());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getBoolean("in_cycle");
@@ -85,6 +86,10 @@ public class DataManager {
             }
         }
         return false;
+    }
+
+    public boolean isPlayerInCycle(Player player) throws SQLException {
+        return isPlayerInCycle(player.getUniqueId());
     }
 
     public boolean isPlayerInCycleUUID(UUID playerUUID) throws SQLException {
@@ -168,7 +173,7 @@ public class DataManager {
             pstmt.setString(1, uuid.toString());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getBigDecimal("stored_balance");
+                    return rs.getBigDecimal("stored_balance").setScale(2, RoundingMode.FLOOR);
                 }
             }
         } catch (SQLException e) {
@@ -397,6 +402,47 @@ public class DataManager {
             return histories;
         } catch (SQLException e) {
             logSevere("Error getting cycle history: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public void clearPlayerData(Player player) throws SQLException {
+        clearPlayerDataTable(player);
+        clearCycleHistoryTable(player);
+        clearCompletedModifiersTable(player);
+        clearActiveModifiersTable(player);
+
+        ConsoleUtil.sendDebug("Finished clearing all data for player: " + player.getName());
+    }
+
+    private void clearPlayerDataTable(Player player) throws SQLException {
+        String sql = "DELETE FROM player_data WHERE uuid = ?";
+        executeDelete(sql, player, "player_data");
+    }
+
+    private void clearCycleHistoryTable(Player player) throws SQLException {
+        String sql = "DELETE FROM cycle_history WHERE player_uuid = ?";
+        executeDelete(sql, player, "cycle_history");
+    }
+
+    private void clearCompletedModifiersTable(Player player) throws SQLException {
+        String sql = "DELETE FROM completed_modifiers WHERE player_uuid = ?";
+        executeDelete(sql, player, "completed_modifiers");
+    }
+
+    private void clearActiveModifiersTable(Player player) throws SQLException {
+        String sql = "DELETE FROM active_modifiers WHERE player_uuid = ?";
+        executeDelete(sql, player, "active_modifiers");
+    }
+
+    private void executeDelete(String sql, Player player, String tableName) throws SQLException {
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, player.getUniqueId().toString());
+            int rowsAffected = pstmt.executeUpdate();
+            ConsoleUtil.sendDebug("Cleared " + rowsAffected + " rows from " + tableName + " for player: " + player.getName());
+        } catch (SQLException e) {
+            ConsoleUtil.sendError("Error clearing data from " + tableName + " for player " + player.getName() + ": " + e.getMessage());
             throw e;
         }
     }

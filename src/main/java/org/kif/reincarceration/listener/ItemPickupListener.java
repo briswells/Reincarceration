@@ -30,7 +30,7 @@ public class ItemPickupListener implements Listener {
 
         ItemStack item = event.getItem().getItemStack();
 
-        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player);
+        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player.getUniqueId());
         boolean hasFlag = ItemUtil.hasReincarcerationFlag(item);
 
         if (isAssociated && !hasFlag) {

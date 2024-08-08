@@ -46,7 +46,7 @@ public class ContainerInteractionListener implements Listener {
         Player player = (Player) event.getPlayer();
         if (player.isOp()) return;
 
-        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player);
+        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player.getUniqueId());
 
         Inventory inventory = event.getInventory();
 
@@ -192,7 +192,7 @@ public class ContainerInteractionListener implements Listener {
         if (!viewers.isEmpty()) {
             ConsoleUtil.sendDebug("Current viewers of inventory " + inventory.getType() + ":");
             for (Player viewer : viewers) {
-                ConsoleUtil.sendDebug("- " + viewer.getName() + " (Associated: " + permissionManager.isAssociatedWithBaseGroup(viewer) + ")");
+                ConsoleUtil.sendDebug("- " + viewer.getName() + " (Associated: " + permissionManager.isAssociatedWithBaseGroup(viewer.getUniqueId()) + ")");
             }
         }
     }

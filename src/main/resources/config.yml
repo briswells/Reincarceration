@@ -10,7 +10,7 @@ economy:
     - 65000
     - 100000
 
-start_location:
+start_location: # This was meant to just send them to the prison but suffocating them at the location also works
   world: "world"
   x: 233
   y: 67
@@ -54,40 +54,40 @@ item_flagging:
     - DIAMOND
     - IRON_INGOT
     - GOLD_INGOT
-blacklist:
-  - BEDROCK
-  - COMMAND_BLOCK
-  - BARRIER
-  - SHULKER_BOX
-  - WHITE_SHULKER_BOX
-  - ORANGE_SHULKER_BOX
-  - MAGENTA_SHULKER_BOX
-  - LIGHT_BLUE_SHULKER_BOX
-  - YELLOW_SHULKER_BOX
-  - LIME_SHULKER_BOX
-  - PINK_SHULKER_BOX
-  - GRAY_SHULKER_BOX
-  - LIGHT_GRAY_SHULKER_BOX
-  - CYAN_SHULKER_BOX
-  - PURPLE_SHULKER_BOX
-  - BLUE_SHULKER_BOX
-  - BROWN_SHULKER_BOX
-  - GREEN_SHULKER_BOX
-  - RED_SHULKER_BOX
-  - BLACK_SHULKER_BOX
-  - DIAMOND_BLOCK
-  - GOLD_BLOCK
-  - IRON_BLOCK
-  - EMERALD_BLOCK
-  - LAPIS_BLOCK
-  - NETHERITE_BLOCK
-  - COAL_BLOCK
-  - REDSTONE_BLOCK
-  - COPPER_BLOCK
-  - WATER_BUCKET
-  - OBSIDIAN
-  - LAVA_BUCKET
-  - ELYTRA
+  blacklist:
+    - BEDROCK
+    - COMMAND_BLOCK
+    - BARRIER
+    - SHULKER_BOX
+    - WHITE_SHULKER_BOX
+    - ORANGE_SHULKER_BOX
+    - MAGENTA_SHULKER_BOX
+    - LIGHT_BLUE_SHULKER_BOX
+    - YELLOW_SHULKER_BOX
+    - LIME_SHULKER_BOX
+    - PINK_SHULKER_BOX
+    - GRAY_SHULKER_BOX
+    - LIGHT_GRAY_SHULKER_BOX
+    - CYAN_SHULKER_BOX
+    - PURPLE_SHULKER_BOX
+    - BLUE_SHULKER_BOX
+    - BROWN_SHULKER_BOX
+    - GREEN_SHULKER_BOX
+    - RED_SHULKER_BOX
+    - BLACK_SHULKER_BOX
+    - DIAMOND_BLOCK
+    - GOLD_BLOCK
+    - IRON_BLOCK
+    - EMERALD_BLOCK
+    - LAPIS_BLOCK
+    - NETHERITE_BLOCK
+    - COAL_BLOCK
+    - REDSTONE_BLOCK
+    - COPPER_BLOCK
+    - WATER_BUCKET
+    - OBSIDIAN
+    - LAVA_BUCKET
+    - ELYTRA
 
 block_blacklist:
   blocks:
@@ -153,7 +153,7 @@ modifiers:
           - NETHER_BRICKS
           - RED_NETHER_BRICKS
           - SNOW
-        affected_radius: 3
+        affected_radius: 4
 
       DEEPSLATE_COAL_ORE:
         type: potion
@@ -163,7 +163,7 @@ modifiers:
 
       COPPER_ORE:
         type: hunger
-        amount: 5
+        amount: 2
 
       DEEPSLATE_COPPER_ORE:
         type: potion
@@ -195,7 +195,7 @@ modifiers:
 
       DIAMOND_ORE:
         type: player_repulsion
-        force: 10000.5 # I think this level makes things fun
+        force: 3.0 # I think this level makes things fun
 
       DEEPSLATE_DIAMOND_ORE:
         type: item_repulsion # probably needs some work but concept is making it repel dropped items
@@ -383,7 +383,7 @@ modifiers:
     enabled: true
     rewards:
       commands_desc:
-        - "1x T1, T2, T3 Precious Stone Slot"
+        - "1x T1 Precious Stone Slot"
         - "1x Inventory Shulker Slot"
       items:
         TOTEM_OF_UNDYING:
@@ -408,7 +408,7 @@ modifiers:
     max_hearts: 1
     rewards:
       commands_desc:
-        - "1x T1, T2, T3 Precious Stone Slot"
+        - "1x T1 Precious Stone Slot"
         - "1x Inventory Shulker Slot"
       items:
         NETHERITE_SWORD:
@@ -475,12 +475,14 @@ modifiers:
       - SADDLE
       - NAME_TAG
       - TRIPWIRE_HOOK
-      - ROTTEN_FLESH
       - STICK
-      - STRING
-      - BONE
       - INK_SAC
       - BAMBOO
+    disallowed_swap_items:
+      - COD 60
+      - SALMON 25
+      - TROPICAL_FISH 2
+      - PUFFERFISH 13
     rewards:
       items:
         FISHING_ROD:

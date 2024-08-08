@@ -8,6 +8,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.GlowSquid;
 import org.bukkit.event.EventHandler;
@@ -205,6 +206,11 @@ public class AnglerModifier extends AbstractModifier implements Listener {
     @Override
     public void apply(Player player) {
         super.apply(player);
+
+        if (player.isOnline() && player.isValid() && !playerHasFishingRod(player)) {
+            provideFishingRod(player);
+        }
+
         ConsoleUtil.sendDebug("Applied Angler Modifier to " + player.getName());
     }
 
@@ -214,6 +220,15 @@ public class AnglerModifier extends AbstractModifier implements Listener {
         stopWaterTask(player);
         playerInWaterStatus.remove(player.getUniqueId());
         ConsoleUtil.sendDebug("Removed Angler Modifier from " + player.getName());
+    }
+
+    private boolean playerHasFishingRod(Player player) {
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null && item.getType() == Material.FISHING_ROD) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @EventHandler
@@ -236,8 +251,9 @@ public class AnglerModifier extends AbstractModifier implements Listener {
         if (!isActive(player)) return;
 
         if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH || event.getState() == PlayerFishEvent.State.CAUGHT_ENTITY) {
-            Item caughtItem = (Item) event.getCaught();
-            if (caughtItem != null) {
+            Entity caught = event.getCaught();
+            if (caught instanceof Item) {
+                Item caughtItem = (Item) caught;
                 ConsoleUtil.sendDebug("Angler - Caught ITEM: " + caughtItem.getItemStack().getType());
                 if (!allowedItems.contains(caughtItem.getItemStack().getType())) {
                     Material randomFish = getRandomFish();
@@ -246,7 +262,8 @@ public class AnglerModifier extends AbstractModifier implements Listener {
                     caughtItem.setItemStack(newItem);
                     ConsoleUtil.sendDebug("Angler - Changed caught item to: " + newItem.getType());
                 }
-
+            } else if (caught != null) {
+                ConsoleUtil.sendDebug("Angler - Caught non-item entity: " + ((Entity) caught).getType());
             }
             handleFishingPull(player);
         }
@@ -581,6 +598,18 @@ public class AnglerModifier extends AbstractModifier implements Listener {
     private void provideFishingRod(Player player) {
         if (!player.getInventory().contains(Material.FISHING_ROD)) {
             ItemStack item = new ItemStack(Material.FISHING_ROD);
+
+            ItemMeta meta = item.getItemMeta();
+
+            if (meta instanceof Damageable) {
+                Damageable damageable = (Damageable) meta;
+                // int maxDurability = Material.FISHING_ROD.getMaxDurability();
+                int damage = 50;
+                damageable.setDamage(damage);
+            }
+
+            item.setItemMeta(meta);
+
             ItemUtil.addReincarcerationFlag(item);
             player.getInventory().addItem(item);
             ConsoleUtil.sendDebug("Provided fishing rod to " + player.getName());

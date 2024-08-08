@@ -27,7 +27,7 @@ public class InventoryDragListener implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player);
+        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player.getUniqueId());
 
         if (isAssociated) {
             for (Integer slot : event.getRawSlots()) {

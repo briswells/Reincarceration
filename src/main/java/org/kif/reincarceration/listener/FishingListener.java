@@ -36,7 +36,7 @@ public class FishingListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player);
+        boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player.getUniqueId());
 
         if (event.getCaught() instanceof Item) {
             Item caughtItem = (Item) event.getCaught();
